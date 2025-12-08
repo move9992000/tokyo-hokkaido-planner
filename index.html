@@ -44,10 +44,11 @@
             min-height: 500px;
         }
 
-        /* --- ICON 位置 (保持不變) --- */
+        /* --- ICON 位置調整 --- */
         .nav-tabs {
             position: absolute;
-            bottom: 23px; /* 維持上一版的 23px */
+            /* 修改這裡：從 23px 改為 18px (往下移 5px) */
+            bottom: 18px;
             right: 15px;
             display: flex;
             gap: 10px;
@@ -94,7 +95,7 @@
                 opacity: 0.8;
             }
             100% {
-                /* 配合 Banner 高度改為 230px */
+                /* 配合 Banner 高度 230px */
                 transform: translateY(230px) translateX(20px) rotate(360deg); 
                 opacity: 0.2;
             }
@@ -106,12 +107,11 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 45px; /* 約 1cm 稍微多一點，做漸層 */
+            height: 45px;
             background: linear-gradient(to top, #ffffff 30%, rgba(255,255,255,0.6) 80%, transparent 100%);
             z-index: 5;
             pointer-events: none;
         }
-        /* 增加一點波浪感 */
         .snow-pile::after {
             content: '';
             position: absolute;
