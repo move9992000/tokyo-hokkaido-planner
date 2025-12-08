@@ -44,10 +44,11 @@
             min-height: 500px;
         }
 
-        /* --- ICON 位置調整 (Bottom 13px) --- */
+        /* --- ICON 位置調整 --- */
         .nav-tabs {
             position: absolute;
-            bottom: 13px;
+            /* 修改這裡：從 13px 改為 11.5px (再往下移 1.5px) */
+            bottom: 11.5px;
             right: 15px;
             display: flex;
             gap: 10px;
@@ -77,32 +78,15 @@
             opacity: 1;
         }
 
-        /* --- 雪花動畫 --- */
-        .snowflake {
+        /*Canvas for Snow Effect*/
+        #snow-canvas {
             position: absolute;
-            top: -10px;
-            background-color: #fff;
-            border-radius: 50%;
-            opacity: 0.8;
-            pointer-events: none;
-            animation: snowfall linear infinite;
-        }
-
-        @keyframes snowfall {
-            0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.8; }
-            100% { transform: translateY(230px) translateX(20px) rotate(360deg); opacity: 0.2; }
-        }
-
-        /* 積雪效果遮罩 (無陰影) */
-        .snow-pile {
-            position: absolute;
-            bottom: 0;
+            top: 0;
             left: 0;
-            right: 0;
-            height: 45px;
-            background: linear-gradient(to top, #ffffff 50%, transparent 100%);
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* 確保不擋住點擊 */
             z-index: 5;
-            pointer-events: none;
         }
 
         /* 其他樣式 */
@@ -141,13 +125,11 @@
 <div id="app">
     <div class="app-container">
         
-        <div class="relative h-[230px] w-full overflow-hidden">
+        <div class="relative h-[230px] w-full overflow-hidden" ref="bannerRef">
             <img src="banner.jpg" alt="Banner" class="w-full h-full object-cover object-center">
             <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
             
-            <div v-for="n in 30" :key="n" class="snowflake" :style="getSnowStyle()"></div>
-            
-            <div class="snow-pile"></div>
+            <canvas id="snow-canvas"></canvas>
 
             <div class="nav-tabs">
                 <button @click="currentTab = 'schedule'" :class="['nav-tab-btn', currentTab === 'schedule' ? 'active' : '']">
@@ -235,6 +217,7 @@
                                  :class="getCategoryColor(item.category)">
                                 <i :class="getCategoryIcon(item.category)"></i>
                             </div>
+
                             <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 hover:shadow-md transition active:scale-95">
                                 <div class="flex justify-between items-start">
                                     <h3 class="font-bold text-gray-800 text-lg">{{ item.name }}</h3>
@@ -242,27 +225,29 @@
                                         <i class="fas fa-location-arrow"></i>
                                     </a>
                                 </div>
+                                
                                 <div class="mt-1 flex flex-wrap gap-2 text-xs text-gray-500">
                                     <span v-if="item.startTime" class="bg-gray-100 px-2 py-1 rounded"><i class="far fa-clock mr-1"></i>{{ item.startTime }}~{{item.endTime}}</span>
                                     <span v-if="item.category === 'spot' && item.cost" class="bg-yellow-50 text-yellow-600 px-2 py-1 rounded"><i class="fas fa-ticket-alt mr-1"></i>{{ item.cost }}</span>
                                 </div>
-                                <p v-if="item.notes" class="mt-2 text-sm text-gray-500 border-l-2 border-gray-200 pl-2 line-clamp-2">{{ item.notes }}</p>
+
+                                <p v-if="item.notes" class="mt-2 text-sm text-gray-500 border-l-2 border-gray-200 pl-2 line-clamp-2">
+                                    {{ item.notes }}
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <button @click="openAddModal('schedule')" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl flex items-center justify-center text-2xl z-40 hover:scale-110 transition"><i class="fas fa-plus"></i></button>
+
+                <button @click="openAddModal('schedule')" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl flex items-center justify-center text-2xl z-40 hover:scale-110 transition">
+                    <i class="fas fa-plus"></i>
+                </button>
             </div>
 
             <div v-show="currentTab === 'info'" class="space-y-6 pb-20">
+                
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-                    <h3 class="font-bold text-gray-800 mb-3 flex justify-between items-center">
-                        <span><i class="fas fa-coins text-yellow-500 mr-2"></i>匯率換算</span>
-                        <div class="flex items-center text-xs font-normal text-gray-500 bg-gray-50 px-2 py-1 rounded">
-                            <span class="mr-1">設定匯率:</span>
-                            <input type="number" v-model="settings.rate" class="w-12 bg-transparent text-right border-b border-gray-300 focus:outline-none text-blue-600 font-bold" step="0.001">
-                        </div>
-                    </h3>
+                    <h3 class="font-bold text-gray-800 mb-3"><i class="fas fa-coins text-yellow-500 mr-2"></i>匯率換算 (JPY → TWD)</h3>
                     <div class="flex items-center gap-3">
                         <div class="flex-1">
                             <label class="text-xs text-gray-400 block mb-1">日幣 (JPY)</label>
@@ -276,7 +261,7 @@
                             </div>
                         </div>
                     </div>
-                    <p class="text-[10px] text-gray-400 mt-2 text-right">請依台銀現金賣出匯率自行輸入</p>
+                    <p class="text-[10px] text-gray-400 mt-2 text-right">以匯率 0.22 概算</p>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -284,31 +269,65 @@
                         <span><i class="fas fa-plane mr-2"></i>航班資訊</span>
                     </div>
                     <div class="p-4 border-b border-gray-100">
-                        <div class="flex justify-between mb-2"><span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold">去程</span><span class="text-xs text-gray-500">2025/12/24</span></div>
-                        <div class="flex justify-between items-center text-center">
-                            <div><div class="text-2xl font-black text-gray-800">TPE</div><div class="text-xs text-gray-500">08:00</div></div>
-                            <div class="flex-1 px-2"><i class="fas fa-plane text-gray-300 text-xs"></i><div class="text-[10px] text-gray-400">BR116</div></div>
-                            <div><div class="text-2xl font-black text-gray-800">CTS</div><div class="text-xs text-gray-500">12:35</div></div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold">去程</span>
+                            <span class="text-xs text-gray-500">2025/12/24</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="text-center">
+                                <div class="text-2xl font-black text-gray-800">TPE</div>
+                                <div class="text-xs text-gray-500">08:00</div>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center px-2">
+                                <div class="text-xs text-gray-400 mb-1">BR116</div>
+                                <div class="w-full h-[1px] bg-gray-300 relative">
+                                    <i class="fas fa-plane absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 text-gray-400 text-xs"></i>
+                                </div>
+                                <div class="text-[10px] text-gray-400 mt-1">3h 35m</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-black text-gray-800">CTS</div>
+                                <div class="text-xs text-gray-500">12:35</div>
+                            </div>
                         </div>
                     </div>
                     <div class="p-4">
-                        <div class="flex justify-between mb-2"><span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded font-bold">回程</span><span class="text-xs text-gray-500">2026/01/04</span></div>
-                        <div class="flex justify-between items-center text-center">
-                            <div><div class="text-2xl font-black text-gray-800">NRT</div><div class="text-xs text-gray-500">14:00</div></div>
-                            <div class="flex-1 px-2"><i class="fas fa-plane text-gray-300 rotate-180 text-xs"></i><div class="text-[10px] text-gray-400">JX801</div></div>
-                            <div><div class="text-2xl font-black text-gray-800">TPE</div><div class="text-xs text-gray-500">17:15</div></div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded font-bold">回程</span>
+                            <span class="text-xs text-gray-500">2026/01/04</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="text-center">
+                                <div class="text-2xl font-black text-gray-800">NRT</div>
+                                <div class="text-xs text-gray-500">14:00</div>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center px-2">
+                                <div class="text-xs text-gray-400 mb-1">JX801</div>
+                                <div class="w-full h-[1px] bg-gray-300 relative">
+                                    <i class="fas fa-plane absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 text-gray-400 text-xs rotate-180"></i>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-black text-gray-800">TPE</div>
+                                <div class="text-xs text-gray-500">17:15</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                    <div class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center mb-2"><i class="fas fa-bed"></i></div>
-                    <h4 class="font-bold text-gray-700">札幌王子飯店</h4>
-                    <a href="usercontent.com/maps.google.com/2" target="_blank" class="text-[10px] text-blue-500 mt-2 block">導航 ></a>
+
+                <div class="grid grid-cols-1 gap-3">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <div class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center mb-2"><i class="fas fa-bed"></i></div>
+                        <h4 class="font-bold text-gray-700">札幌王子飯店</h4>
+                        <p class="text-xs text-gray-400 mt-1">+81-11-241-1111</p>
+                        <a href="usercontent.com/maps.google.com/2" target="_blank" class="text-[10px] text-blue-500 mt-2 block">導航 ></a>
+                    </div>
                 </div>
             </div>
 
             <div v-show="currentTab === 'shopping'" class="pb-20">
                 <h3 class="font-bold text-xl text-gray-800 mb-4">購物清單 <span class="text-sm font-normal text-gray-400">({{ shoppingList.length }})</span></h3>
+                
                 <div class="grid grid-cols-2 gap-3">
                     <div v-for="(item, idx) in shoppingList" :key="idx" class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 relative group">
                         <button @click="deleteShoppingItem(idx)" class="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10"><i class="fas fa-times"></i></button>
@@ -318,126 +337,104 @@
                         </div>
                         <div class="p-3">
                             <div class="font-bold text-gray-700 truncate">{{ item.name }}</div>
-                            <div class="flex items-center gap-1 text-xs text-gray-400 mt-1"><input type="checkbox" v-model="item.checked" class="rounded text-blue-500"><span>已購買</span></div>
+                            <div class="flex items-center gap-1 text-xs text-gray-400 mt-1">
+                                <input type="checkbox" v-model="item.checked" class="rounded text-blue-500">
+                                <span>已購買</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <button @click="openAddModal('shopping')" class="fixed bottom-6 right-6 w-14 h-14 bg-pink-500 text-white rounded-full shadow-xl flex items-center justify-center text-2xl z-40 hover:scale-110 transition"><i class="fas fa-plus"></i></button>
+                <button @click="openAddModal('shopping')" class="fixed bottom-6 right-6 w-14 h-14 bg-pink-500 text-white rounded-full shadow-xl flex items-center justify-center text-2xl z-40 hover:scale-110 transition">
+                    <i class="fas fa-plus"></i>
+                </button>
             </div>
 
             <div v-show="currentTab === 'expenses'" class="pb-20">
                 <div class="bg-gradient-to-r from-slate-700 to-slate-800 rounded-2xl p-5 text-white shadow-lg mb-6">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="text-sm opacity-70">總公費 (JPY)</div>
-                            <div class="text-3xl font-bold mt-1">¥ {{ totalExpenses.toLocaleString() }}</div>
-                            <div class="text-xs opacity-60 mt-1">約 TWD {{ (totalExpenses * settings.rate).toFixed(0).toLocaleString() }}</div>
-                        </div>
-                        <button @click="toggleSettlement" class="bg-white/20 text-xs px-3 py-1 rounded backdrop-blur-sm hover:bg-white/30 transition">
-                            <i class="fas fa-calculator mr-1"></i>結算報表
-                        </button>
-                    </div>
-                </div>
-
-                <div v-if="showSettlement" class="bg-blue-50 rounded-2xl p-4 border border-blue-100 mb-6 animate-fade-in">
-                    <h4 class="font-bold text-blue-800 mb-3"><i class="fas fa-file-invoice-dollar mr-2"></i>分帳建議</h4>
-                    <div v-if="settlementPlan.length === 0" class="text-sm text-gray-500 text-center py-2">目前結餘平衡，無需轉帳</div>
-                    <div v-else class="space-y-2">
-                        <div v-for="(plan, idx) in settlementPlan" :key="idx" class="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-gray-700">{{ plan.from }}</span>
-                                <i class="fas fa-arrow-right text-gray-400 text-xs"></i>
-                                <span class="font-bold text-gray-700">{{ plan.to }}</span>
-                            </div>
-                            <div class="text-blue-600 font-bold">¥{{ Math.round(plan.amount).toLocaleString() }}</div>
-                        </div>
-                        <p class="text-[10px] text-gray-400 text-center mt-2">*計算匯率: {{settings.rate}}</p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-2 mb-4 overflow-x-auto hide-scrollbar pb-1">
-                    <div v-for="member in members" :key="member" class="flex-shrink-0 bg-white border border-gray-200 px-3 py-1.5 rounded-full text-xs font-bold text-gray-600 shadow-sm">
-                        {{ member }}
-                    </div>
-                    <button @click="addMember" class="flex-shrink-0 bg-gray-100 text-gray-400 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-gray-200">+ 人員</button>
+                    <div class="text-sm opacity-70">總花費 (JPY)</div>
+                    <div class="text-3xl font-bold mt-1">¥ {{ totalExpenses.toLocaleString() }}</div>
+                    <div class="text-xs opacity-60 mt-1">約 TWD {{ (totalExpenses * 0.22).toFixed(0).toLocaleString() }}</div>
                 </div>
 
                 <div class="space-y-3">
-                    <div v-for="(expense, idx) in expenses" :key="idx" class="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-                        <div class="flex justify-between items-start">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm" :class="getCategoryColor(expense.category)">
-                                    <i :class="getCategoryIcon(expense.category)"></i>
-                                </div>
-                                <div>
-                                    <div class="font-bold text-gray-800">{{ expense.name }}</div>
-                                    <div class="text-[10px] text-gray-400 mt-0.5">
-                                        <span class="bg-gray-100 px-1.5 py-0.5 rounded text-gray-500 mr-1">{{ expense.payer }} 付款</span>
-                                        <span v-if="expense.involved.length < members.length">({{ expense.involved.join(', ') }})</span>
-                                        <span v-else>(全員)</span>
-                                    </div>
-                                </div>
+                    <div v-for="(expense, idx) in expenses" :key="idx" class="bg-white rounded-xl p-3 flex items-center justify-between shadow-sm border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm"
+                                 :class="getCategoryColor(expense.category)">
+                                <i :class="getCategoryIcon(expense.category)"></i>
                             </div>
-                            <div class="text-right">
-                                <div class="font-bold text-gray-700">¥{{ expense.amount }}</div>
-                                <div class="text-[10px] text-gray-400">{{ expense.date }}</div>
+                            <div>
+                                <div class="font-bold text-gray-800">{{ expense.name }}</div>
+                                <div class="text-xs text-gray-400">{{ expense.date }} • {{ expense.payment }}</div>
                             </div>
                         </div>
+                        <div class="font-bold text-gray-700">¥{{ expense.amount }}</div>
                     </div>
                 </div>
-                <button @click="openAddModal('expense')" class="fixed bottom-6 right-6 w-14 h-14 bg-yellow-500 text-white rounded-full shadow-xl flex items-center justify-center text-2xl z-40 hover:scale-110 transition"><i class="fas fa-plus"></i></button>
+                <button @click="openAddModal('expense')" class="fixed bottom-6 right-6 w-14 h-14 bg-yellow-500 text-white rounded-full shadow-xl flex items-center justify-center text-2xl z-40 hover:scale-110 transition">
+                    <i class="fas fa-plus"></i>
+                </button>
             </div>
 
         </div>
 
         <div v-if="showModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-            <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl transform transition-all scale-100 max-h-[90vh] overflow-y-auto">
+            <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl transform transition-all scale-100">
                 <h3 class="text-lg font-bold mb-4">{{ modalTitle }}</h3>
                 
                 <div v-if="modalType === 'schedule'" class="space-y-3">
                     <select v-model="editForm.category" class="w-full p-2 border rounded-lg bg-gray-50">
-                        <option value="spot">景點</option><option value="food">美食</option><option value="shop">購物</option><option value="hotel">住宿</option><option value="flight">航班</option>
+                        <option value="spot">景點</option>
+                        <option value="food">美食</option>
+                        <option value="shop">購物</option>
+                        <option value="hotel">住宿</option>
+                        <option value="flight">航班</option>
                     </select>
                     <input v-model="editForm.name" placeholder="名稱" class="w-full p-2 border rounded-lg">
-                    <div class="flex gap-2"><input v-model="editForm.startTime" type="time" class="w-1/2 p-2 border rounded-lg"><input v-model="editForm.endTime" type="time" class="w-1/2 p-2 border rounded-lg"></div>
-                    <div class="bg-gray-50 p-2 rounded-lg">
-                        <label class="text-xs text-gray-500">交通</label>
-                        <div class="flex gap-2 mt-1"><select v-model="editForm.transportType" class="p-1 text-sm border rounded"><option value="walk">步行</option><option value="train">大眾運輸</option></select><input v-model="editForm.transportTime" placeholder="15分" class="flex-1 p-1 text-sm border rounded"></div>
+                    <div class="flex gap-2">
+                        <input v-model="editForm.startTime" type="time" class="w-1/2 p-2 border rounded-lg">
+                        <input v-model="editForm.endTime" type="time" class="w-1/2 p-2 border rounded-lg">
                     </div>
+                    <input v-if="editForm.category === 'spot'" v-model="editForm.cost" placeholder="門票價格" class="w-full p-2 border rounded-lg">
+                    
+                    <div class="bg-gray-50 p-2 rounded-lg">
+                        <label class="text-xs text-gray-500">前往下一站的交通</label>
+                        <div class="flex gap-2 mt-1">
+                            <select v-model="editForm.transportType" class="p-1 text-sm border rounded">
+                                <option value="walk">步行</option>
+                                <option value="train">大眾運輸</option>
+                            </select>
+                            <input v-model="editForm.transportTime" placeholder="例如: 15分" class="flex-1 p-1 text-sm border rounded">
+                        </div>
+                    </div>
+
                     <textarea v-model="editForm.notes" placeholder="備註" class="w-full p-2 border rounded-lg h-20"></textarea>
                 </div>
 
                 <div v-if="modalType === 'shopping'" class="space-y-3">
                     <input v-model="shoppingForm.name" placeholder="商品名稱" class="w-full p-2 border rounded-lg">
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer relative"><input type="file" @change="handleImageUpload" class="absolute inset-0 opacity-0"><span class="text-gray-400 text-sm"><i class="fas fa-camera mr-1"></i> 上傳圖片</span></div>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50 relative">
+                        <input type="file" @change="handleImageUpload" class="absolute inset-0 opacity-0 cursor-pointer">
+                        <span class="text-gray-400 text-sm"><i class="fas fa-camera mr-1"></i> 上傳圖片</span>
+                    </div>
                 </div>
 
                 <div v-if="modalType === 'expense'" class="space-y-3">
-                    <input v-model="expenseForm.name" placeholder="項目名稱 (例如: 晚餐)" class="w-full p-2 border rounded-lg">
-                    <div class="flex gap-2">
-                        <input v-model="expenseForm.amount" type="number" placeholder="金額 (日幣)" class="w-2/3 p-2 border rounded-lg text-lg font-bold">
-                        <select v-model="expenseForm.category" class="w-1/3 p-2 border rounded-lg bg-gray-50 text-sm"><option value="food">飲食</option><option value="transport">交通</option><option value="shop">購物</option><option value="ticket">門票</option><option value="hotel">住宿</option><option value="other">其他</option></select>
-                    </div>
-                    
-                    <div class="bg-gray-50 p-3 rounded-lg">
-                        <label class="text-xs text-gray-500 font-bold block mb-2">誰先付錢?</label>
-                        <div class="flex flex-wrap gap-2">
-                            <button v-for="m in members" :key="m" @click="expenseForm.payer = m" class="px-3 py-1 rounded-full text-xs transition border" :class="expenseForm.payer === m ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200'">{{ m }}</button>
-                        </div>
-                    </div>
-
-                    <div class="bg-gray-50 p-3 rounded-lg">
-                        <div class="flex justify-between mb-2">
-                            <label class="text-xs text-gray-500 font-bold">分攤給誰?</label>
-                            <button @click="toggleAllInvolved" class="text-[10px] text-blue-500 font-bold">全選/全不選</button>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            <label v-for="m in members" :key="m" class="flex items-center gap-1 bg-white px-2 py-1 rounded border border-gray-200 text-xs">
-                                <input type="checkbox" :value="m" v-model="expenseForm.involved" class="rounded text-blue-600">
-                                {{ m }}
-                            </label>
-                        </div>
-                    </div>
+                    <select v-model="expenseForm.category" class="w-full p-2 border rounded-lg bg-gray-50">
+                        <option value="food">飲食</option>
+                        <option value="transport">交通</option>
+                        <option value="shop">購物</option>
+                        <option value="ticket">門票</option>
+                        <option value="hotel">住宿</option>
+                        <option value="other">其他</option>
+                    </select>
+                    <input v-model="expenseForm.name" placeholder="項目名稱" class="w-full p-2 border rounded-lg">
+                    <input v-model="expenseForm.amount" type="number" placeholder="金額 (日幣)" class="w-full p-2 border rounded-lg">
+                    <select v-model="expenseForm.payment" class="w-full p-2 border rounded-lg">
+                        <option value="現金">現金</option>
+                        <option value="信用卡">信用卡</option>
+                        <option value="Suica/IC">西瓜卡</option>
+                    </select>
                 </div>
 
                 <div class="flex gap-3 mt-6">
@@ -452,23 +449,23 @@
 </div>
 
 <script>
-    const { createApp, ref, computed, onMounted, watch } = Vue;
+    const { createApp, ref, computed, onMounted, watch, onUnmounted } = Vue;
 
     createApp({
         setup() {
             const currentTab = ref('schedule');
             const currentDayIndex = ref(0);
             const showModal = ref(false);
-            const modalType = ref('');
+            const modalType = ref(''); // schedule, shopping, expense
             const isEditing = ref(false);
             const converter = ref({ jpy: 1000 });
             const weather = ref(null);
-            
+            const bannerRef = ref(null);
+
             // 全域設定
             const settings = ref({ rate: 0.225 }); // 預設匯率
             const members = ref(['我']); // 預設成員
-            const showSettlement = ref(false);
-
+            
             // 資料 Refs
             const schedule = ref([
                 { date: "2025-12-24", location: "Tokyo", events: [{ id: 1, category: 'flight', name: '前往東京', startTime: '08:00', endTime: '12:35', depCode: 'TPE', arrCode: 'CTS', transportType: 'train', transportTime: '45分' }, { id: 2, category: 'hotel', name: '東京王子飯店', startTime: '15:00', endTime: '', notes: 'Check-in', transportType: 'walk', transportTime: '10分' }, { id: 3, category: 'spot', name: '六本木聖誕燈飾', startTime: '18:00', endTime: '20:00', cost: '免費', notes: '櫸坂通點燈', transportType: 'walk', transportTime: '-' }] },
@@ -483,6 +480,109 @@
             const shoppingForm = ref({});
             const expenseForm = ref({});
 
+            // ---------------- 動態積雪 Canvas 邏輯 ----------------
+            let canvas, ctx, animationId;
+            const flakes = [];
+            const snowPileHeight = new Array(480).fill(0); // 模擬螢幕寬度，記錄每點積雪高度
+
+            // 初始化 Canvas
+            const initCanvas = () => {
+                canvas = document.getElementById('snow-canvas');
+                if (!canvas) return;
+                
+                const resize = () => {
+                    canvas.width = canvas.parentElement.offsetWidth;
+                    canvas.height = canvas.parentElement.offsetHeight;
+                    // 重置積雪陣列
+                    if (snowPileHeight.length !== canvas.width) {
+                       snowPileHeight.length = canvas.width;
+                       for(let i=0; i<canvas.width; i++) snowPileHeight[i] = 0;
+                    }
+                };
+                window.addEventListener('resize', resize);
+                resize();
+
+                // 產生雪花
+                for (let i = 0; i < 60; i++) {
+                    flakes.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        r: Math.random() * 2 + 1,
+                        d: Math.random() * 1 + 0.5 // 密度/速度
+                    });
+                }
+                
+                animateSnow();
+            };
+
+            const animateSnow = () => {
+                if (!canvas) return;
+                ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // 1. 繪製積雪
+                ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height);
+                for (let i = 0; i < canvas.width; i++) {
+                    // 讓積雪稍微平滑一點，不要太鋸齒
+                    let h = snowPileHeight[i];
+                    ctx.lineTo(i, canvas.height - h);
+                }
+                ctx.lineTo(canvas.width, canvas.height);
+                ctx.fill();
+
+                // 2. 繪製與更新雪花
+                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+                ctx.beginPath();
+                for (let i = 0; i < flakes.length; i++) {
+                    const f = flakes[i];
+                    ctx.moveTo(f.x, f.y);
+                    ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
+                }
+                ctx.fill();
+                updateFlakes();
+                
+                animationId = requestAnimationFrame(animateSnow);
+            };
+
+            const updateFlakes = () => {
+                for (let i = 0; i < flakes.length; i++) {
+                    const f = flakes[i];
+                    f.y += Math.pow(f.d, 2) + 1; // 下落速度
+                    f.x += Math.sin(f.y * 0.05) * 0.5; // 左右飄動
+
+                    // 碰到積雪或底部
+                    const floorIndex = Math.floor(f.x);
+                    // 邊界檢查
+                    if (floorIndex >= 0 && floorIndex < canvas.width) {
+                        const pileHeight = snowPileHeight[floorIndex];
+                        // 如果碰到積雪 (高度 = canvas.height - pileHeight)
+                        if (f.y + f.r >= canvas.height - pileHeight) {
+                            // 堆積：增加該點高度 (有上限，例如 35px，避免擋太多)
+                            if (pileHeight < 35) {
+                                // 增加一點範圍的積雪，讓它比較像小山丘
+                                for(let k = -2; k <= 2; k++) {
+                                    if (floorIndex + k >= 0 && floorIndex + k < canvas.width) {
+                                        snowPileHeight[floorIndex + k] += 0.5 * (3 - Math.abs(k)); // 中間加多，旁邊加少
+                                    }
+                                }
+                            }
+                            // 重置雪花到頂部
+                            resetFlake(f);
+                        }
+                    } else if (f.y > canvas.height) {
+                        resetFlake(f);
+                    }
+                }
+            };
+
+            const resetFlake = (f) => {
+                f.y = -10;
+                f.x = Math.random() * canvas.width;
+            };
+            // --------------------------------------------------------
+
             onMounted(() => {
                 const savedData = localStorage.getItem('tripData');
                 if (savedData) {
@@ -495,6 +595,13 @@
                 }
                 initSortable();
                 fetchWeather();
+                
+                // 啟動 Canvas
+                setTimeout(initCanvas, 100);
+            });
+
+            onUnmounted(() => {
+                cancelAnimationFrame(animationId);
             });
 
             watch([schedule, shoppingList, expenses, members, settings], () => {
@@ -507,68 +614,7 @@
                 }));
             }, { deep: true });
 
-            // 智慧分帳邏輯
-            const settlementPlan = computed(() => {
-                let balance = {};
-                members.value.forEach(m => balance[m] = 0);
-
-                expenses.value.forEach(ex => {
-                    const amount = parseFloat(ex.amount);
-                    const payer = ex.payer;
-                    const involved = ex.involved || members.value;
-                    if (!amount || involved.length === 0) return;
-                    
-                    // 付錢的人 +
-                    balance[payer] = (balance[payer] || 0) + amount;
-                    
-                    // 分攤的人 -
-                    const share = amount / involved.length;
-                    involved.forEach(p => {
-                        balance[p] = (balance[p] || 0) - share;
-                    });
-                });
-
-                // 貪婪演算法計算轉帳路徑
-                let debtors = [], creditors = [];
-                for (let p in balance) {
-                    if (balance[p] < -1) debtors.push({ name: p, amount: balance[p] }); // 欠錢
-                    else if (balance[p] > 1) creditors.push({ name: p, amount: balance[p] }); // 被欠錢
-                }
-
-                debtors.sort((a, b) => a.amount - b.amount);
-                creditors.sort((a, b) => b.amount - a.amount);
-
-                let plan = [];
-                let i = 0, j = 0;
-                while (i < debtors.length && j < creditors.length) {
-                    let debtor = debtors[i];
-                    let creditor = creditors[j];
-                    let amount = Math.min(Math.abs(debtor.amount), creditor.amount);
-                    
-                    plan.push({ from: debtor.name, to: creditor.name, amount: amount });
-                    
-                    debtor.amount += amount;
-                    creditor.amount -= amount;
-
-                    if (Math.abs(debtor.amount) < 1) i++;
-                    if (creditor.amount < 1) j++;
-                }
-                return plan;
-            });
-
-            const toggleSettlement = () => showSettlement.value = !showSettlement.value;
-            
-            const addMember = () => {
-                const name = prompt("輸入新成員名字:");
-                if (name && !members.value.includes(name)) members.value.push(name);
-            };
-
-            const toggleAllInvolved = () => {
-                if (expenseForm.value.involved.length === members.value.length) expenseForm.value.involved = [];
-                else expenseForm.value.involved = [...members.value];
-            };
-
-            // ... (其他原有 Functions 保持不變: initSortable, fetchWeather, openAddModal, editEvent, handleImageUpload, saveData, confirmDelete, deleteShoppingItem, Helpers...)
+            // ... (其他既有 Functions 保持不變) ...
             
             const initSortable = () => {
                 const el = document.getElementById('itinerary-list');
@@ -586,7 +632,8 @@
             const getTransportIcon = (t) => t === 'walk' ? 'fas fa-person-walking' : 'fas fa-train-subway';
             const getWeatherIcon = () => 'fas fa-snowflake';
             const getMapLink = (n) => `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(n)}`;
-            const getSnowStyle = () => ({ width: `${Math.random()*5+2}px`, height: `${Math.random()*5+2}px`, left: `${Math.random()*100}%`, animationDuration: `${Math.random()*5+5}s`, animationDelay: `${Math.random()*5}s`, opacity: Math.random()*0.6+0.2 });
+            // (注意: getSnowStyle 已移除，因為改用 Canvas)
+            
             const totalExpenses = computed(() => expenses.value.reduce((sum, item) => sum + Number(item.amount), 0));
             const modalTitle = computed(() => ({ schedule: isEditing.value?'編輯行程':'新增行程', shopping:'新增購物清單', expense:'新增花費' }[modalType.value] || ''));
 
@@ -594,7 +641,6 @@
                 modalType.value = type; isEditing.value = false;
                 editForm.value = { category: 'spot', transportType: 'train', transportTime: '20分' };
                 shoppingForm.value = {};
-                // 初始化花費表單: 預設payer是我，involved是所有人
                 expenseForm.value = { category: 'food', payment: '現金', date: schedule.value[currentDayIndex.value].date, payer: '我', involved: [...members.value] };
                 showModal.value = true;
             };
@@ -612,9 +658,9 @@
             return {
                 currentTab, currentDayIndex, schedule, showModal, modalType, isEditing, modalTitle,
                 editForm, shoppingForm, expenseForm, shoppingList, expenses, converter, weather, settings, members,
-                totalExpenses, showSettlement, settlementPlan, toggleSettlement, addMember, toggleAllInvolved,
+                totalExpenses, bannerRef,
                 openAddModal, editEvent, saveData, confirmDelete, deleteShoppingItem, handleImageUpload,
-                getDayName, getDayNum, getCategoryIcon, getCategoryColor, getTransportIcon, getWeatherIcon, getMapLink, getSnowStyle
+                getDayName, getDayNum, getCategoryIcon, getCategoryColor, getTransportIcon, getWeatherIcon, getMapLink
             };
         }
     }).mount('#app');
