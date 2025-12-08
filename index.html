@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>東京北海道跨年之旅</title>
+    <title>Tokyo & Hokkaido Winter Trip</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
+        /* 日系字體與配色設定 */
         body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: #F0F4F8; /* 極淡的冰雪灰 */
-            color: #334155;
+            font-family: 'Zen Maru Gothic', sans-serif; /* 圓體字，更有日系可愛感 */
+            background-color: #F6F9FC; /* 極淡的雪灰 */
+            color: #475569;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -26,21 +27,16 @@
             margin: 0 auto;
             min-height: 100vh;
             background-color: #ffffff;
-            box-shadow: 0 0 40px rgba(148, 163, 184, 0.2);
+            box-shadow: 0 0 40px rgba(203, 213, 225, 0.3);
             position: relative;
             padding-bottom: 90px;
         }
 
-        /* 極簡風卡片陰影 */
-        .soft-shadow {
-            box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.15);
-        }
-        
-        /* 冰雪漸層文字 */
-        .text-gradient {
-            background: linear-gradient(to right, #2c5282, #63b3ed);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* 玻璃擬態效果 */
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
         }
     </style>
     
@@ -49,11 +45,14 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#93C5FD',    // 冰藍色
-                        accent: '#3B82F6',     // 重點藍
-                        dark: '#1E293B',       // 深岩灰
-                        snow: '#F8FAFC',       // 雪白
-                        ice: '#E0F2FE',        // 淺冰色
+                        ice: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd', // 北海道雪藍
+                            500: '#0ea5e9',
+                            600: '#0284c7', // 深藍
+                        },
+                        snow: '#ffffff'
                     }
                 }
             }
@@ -65,92 +64,85 @@
 <div id="app">
     <div class="app-container">
         
-        <div class="relative h-[250px] w-full overflow-hidden bg-gray-200">
+        <div class="relative h-[250px] w-full overflow-hidden bg-ice-100">
             <img src="banner.jpg" alt="Tokyo & Hokkaido" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-80"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
             
-            <div class="absolute bottom-4 left-6">
-                <h2 class="text-sm font-medium tracking-widest text-gray-500 uppercase mb-1">Winter Holiday</h2>
-                <h1 class="text-2xl font-bold text-gray-800 tracking-wide">東京北海道・雪國跨年</h1>
-                <div class="flex items-center mt-2 text-xs font-medium text-gray-500 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full w-fit shadow-sm">
-                    <i class="far fa-calendar mr-2 text-blue-400"></i>
-                    2025/12/24 - 2026/01/04
+            <div class="absolute bottom-5 left-5 text-white drop-shadow-md">
+                <div class="inline-block px-2 py-1 bg-white/20 backdrop-blur-md rounded-md text-xs mb-2 border border-white/30">
+                    2025.12.24 - 2026.01.04
                 </div>
+                <h1 class="text-2xl font-bold tracking-wider">冬の旅・東京と北海道</h1>
+                <p class="text-sm opacity-90 mt-1">聖誕與跨年的浪漫紀行</p>
             </div>
         </div>
 
-        <div class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100 pt-3 pb-3">
-            <div class="flex space-x-4 overflow-x-auto hide-scrollbar px-6" ref="dateContainer">
+        <div class="sticky top-0 z-30 glass-nav pt-3 pb-3">
+            <div class="flex space-x-3 overflow-x-auto hide-scrollbar px-4" id="days-nav">
                 <button 
                     v-for="(day, index) in schedule" 
                     :key="index"
-                    @click="scrollToDay(index)"
-                    class="flex-shrink-0 flex flex-col items-center justify-center w-[4.5rem] h-16 rounded-xl transition-all duration-300"
-                    :class="currentDayIndex === index ? 'bg-slate-700 text-white shadow-md transform scale-105' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'"
+                    @click="currentDayIndex = index"
+                    class="flex-shrink-0 flex flex-col items-center justify-center w-[4rem] h-16 rounded-xl transition-all duration-300 border"
+                    :class="currentDayIndex === index ? 'bg-ice-500 text-white border-ice-500 shadow-lg shadow-ice-200' : 'bg-white text-gray-400 border-slate-100'"
                 >
-                    <span class="text-[10px] uppercase tracking-wider opacity-80">{{ day.locationShort }}</span>
+                    <span class="text-[10px] uppercase font-bold tracking-widest">{{ day.locCode }}</span>
                     <span class="text-sm font-bold mt-0.5">{{ day.dateShort }}</span>
                 </button>
             </div>
         </div>
 
-        <div class="px-6 mt-6 pb-10 min-h-screen">
-            <div v-if="schedule[currentDayIndex]" class="animate-fade-in">
-                <div class="flex justify-between items-end mb-6">
-                    <div>
-                        <span class="text-blue-400 text-sm font-bold tracking-widest uppercase block mb-1">Day {{ currentDayIndex + 1 }}</span>
-                        <h3 class="text-2xl font-bold text-slate-700">{{ schedule[currentDayIndex].title }}</h3>
-                    </div>
-                    <div class="text-2xl opacity-20 text-blue-300">
-                        <i :class="getDayIcon(schedule[currentDayIndex].locationShort)"></i>
-                    </div>
+        <div class="px-5 mt-6 pb-12">
+            
+            <div class="mb-6 flex justify-between items-end border-b border-slate-100 pb-4">
+                <div>
+                    <span class="text-ice-500 text-xs font-bold tracking-widest uppercase block mb-1">Day {{ currentDayIndex + 1 }}</span>
+                    <h2 class="text-xl font-bold text-slate-700">{{ schedule[currentDayIndex].title }}</h2>
                 </div>
+                <div class="text-3xl text-ice-200">
+                    <i :class="schedule[currentDayIndex].icon"></i>
+                </div>
+            </div>
 
-                <div class="space-y-6 relative ml-2">
-                    <div class="absolute left-[7px] top-4 bottom-4 w-[2px] bg-gray-100"></div>
+            <div class="space-y-5 relative ml-2">
+                <div class="absolute left-[7px] top-2 bottom-4 w-[1px] bg-slate-200"></div>
 
-                    <div v-for="(item, idx) in schedule[currentDayIndex].events" :key="idx" class="relative pl-8">
-                        <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full border-[3px] border-white shadow-sm z-10"
-                             :class="getIconStyle(item.type)">
+                <div v-for="(item, idx) in schedule[currentDayIndex].events" :key="idx" class="relative pl-8 animate-fade-in">
+                    <div class="absolute left-0 top-2 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm z-10"
+                         :class="getDotColor(item.type)">
+                    </div>
+
+                    <div class="bg-white rounded-xl p-4 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-slate-50">
+                        <div class="flex justify-between items-start mb-1.5">
+                            <span class="text-sm font-bold text-slate-400 font-mono tracking-tighter">{{ item.time }}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-50 text-slate-400">{{ item.duration }}</span>
                         </div>
+                        
+                        <h3 class="font-bold text-slate-700 text-base mb-1">{{ item.location }}</h3>
+                        <p class="text-sm text-slate-500 font-light leading-relaxed mb-3">{{ item.desc }}</p>
 
-                        <div class="bg-white rounded-2xl p-5 soft-shadow border border-gray-50/50 hover:border-blue-100 transition-colors">
-                            <div class="flex justify-between items-start mb-2">
-                                <span class="text-sm font-medium text-slate-400 font-mono">{{ item.time }}</span>
-                                <span class="text-xs px-2 py-0.5 rounded text-slate-400 bg-slate-50">{{ item.duration }}</span>
-                            </div>
-                            
-                            <h4 class="font-bold text-slate-700 text-lg mb-1">{{ item.location }}</h4>
-                            <p class="text-sm text-gray-500 mb-4 font-light leading-relaxed">{{ item.description }}</p>
-
-                            <div class="flex gap-3">
-                                <a :href="getGoogleMapsLink(item.location)" target="_blank" 
-                                   class="flex-1 bg-blue-50 text-blue-500 py-2 rounded-lg text-xs font-bold text-center flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors">
-                                    <i class="fas fa-location-dot"></i> 導航
-                                </a>
-                                <button v-if="item.link" @click="openLink(item.link)"
-                                    class="px-4 bg-gray-50 text-gray-400 rounded-lg hover:text-gray-600 transition-colors">
-                                    <i class="fas fa-link"></i>
-                                </button>
-                            </div>
-                        </div>
+                        <a :href="getMapLink(item.location)" target="_blank" 
+                           class="inline-flex items-center justify-center w-full py-2 bg-ice-50 text-ice-600 rounded-lg text-xs font-bold hover:bg-ice-100 transition-colors gap-2">
+                            <i class="fas fa-location-arrow text-[10px]"></i> 導航
+                        </a>
                     </div>
                 </div>
             </div>
+            
+            <div class="mt-8 text-center">
+                <p class="text-xs text-slate-300 font-light tracking-widest">ENJOY YOUR TRIP</p>
+            </div>
         </div>
 
-        <div class="fixed bottom-6 left-6 right-6 bg-slate-800/90 backdrop-blur-md rounded-2xl text-white py-4 px-8 shadow-2xl flex justify-between items-center z-40 max-w-[432px] mx-auto">
-            <button class="flex flex-col items-center text-blue-300">
-                <i class="fas fa-map text-lg mb-1"></i>
-                <span class="text-[10px]">行程</span>
+        <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-md border border-white/50 rounded-full px-6 py-3 shadow-xl flex gap-8 z-40 items-center">
+            <button class="text-ice-500 flex flex-col items-center gap-1">
+                <i class="fas fa-book-open text-lg"></i>
             </button>
-            <button class="flex flex-col items-center text-gray-400 hover:text-white transition">
-                <i class="fas fa-train text-lg mb-1"></i>
-                <span class="text-[10px]">交通</span>
+            <button class="text-slate-300 hover:text-slate-500 flex flex-col items-center gap-1">
+                <i class="fas fa-heart text-lg"></i>
             </button>
-            <button class="flex flex-col items-center text-gray-400 hover:text-white transition">
-                <i class="fas fa-snowflake text-lg mb-1"></i>
-                <span class="text-[10px]">清單</span>
+            <button class="text-slate-300 hover:text-slate-500 flex flex-col items-center gap-1">
+                <i class="fas fa-user text-lg"></i>
             </button>
         </div>
 
@@ -163,168 +155,145 @@
     createApp({
         setup() {
             const currentDayIndex = ref(0);
-            const dateContainer = ref(null);
 
-            const scrollToDay = (index) => {
-                currentDayIndex.value = index;
-                // 簡單的滾動邏輯，讓選中的日期置中
-                if(dateContainer.value) {
-                    const el = dateContainer.value.children[index];
-                    if(el) {
-                        el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                    }
-                }
-            };
-
-            // 行程資料：東京聖誕 -> 北海道跨年 -> 東京
+            // 根據你的需求設定的行程資料
             const schedule = ref([
-                // 1. 東京段 (12/24 - 12/27)
+                // --- TOKYO (12/24 - 12/27) ---
                 {
-                    dateShort: "12/24", locationShort: "TOKYO", title: "聖誕夜抵達東京 🎄",
+                    dateShort: "12/24", locCode: "TYO", icon: "fas fa-tree",
+                    title: "東京聖誕夜 🎄",
                     events: [
-                        { time: "14:00", type: "transport", location: "成田機場/羽田機場", description: "抵達東京，辦理入境手續，搭乘電車前往市區。", duration: "1.5hr" },
-                        { time: "17:00", type: "checkin", location: "東京飯店 Check-in", description: "放置行李，稍作休息。", duration: "1hr" },
-                        { time: "19:00", type: "spot", location: "六本木之丘聖誕燈飾", description: "著名的櫸坂通藍色燈海，背景是東京鐵塔，這是最浪漫的聖誕夜。", duration: "2hr" },
-                        { time: "21:00", type: "food", location: "聖誕晚餐", description: "享用預約好的聖誕大餐 (建議燒肉或法式料理)。", duration: "1.5hr" }
+                        { time: "14:00", type: "move", location: "成田機場 (NRT)", desc: "抵達東京，搭乘 Skyliner 前往市區。", duration: "1.5h" },
+                        { time: "17:00", type: "stay", location: "東京飯店 Check-in", desc: "放置行李，整理儀容。", duration: "1h" },
+                        { time: "19:00", type: "spot", location: "六本木之丘", desc: "欣賞櫸坂通的藍色燈海與東京鐵塔。", duration: "2h" },
+                        { time: "21:00", type: "food", location: "聖誕晚餐", desc: "預約好的聖誕大餐 (燒肉/法式)。", duration: "2h" }
                     ]
                 },
                 {
-                    dateShort: "12/25", locationShort: "TOKYO", title: "東京聖誕節 ✨",
+                    dateShort: "12/25", locCode: "TYO", icon: "fas fa-gift",
+                    title: "Merry Christmas ✨",
                     events: [
-                        { time: "10:00", type: "spot", location: "澀谷 SHIBUYA SKY", description: "在聖誕節的早晨俯瞰東京全景，視野極佳。", duration: "2hr" },
-                        { time: "13:00", type: "food", location: "表參道/原宿", description: "漫步表參道欣賞聖誕裝飾，享用甜點與午餐。", duration: "2hr" },
-                        { time: "16:00", type: "spot", location: "丸之內仲通燈飾", description: "東京車站周邊最經典的香檳金燈飾大道。", duration: "1.5hr" },
-                        { time: "18:30", type: "spot", location: "惠比壽花園廣場", description: "參觀世界最大的 Baccarat 水晶吊燈。", duration: "1.5hr" }
+                        { time: "10:00", type: "spot", location: "SHIBUYA SKY", desc: "澀谷高空展望台，俯瞰冬季東京。", duration: "2h" },
+                        { time: "13:00", type: "shop", location: "表參道 / 原宿", desc: "漫步時尚街道，欣賞聖誕櫥窗。", duration: "3h" },
+                        { time: "18:00", type: "spot", location: "青之洞窟 / 丸之內", desc: "參觀著名的聖誕點燈活動。", duration: "2h" }
                     ]
                 },
                 {
-                    dateShort: "12/26", locationShort: "TOKYO", title: "東京市區探索 🛍️",
+                    dateShort: "12/26", locCode: "TYO", icon: "fas fa-city",
+                    title: "東京散策 🛍️",
                     events: [
-                        { time: "10:00", type: "spot", location: "淺草寺/雷門", description: "體驗下町風情，參拜祈福。", duration: "2hr" },
-                        { time: "13:00", type: "spot", location: "銀座步行街", description: "在銀座購物，週末或假期會有步行者天國。", duration: "3hr" },
-                        { time: "17:00", type: "spot", location: "東京鐵塔", description: "近距離欣賞經典的紅色鐵塔。", duration: "1.5hr" }
+                        { time: "10:00", type: "spot", location: "淺草寺雷門", desc: "感受下町風情，參拜祈福。", duration: "2h" },
+                        { time: "14:00", type: "shop", location: "銀座 Ginza", desc: "享受銀座的步行者天國與下午茶。", duration: "3h" },
+                        { time: "19:00", type: "food", location: "居酒屋", desc: "體驗道地的日式居酒屋文化。", duration: "2h" }
                     ]
                 },
-                
-                // 2. 移動日 & 札幌 (12/27 - 12/31)
+                // --- SAPPORO (12/27 - 12/31) ---
                 {
-                    dateShort: "12/27", locationShort: "SAPPORO", title: "飛往雪國北海道 ❄️",
+                    dateShort: "12/27", locCode: "CTS", icon: "fas fa-plane",
+                    title: "飛往北國雪界 ❄️",
                     events: [
-                        { time: "09:00", type: "transport", location: "羽田機場 (HND)", description: "搭乘國內線飛往新千歲機場。", duration: "1.5hr" },
-                        { time: "12:00", type: "transport", location: "新千歲機場", description: "抵達北海道！記得品嚐機場限定的拉麵或霜淇淋。", duration: "1hr" },
-                        { time: "15:00", type: "checkin", location: "札幌飯店 Check-in", description: "入住札幌市區飯店。", duration: "1hr" },
-                        { time: "18:00", type: "food", location: "成吉思汗烤肉", description: "北海道必吃！達摩或其他名店享用烤羊肉。", duration: "1.5hr" }
-                    ]
-                },
-                {
-                    dateShort: "12/28", locationShort: "SAPPORO", title: "小樽浪漫運河 🕯️",
-                    events: [
-                        { time: "10:00", type: "transport", location: "前往小樽", description: "搭乘 JR 快速列車前往小樽。", duration: "40min" },
-                        { time: "11:00", type: "spot", location: "小樽堺町通商店街", description: "參觀六花亭、北菓樓、LeTAO 本店，試吃甜點。", duration: "2hr" },
-                        { time: "14:00", type: "spot", location: "小樽運河", description: "在雪中漫步運河，等待傍晚點燈的浪漫時刻。", duration: "2hr" },
-                        { time: "18:00", type: "food", location: "小樽壽司", description: "在壽司通享用新鮮的海鮮丼或握壽司。", duration: "1.5hr" }
+                        { time: "09:00", type: "move", location: "羽田機場 (HND)", desc: "搭乘國內線飛往北海道。", duration: "2h" },
+                        { time: "13:00", type: "move", location: "新千歲機場", desc: "抵達！別忘了吃機場霜淇淋。", duration: "1h" },
+                        { time: "16:00", type: "stay", location: "札幌飯店", desc: "入住手續，準備迎接雪景。", duration: "1h" },
+                        { time: "18:00", type: "food", location: "成吉思汗烤肉", desc: "必吃！達摩或其他名店享用烤羊肉。", duration: "1.5h" }
                     ]
                 },
                 {
-                    dateShort: "12/29", locationShort: "SAPPORO", title: "札幌市區漫遊 🦀",
+                    dateShort: "12/28", locCode: "SAP", icon: "fas fa-snowflake",
+                    title: "小樽浪漫運河 🕯️",
                     events: [
-                        { time: "09:00", type: "spot", location: "二條市場", description: "早餐就吃海鮮丼！", duration: "1.5hr" },
-                        { time: "11:00", type: "spot", location: "大通公園", description: "欣賞札幌電視塔與慕尼黑聖誕市集(若還有)或雪景。", duration: "1hr" },
-                        { time: "14:00", type: "spot", location: "北海道神宮", description: "在雪森林中參拜莊嚴的神宮。", duration: "1.5hr" },
-                        { time: "18:00", type: "food", location: "湯咖哩", description: "晚餐享用札幌名物湯咖哩 (Suage+ 或 Garaku)。", duration: "1.5hr" }
+                        { time: "10:00", type: "move", location: "JR 札幌站", desc: "搭乘快速列車前往小樽。", duration: "40m" },
+                        { time: "11:00", type: "spot", location: "堺町通商店街", desc: "六花亭、北菓樓、LeTAO 甜點巡禮。", duration: "3h" },
+                        { time: "16:30", type: "spot", location: "小樽運河", desc: "日落藍調時刻，運河點燈超浪漫。", duration: "1.5h" },
+                        { time: "19:00", type: "food", location: "政壽司 / 旭壽司", desc: "品嚐小樽新鮮握壽司。", duration: "1.5h" }
                     ]
                 },
                 {
-                    dateShort: "12/30", locationShort: "SAPPORO", title: "白色戀人與夜景 🍫",
+                    dateShort: "12/29", locCode: "SAP", icon: "fas fa-camera",
+                    title: "札幌市區漫遊 🦀",
                     events: [
-                        { time: "10:00", type: "spot", location: "白色戀人公園", description: "夢幻的歐式城堡工廠，拍照打卡。", duration: "2.5hr" },
-                        { time: "14:00", type: "spot", location: "狸小路商店街", description: "採買藥妝與伴手禮的好地方。", duration: "2hr" },
-                        { time: "18:00", type: "spot", location: "藻岩山夜景", description: "搭乘纜車欣賞日本新三大夜景之一。", duration: "2hr" }
-                    ]
-                },
-
-                // 3. 函館 (12/31 - 1/2)
-                {
-                    dateShort: "12/31", locationShort: "HAKODATE", title: "函館大晦日跨年 🎉",
-                    events: [
-                        { time: "09:00", type: "transport", location: "移動往函館", description: "搭乘特急北斗號列車前往函館 (約3.5小時)，欣賞沿途雪景。", duration: "4hr" },
-                        { time: "14:00", type: "spot", location: "五稜郭塔", description: "俯瞰五角形的雪白星形要塞。", duration: "1.5hr" },
-                        { time: "17:00", type: "spot", location: "金森紅磚倉庫", description: "港邊的紅磚倉庫群，充滿異國情調。", duration: "1.5hr" },
-                        { time: "22:00", type: "spot", location: "函館跨年活動", description: "前往八幡坂或倉庫群附近，準備倒數迎接 2026！(或在飯店看紅白歌合戰)", duration: "3hr" }
+                        { time: "09:00", type: "food", location: "二條市場", desc: "早餐就是要吃海鮮丼！", duration: "1.5h" },
+                        { time: "11:00", type: "spot", location: "北海道神宮", desc: "雪中參拜，莊嚴又美麗。", duration: "1.5h" },
+                        { time: "15:00", type: "spot", location: "白色戀人公園", desc: "歐風城堡工廠，拍照好去處。", duration: "2h" },
+                        { time: "19:00", type: "food", location: "湯咖哩 Suage+", desc: "暖呼呼的札幌名物湯咖哩。", duration: "1.5h" }
                     ]
                 },
                 {
-                    dateShort: "01/01", locationShort: "HAKODATE", title: "函館新年・初詣 ⛩️",
+                    dateShort: "12/30", locCode: "SAP", icon: "fas fa-mountain",
+                    title: "百萬夜景 ✨",
                     events: [
-                        { time: "09:00", type: "food", location: "函館朝市", description: "新年第一餐：釣烏賊與海鮮丼。", duration: "2hr" },
-                        { time: "11:30", type: "spot", location: "函館護國神社/八幡宮", description: "進行日本新年的「初詣」參拜。", duration: "1.5hr" },
-                        { time: "14:00", type: "spot", location: "元町教會群", description: "散步於充滿洋風的街道與坂道。", duration: "1.5hr" },
-                        { time: "16:30", type: "spot", location: "函館山夜景", description: "世界三大夜景之一，百萬夜景不容錯過。", duration: "2hr" }
+                        { time: "10:00", type: "shop", location: "狸小路商店街", desc: "採買藥妝、伴手禮。", duration: "3h" },
+                        { time: "15:00", type: "spot", location: "大通公園", desc: "散步看電視塔。", duration: "1h" },
+                        { time: "17:00", type: "spot", location: "藻岩山夜景", desc: "搭纜車看日本新三大夜景。", duration: "2h" },
+                        { time: "20:00", type: "food", location: "螃蟹料理", desc: "帝王蟹/松葉蟹大餐。", duration: "2h" }
                     ]
                 },
-                
-                // 4. 回東京 (1/2 - 1/4)
+                // --- HAKODATE (12/31 - 1/2) ---
                 {
-                    dateShort: "01/02", locationShort: "TOKYO", title: "新幹線回東京 🚄",
+                    dateShort: "12/31", locCode: "HKD", icon: "fas fa-glass-cheers",
+                    title: "函館跨年夜 🎉",
                     events: [
-                        { time: "09:00", type: "transport", location: "新函館北斗站", description: "搭乘北海道新幹線直達東京 (約4小時)。", duration: "4.5hr" },
-                        { time: "14:00", type: "checkin", location: "東京飯店 Check-in", description: "回到東京，入住飯店。", duration: "1hr" },
-                        { time: "16:00", type: "spot", location: "百貨公司新年特賣", description: "趁著新年折扣季(初売り)逛街搶福袋。", duration: "3hr" }
-                    ]
-                },
-                {
-                    dateShort: "01/03", locationShort: "TOKYO", title: "東京悠閒尾聲 ☕",
-                    events: [
-                        { time: "10:00", type: "spot", location: "清澄白河 / 中目黑", description: "走訪咖啡廳，享受悠閒的東京午後。", duration: "3hr" },
-                        { time: "15:00", type: "spot", location: "台場 / 豐洲千客萬來", description: "泡溫泉或看鋼彈，為旅程畫下句點。", duration: "3hr" },
-                        { time: "19:00", type: "food", location: "居酒屋慶功宴", description: "最後一晚，好好喝一杯！", duration: "2hr" }
+                        { time: "09:00", type: "move", location: "JR 札幌站", desc: "搭乘特急北斗號前往函館。", duration: "3.5h" },
+                        { time: "14:00", type: "spot", location: "五稜郭塔", desc: "俯瞰星形要塞雪景。", duration: "1.5h" },
+                        { time: "17:00", type: "spot", location: "金森紅磚倉庫", desc: "港邊倉庫群，跨年氛圍濃厚。", duration: "2h" },
+                        { time: "23:00", type: "spot", location: "函館跨年活動", desc: "準備倒數迎接 2026！Happy New Year！", duration: "1.5h" }
                     ]
                 },
                 {
-                    dateShort: "01/04", locationShort: "HOME", title: "滿載而歸 ✈️",
+                    dateShort: "01/01", locCode: "HKD", icon: "fas fa-torii-gate",
+                    title: "元旦初詣 ⛩️",
                     events: [
-                        { time: "09:00", type: "checkin", location: "前往機場", description: "搭乘 Skyliner 或 N'EX 前往成田機場。", duration: "1.5hr" },
-                        { time: "11:00", type: "shop", location: "免稅店採買", description: "最後採買伴手禮 (Banana, Royce, 白色戀人)。", duration: "1hr" },
-                        { time: "13:00", type: "transport", location: "起飛", description: "平安回家，下次見！", duration: "" }
+                        { time: "10:00", type: "spot", location: "函館八幡宮", desc: "新年第一次參拜(初詣)。", duration: "1.5h" },
+                        { time: "12:00", type: "food", location: "函館朝市", desc: "元旦釣烏賊！(視店家營業狀況)。", duration: "1.5h" },
+                        { time: "15:00", type: "spot", location: "八幡坂 / 元町", desc: "最美坡道散步，看海景。", duration: "1.5h" },
+                        { time: "17:00", type: "spot", location: "函館山夜景", desc: "世界三大夜景，百萬璀璨。", duration: "2h" }
+                    ]
+                },
+                // --- BACK TO TOKYO (1/2 - 1/4) ---
+                {
+                    dateShort: "01/02", locCode: "HKD", icon: "fas fa-train",
+                    title: "新幹線回東京 🚄",
+                    events: [
+                        { time: "09:00", type: "move", location: "新函館北斗站", desc: "搭乘北海道新幹線直達東京。", duration: "4h" },
+                        { time: "14:00", type: "stay", location: "東京飯店", desc: "回到東京，入住休息。", duration: "1h" },
+                        { time: "16:00", type: "shop", location: "初売り(新年特賣)", desc: "百貨公司搶福袋與折扣季！", duration: "4h" }
+                    ]
+                },
+                {
+                    dateShort: "01/03", locCode: "TYO", icon: "fas fa-coffee",
+                    title: "東京悠閒尾聲 ☕",
+                    events: [
+                        { time: "10:00", type: "spot", location: "中目黑 / 代官山", desc: "探訪質感咖啡廳與選物店。", duration: "3h" },
+                        { time: "15:00", type: "spot", location: "台場 / 豐洲", desc: "看獨角獸鋼彈或逛千客萬來。", duration: "3h" },
+                        { time: "19:00", type: "food", location: "居酒屋慶功", desc: "旅程最後一晚的乾杯。", duration: "2h" }
+                    ]
+                },
+                {
+                    dateShort: "01/04", locCode: "TYO", icon: "fas fa-plane-departure",
+                    title: "滿載而歸 ✈️",
+                    events: [
+                        { time: "09:00", type: "move", location: "上野站 / 東京站", desc: "搭乘機場快線前往機場。", duration: "1h" },
+                        { time: "11:00", type: "shop", location: "免稅店", desc: "最後衝刺：Royce, 東京香蕉, 白色戀人。", duration: "1h" },
+                        { time: "13:00", type: "move", location: "起飛 Home", desc: "再見日本，下次見！", duration: "-" }
                     ]
                 }
             ]);
 
-            const getIconStyle = (type) => {
-                switch(type) {
-                    case 'food': return 'bg-orange-300 border-orange-100';
-                    case 'transport': return 'bg-blue-300 border-blue-100';
-                    case 'spot': return 'bg-indigo-300 border-indigo-100';
-                    case 'checkin': return 'bg-emerald-300 border-emerald-100';
-                    case 'shop': return 'bg-rose-300 border-rose-100';
-                    default: return 'bg-gray-300';
-                }
+            // 配色邏輯
+            const getDotColor = (type) => {
+                const colors = {
+                    move: 'bg-blue-400',
+                    spot: 'bg-cyan-400',
+                    food: 'bg-orange-400',
+                    shop: 'bg-pink-400',
+                    stay: 'bg-indigo-400'
+                };
+                return colors[type] || 'bg-gray-400';
             };
 
-            const getDayIcon = (location) => {
-                if (location === 'SAPPORO' || location === 'HAKODATE') return 'fas fa-snowflake';
-                if (location === 'HOME') return 'fas fa-plane-departure';
-                return 'fas fa-city';
-            }
+            const getMapLink = (loc) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`;
 
-            const getGoogleMapsLink = (location) => {
-                return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
-            };
-
-            const openLink = (link) => {
-                if(link) window.open(link, '_blank');
-            };
-
-            return {
-                currentDayIndex,
-                schedule,
-                getIconStyle,
-                getDayIcon,
-                getGoogleMapsLink,
-                openLink,
-                scrollToDay,
-                dateContainer
-            };
+            return { currentDayIndex, schedule, getDotColor, getMapLink };
         }
     }).mount('#app');
 </script>
