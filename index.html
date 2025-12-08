@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Japan Winter Trip 2025</title>
+    <title>Japan Winter Trip 2025-26</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -43,7 +43,7 @@
             min-height: 500px;
         }
 
-        /* --- 右側 ICON 位置 (Bottom 8px) --- */
+        /* --- ICON 位置調整 (Bottom 8px) --- */
         .nav-tabs {
             position: absolute;
             bottom: 8px;
@@ -76,10 +76,10 @@
             opacity: 1;
         }
 
-        /* --- 左側 鉛筆 ICON (新增) --- */
+        /* --- 左側 鉛筆 ICON --- */
         .edit-mode-btn {
             position: absolute;
-            bottom: 8px; /* 與右側平行 */
+            bottom: 8px;
             left: 15px;
             z-index: 20;
             width: 40px;
@@ -96,10 +96,9 @@
             transition: all 0.3s ease;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        /* 啟動編輯模式時的樣式 */
         .edit-mode-btn.active {
             background: #ffffff;
-            color: #F59E0B; /* 橘黃色代表編輯中，或用藍色也可以 */
+            color: #F59E0B;
             border-color: #ffffff;
             transform: scale(1.1);
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
@@ -147,7 +146,6 @@
         .boarding-pass::before { left: -11px; border-right-color: transparent; border-top-color: transparent; border-bottom-color: transparent; transform: translateY(-50%) rotate(45deg); }
         .boarding-pass::after { right: -11px; border-left-color: transparent; border-top-color: transparent; border-bottom-color: transparent; transform: translateY(-50%) rotate(-45deg); }
         
-        /* 抖動動畫 (編輯模式下行程卡片微微抖動，提示可拖曳) */
         @keyframes shake {
             0% { transform: rotate(0deg); }
             25% { transform: rotate(0.5deg); }
@@ -157,7 +155,7 @@
         }
         .draggable-shake {
             animation: shake 0.3s infinite ease-in-out;
-            cursor: move; /* 電腦版游標提示 */
+            cursor: move;
         }
     </style>
 </head>
@@ -171,11 +169,7 @@
             
             <canvas id="snow-canvas"></canvas>
 
-            <button 
-                @click="toggleDraggable" 
-                class="edit-mode-btn" 
-                :class="{ 'active': isDraggable }"
-            >
+            <button @click="toggleDraggable" class="edit-mode-btn" :class="{ 'active': isDraggable }">
                 <i class="fas fa-pencil-alt"></i>
             </button>
 
@@ -238,20 +232,20 @@
                         <div v-if="item.category === 'flight' && idx === 0" class="pl-0 mb-4">
                             <div class="boarding-pass rounded-2xl p-4 shadow-sm relative">
                                 <div class="flex justify-between items-center mb-3 border-b border-dashed border-gray-300 pb-2">
-                                    <div class="text-blue-600 font-bold tracking-widest">FLIGHT</div>
+                                    <div class="text-blue-800 font-bold tracking-widest"><i class="fas fa-plane-departure mr-1"></i> ANA</div>
                                     <div class="text-gray-400 text-xs">{{ item.date }}</div>
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <div class="text-center">
-                                        <div class="text-3xl font-bold text-gray-800">{{ item.depCode || 'TPE' }}</div>
+                                        <div class="text-3xl font-bold text-gray-800">{{ item.depCode }}</div>
                                         <div class="text-xs text-gray-500">{{ item.startTime }}</div>
                                     </div>
                                     <div class="flex-1 flex flex-col items-center px-2">
-                                        <i class="fas fa-plane text-gray-300 transform rotate-90"></i>
+                                        <i class="fas fa-plane text-blue-300 transform rotate-90"></i>
                                         <div class="text-[10px] text-gray-400 mt-1">{{ item.duration || '飛行中' }}</div>
                                     </div>
                                     <div class="text-center">
-                                        <div class="text-3xl font-bold text-gray-800">{{ item.arrCode || 'CTS' }}</div>
+                                        <div class="text-3xl font-bold text-gray-800">{{ item.arrCode }}</div>
                                         <div class="text-xs text-gray-500">{{ item.endTime }}</div>
                                     </div>
                                 </div>
@@ -263,7 +257,9 @@
 
                         <div v-else class="relative pl-12 cursor-pointer" 
                              @click="editEvent(item)"
-                             :class="{ 'opacity-90': isDraggable }"> <div v-if="isDraggable" class="absolute right-2 top-2 text-gray-300 z-20">
+                             :class="{ 'opacity-90': isDraggable }">
+                            
+                            <div v-if="isDraggable" class="absolute right-2 top-2 text-gray-300 z-20">
                                 <i class="fas fa-bars"></i>
                             </div>
 
@@ -313,29 +309,41 @@
                 </div>
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="bg-blue-600 px-4 py-2 text-white text-sm font-bold flex justify-between items-center">
-                        <span><i class="fas fa-plane mr-2"></i>航班資訊</span>
+                        <span><i class="fas fa-plane mr-2"></i>航班資訊 (ANA)</span>
                     </div>
                     <div class="p-4 border-b border-gray-100">
-                        <div class="flex justify-between mb-2"><span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold">去程</span><span class="text-xs text-gray-500">2025/12/24</span></div>
+                        <div class="flex justify-between mb-2"><span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold">去程 1</span><span class="text-xs text-gray-500">12/24</span></div>
                         <div class="flex justify-between items-center text-center">
-                            <div><div class="text-2xl font-black text-gray-800">TPE</div><div class="text-xs text-gray-500">08:00</div></div>
-                            <div class="flex-1 px-2"><i class="fas fa-plane text-gray-300 text-xs"></i><div class="text-[10px] text-gray-400">BR116</div></div>
-                            <div><div class="text-2xl font-black text-gray-800">CTS</div><div class="text-xs text-gray-500">12:35</div></div>
+                            <div><div class="text-2xl font-black text-gray-800">TSA</div><div class="text-xs text-gray-500">13:30</div></div>
+                            <div class="flex-1 px-2"><i class="fas fa-plane text-gray-300 text-xs"></i><div class="text-[10px] text-gray-400">ANA</div></div>
+                            <div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">17:30</div></div>
+                        </div>
+                        <div class="mt-4 flex justify-between mb-2"><span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold">去程 2</span><span class="text-xs text-gray-500">12/27</span></div>
+                        <div class="flex justify-between items-center text-center">
+                            <div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">18:00</div></div>
+                            <div class="flex-1 px-2"><i class="fas fa-plane text-gray-300 text-xs"></i><div class="text-[10px] text-gray-400">ANA</div></div>
+                            <div><div class="text-2xl font-black text-gray-800">CTS</div><div class="text-xs text-gray-500">19:35</div></div>
                         </div>
                     </div>
                     <div class="p-4">
-                        <div class="flex justify-between mb-2"><span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded font-bold">回程</span><span class="text-xs text-gray-500">2026/01/04</span></div>
+                        <div class="flex justify-between mb-2"><span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded font-bold">回程 1</span><span class="text-xs text-gray-500">01/02</span></div>
                         <div class="flex justify-between items-center text-center">
-                            <div><div class="text-2xl font-black text-gray-800">NRT</div><div class="text-xs text-gray-500">14:00</div></div>
-                            <div class="flex-1 px-2"><i class="fas fa-plane text-gray-300 rotate-180 text-xs"></i><div class="text-[10px] text-gray-400">JX801</div></div>
-                            <div><div class="text-2xl font-black text-gray-800">TPE</div><div class="text-xs text-gray-500">17:15</div></div>
+                            <div><div class="text-2xl font-black text-gray-800">HKD</div><div class="text-xs text-gray-500">11:45</div></div>
+                            <div class="flex-1 px-2"><i class="fas fa-plane text-gray-300 rotate-180 text-xs"></i><div class="text-[10px] text-gray-400">ANA</div></div>
+                            <div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">13:15</div></div>
+                        </div>
+                        <div class="mt-4 flex justify-between mb-2"><span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded font-bold">回程 2</span><span class="text-xs text-gray-500">01/04</span></div>
+                        <div class="flex justify-between items-center text-center">
+                            <div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">12:40</div></div>
+                            <div class="flex-1 px-2"><i class="fas fa-plane text-gray-300 rotate-180 text-xs"></i><div class="text-[10px] text-gray-400">ANA</div></div>
+                            <div><div class="text-2xl font-black text-gray-800">TSA</div><div class="text-xs text-gray-500">15:50</div></div>
                         </div>
                     </div>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                     <div class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center mb-2"><i class="fas fa-bed"></i></div>
-                    <h4 class="font-bold text-gray-700">札幌王子飯店</h4>
-                    <p class="text-xs text-gray-400 mt-1">+81-11-241-1111</p>
+                    <h4 class="font-bold text-gray-700">住宿資訊</h4>
+                    <p class="text-xs text-gray-400 mt-1">請於此紀錄飯店資訊</p>
                     <a href="usercontent.com/maps.google.com/2" target="_blank" class="text-[10px] text-blue-500 mt-2 block">導航 ></a>
                 </div>
             </div>
@@ -484,7 +492,7 @@
             const showModal = ref(false);
             const modalType = ref('');
             const isEditing = ref(false);
-            const isDraggable = ref(false); // 拖曳模式狀態
+            const isDraggable = ref(false); 
             const converter = ref({ jpy: 1000 });
             const weather = ref(null);
             const bannerRef = ref(null);
@@ -493,14 +501,38 @@
             const members = ref(['我']);
             const showSettlement = ref(false);
 
-            // Sortable 實例
             let sortableInstance = null;
 
+            // --- 行程資料更新 (12天, 2025/12/24 - 2026/01/04) ---
             const schedule = ref([
-                { date: "2025-12-24", location: "Tokyo", events: [{ id: 1, category: 'flight', name: '前往東京', startTime: '08:00', endTime: '12:35', depCode: 'TPE', arrCode: 'CTS', transportType: 'train', transportTime: '45分' }, { id: 2, category: 'hotel', name: '東京王子飯店', startTime: '15:00', endTime: '', notes: 'Check-in', transportType: 'walk', transportTime: '10分' }, { id: 3, category: 'spot', name: '六本木聖誕燈飾', startTime: '18:00', endTime: '20:00', cost: '免費', notes: '櫸坂通點燈', transportType: 'walk', transportTime: '-' }] },
-                { date: "2025-12-25", location: "Tokyo", events: [{ id: 10, category: 'spot', name: '迪士尼樂園', startTime: '09:00', endTime: '21:00', cost: '¥9400', notes: '聖誕遊行必看', transportType: 'train', transportTime: '30分' }] },
-                { date: "2025-12-26", location: "Tokyo", events: [] }, { date: "2025-12-27", location: "Sapporo", events: [] }, { date: "2025-12-28", location: "Sapporo", events: [] }
+                { date: "2025-12-24", location: "Tokyo", events: [
+                    { id: 1, category: 'flight', name: '台北(TSA) ✈️ 東京(HND)', startTime: '13:30', endTime: '17:30', depCode: 'TSA', arrCode: 'HND', duration: '3h', transportType: 'train', transportTime: '45分' },
+                    { id: 2, category: 'hotel', name: '東京住宿 Check-in', startTime: '19:00', endTime: '', notes: '第一晚東京', transportType: 'walk', transportTime: '10分' }
+                ]},
+                { date: "2025-12-25", location: "Tokyo", events: [] },
+                { date: "2025-12-26", location: "Tokyo", events: [] },
+                { date: "2025-12-27", location: "Tokyo/Sapporo", events: [
+                    { id: 10, category: 'flight', name: '東京(HND) ✈️ 札幌(CTS)', startTime: '18:00', endTime: '19:35', depCode: 'HND', arrCode: 'CTS', duration: '1h 35m', transportType: 'train', transportTime: '40分' },
+                    { id: 11, category: 'hotel', name: '札幌住宿 Check-in', startTime: '21:00', endTime: '', notes: '抵達北海道', transportType: 'walk', transportTime: '-' }
+                ]},
+                { date: "2025-12-28", location: "Sapporo", events: [] },
+                { date: "2025-12-29", location: "Sapporo", events: [] },
+                { date: "2025-12-30", location: "Sapporo", events: [] },
+                { date: "2025-12-31", location: "Hakodate", events: [
+                    { id: 20, category: 'transport', name: '札幌 🚄 函館 (JR特急)', startTime: '10:56', endTime: '14:41', notes: '移動日', transportType: 'walk', transportTime: '20分' },
+                    { id: 21, category: 'hotel', name: '函館住宿', startTime: '15:30', endTime: '', notes: '跨年夜', transportType: 'walk', transportTime: '-' }
+                ]},
+                { date: "2026-01-01", location: "Hakodate", events: [] },
+                { date: "2026-01-02", location: "Tokyo", events: [
+                    { id: 30, category: 'flight', name: '函館(HKD) ✈️ 東京(HND)', startTime: '11:45', endTime: '13:15', depCode: 'HKD', arrCode: 'HND', duration: '1h 30m', transportType: 'train', transportTime: '40分' },
+                    { id: 31, category: 'hotel', name: '東京住宿', startTime: '15:00', endTime: '', notes: '回到東京', transportType: 'walk', transportTime: '-' }
+                ]},
+                { date: "2026-01-03", location: "Tokyo", events: [] },
+                { date: "2026-01-04", location: "Tokyo", events: [
+                    { id: 40, category: 'flight', name: '東京(HND) ✈️ 台北(TSA)', startTime: '12:40', endTime: '15:50', depCode: 'HND', arrCode: 'TSA', duration: '4h 10m', transportType: 'walk', transportTime: '-' }
+                ]}
             ]);
+
             const shoppingList = ref([]);
             const expenses = ref([]);
 
@@ -527,6 +559,7 @@
                 window.addEventListener('resize', resize);
                 resize();
                 for (let i = 0; i < 50; i++) {
+                    // 速度慢一點 (d 小一點)
                     flakes.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, d: Math.random() * 0.5 + 0.2 });
                 }
                 animateSnow();
@@ -543,6 +576,8 @@
                 ctx.moveTo(0, canvas.height);
                 for (let i = 0; i < canvas.width; i++) {
                     let h = snowPileHeight[i];
+                    // 加上一點底部預設高度 (與下方漸層 div 銜接)
+                    // 但因為下方 div 已經有 #f8fafc，這裡讓積雪也是純白/純背景色
                     ctx.lineTo(i, canvas.height - h);
                 }
                 ctx.lineTo(canvas.width, canvas.height);
@@ -591,7 +626,10 @@
                 const savedData = localStorage.getItem('tripData');
                 if (savedData) {
                     const parsed = JSON.parse(savedData);
-                    schedule.value = parsed.schedule || schedule.value;
+                    // 若有舊資料，盡量合併新行程結構，或直接使用預設新行程
+                    // 這裡為了讓您的更新生效，建議先不讀取舊的 schedule (除非您想保留舊的修改)
+                    // 但為了體驗，我們先優先使用新的 schedule 結構，若使用者有購物清單則保留
+                    // schedule.value = parsed.schedule || schedule.value; <--- 註解掉這行強制更新行程
                     shoppingList.value = parsed.shoppingList || [];
                     expenses.value = parsed.expenses || [];
                     members.value = parsed.members || ['我'];
@@ -613,7 +651,7 @@
             // 監聽拖曳模式開關
             watch(isDraggable, (val) => {
                 if (sortableInstance) {
-                    sortableInstance.option("disabled", !val); // true=disabled, false=enabled
+                    sortableInstance.option("disabled", !val); 
                 }
             });
 
@@ -654,7 +692,7 @@
                     sortableInstance = new Sortable(el, { 
                         animation: 150, 
                         handle: '.itinerary-item', 
-                        disabled: !isDraggable.value, // 初始狀態
+                        disabled: !isDraggable.value, 
                         onEnd: function (evt) { 
                             const item = schedule.value[currentDayIndex.value].events.splice(evt.oldIndex, 1)[0]; 
                             schedule.value[currentDayIndex.value].events.splice(evt.newIndex, 0, item); 
@@ -684,7 +722,7 @@
                 showModal.value = true;
             };
             const editEvent = (item) => { 
-                if(isDraggable.value) return; // 編輯模式下點擊不觸發編輯，避免誤觸
+                if(isDraggable.value) return; 
                 if(item.category==='flight')return; 
                 modalType.value='schedule'; isEditing.value=true; editForm.value=JSON.parse(JSON.stringify(item)); showModal.value=true; 
             };
