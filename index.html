@@ -14,7 +14,7 @@
     <style>
         body {
             font-family: 'Zen Maru Gothic', sans-serif;
-            background-color: #f8fafc; /* 背景色統一 */
+            background-color: #f8fafc;
             color: #334155;
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
@@ -34,20 +34,20 @@
             overflow-x: hidden;
         }
 
-        /* --- 修改：移除圓角與負邊距，達成一致性 --- */
+        /* 內容區域 */
         .content-area {
             position: relative;
             z-index: 10;
             background-color: #f8fafc;
-            /* 移除 border-radius 和 margin-top */
             padding-top: 0.5rem; 
             min-height: 500px;
         }
 
-        /* --- ICON 位置調整 (Bottom 11.5px) --- */
+        /* --- ICON 位置調整 (Bottom 10px) --- */
         .nav-tabs {
             position: absolute;
-            bottom: 11.5px;
+            /* 修改這裡：從 11.5px 減去 1.5px = 10px */
+            bottom: 10px;
             right: 15px;
             display: flex;
             gap: 10px;
@@ -86,19 +86,6 @@
             height: 100%;
             pointer-events: none;
             z-index: 5;
-        }
-
-        /* --- 積雪效果遮罩 (無陰影 + 無縫銜接) --- */
-        .snow-pile {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 60px; /* 稍微增高以確保漸層平滑 */
-            /* 從透明漸層到 #f8fafc (與下方內容背景色一致)，消除分割線 */
-            background: linear-gradient(to top, #f8fafc 25%, rgba(248, 250, 252, 0.8) 60%, transparent 100%);
-            z-index: 5;
-            pointer-events: none;
         }
 
         /* 其他樣式 */
@@ -142,8 +129,6 @@
             <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
             
             <canvas id="snow-canvas"></canvas>
-            
-            <div class="snow-pile"></div>
 
             <div class="nav-tabs">
                 <button @click="currentTab = 'schedule'" :class="['nav-tab-btn', currentTab === 'schedule' ? 'active' : '']">
