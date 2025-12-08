@@ -224,7 +224,7 @@
                     <div v-for="(item, idx) in schedule[currentDayIndex].events" :key="item.id" class="relative group itinerary-item pb-6" :data-id="item.id">
                         
                         <div v-if="idx < schedule[currentDayIndex].events.length - 1" class="absolute left-[19px] top-10 bottom-0 w-[2px] bg-gray-200 z-0 flex flex-col items-center justify-center">
-                            <div class="bg-gray-100 text-[10px] text-gray-500 px-1 py-0.5 rounded border border-gray-200 mt-4 whitespace-nowrap z-10">
+                            <div class="bg-gray-100 text-[10px] text-gray-500 px-1 py-0.5 rounded border border-gray-200 mt-4 whitespace-nowrap z-10 flex items-center gap-1">
                                 <i :class="getTransportIcon(item.transportType)"></i> {{ item.transportTime }}
                             </div>
                         </div>
@@ -440,8 +440,19 @@
                     <input v-model="editForm.name" placeholder="名稱" class="w-full p-2 border rounded-lg">
                     <div class="flex gap-2"><input v-model="editForm.startTime" type="time" class="w-1/2 p-2 border rounded-lg"><input v-model="editForm.endTime" type="time" class="w-1/2 p-2 border rounded-lg"></div>
                     <div class="bg-gray-50 p-2 rounded-lg">
-                        <label class="text-xs text-gray-500">交通</label>
-                        <div class="flex gap-2 mt-1"><select v-model="editForm.transportType" class="p-1 text-sm border rounded"><option value="walk">步行</option><option value="train">大眾運輸</option></select><input v-model="editForm.transportTime" placeholder="15分" class="flex-1 p-1 text-sm border rounded"></div>
+                        <label class="text-xs text-gray-500">交通方式 (到下一站)</label>
+                        <div class="flex gap-2 mt-1">
+                            <select v-model="editForm.transportType" class="p-1 text-sm border rounded">
+                                <option value="walk">步行</option>
+                                <option value="subway">地鐵</option>
+                                <option value="train">火車</option>
+                                <option value="hsr">高鐵</option>
+                                <option value="tram">路面電車</option>
+                                <option value="taxi">計程車</option>
+                                <option value="bus">客運/公車</option>
+                            </select>
+                            <input v-model="editForm.transportTime" placeholder="時間 (例: 15分)" class="flex-1 p-1 text-sm border rounded">
+                        </div>
                     </div>
                     <textarea v-model="editForm.notes" placeholder="備註" class="w-full p-2 border rounded-lg h-20"></textarea>
                 </div>
@@ -626,10 +637,8 @@
                 const savedData = localStorage.getItem('tripData');
                 if (savedData) {
                     const parsed = JSON.parse(savedData);
-                    // 若有舊資料，盡量合併新行程結構，或直接使用預設新行程
-                    // 這裡為了讓您的更新生效，建議先不讀取舊的 schedule (除非您想保留舊的修改)
-                    // 但為了體驗，我們先優先使用新的 schedule 結構，若使用者有購物清單則保留
-                    // schedule.value = parsed.schedule || schedule.value; <--- 註解掉這行強制更新行程
+                    // 為了強制更新日期，這裡註解掉 schedule 的讀取，若您希望保留舊資料請自行斟酌
+                    // schedule.value = parsed.schedule || schedule.value; 
                     shoppingList.value = parsed.shoppingList || [];
                     expenses.value = parsed.expenses || [];
                     members.value = parsed.members || ['我'];
@@ -708,7 +717,21 @@
             const getDayNum = (d) => new Date(d).getDate();
             const getCategoryIcon = (c) => ({ flight: 'fa-plane', hotel: 'fa-bed', spot: 'fa-camera', food: 'fa-utensils', shop: 'fa-bag-shopping', transport: 'fa-train', ticket: 'fa-ticket', other: 'fa-star' }[c] || 'fa-circle');
             const getCategoryColor = (c) => ({ flight: 'bg-blue-400', hotel: 'bg-indigo-400', spot: 'bg-pink-400', food: 'bg-orange-400', shop: 'bg-yellow-400', transport: 'bg-green-400' }[c] || 'bg-gray-400');
-            const getTransportIcon = (t) => t === 'walk' ? 'fas fa-person-walking' : 'fas fa-train-subway';
+            
+            // --- 新增的交通圖示邏輯 ---
+            const getTransportIcon = (type) => {
+                switch(type) {
+                    case 'walk': return 'fas fa-person-walking';
+                    case 'subway': return 'fas fa-train-subway';
+                    case 'train': return 'fas fa-train';
+                    case 'hsr': return 'fas fa-train'; // 高鐵 (字庫無 HSR 專用，暫用火車)
+                    case 'tram': return 'fas fa-train-tram';
+                    case 'taxi': return 'fas fa-taxi';
+                    case 'bus': return 'fas fa-bus';
+                    default: return 'fas fa-person-walking';
+                }
+            };
+
             const getWeatherIcon = () => 'fas fa-snowflake';
             const getMapLink = (n) => `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(n)}`;
             const totalExpenses = computed(() => expenses.value.reduce((sum, item) => sum + Number(item.amount), 0));
