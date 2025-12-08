@@ -13,7 +13,6 @@
 
     <style>
         body {
-            /* 字體修改：應用 Zen Maru Gothic */
             font-family: 'Zen Maru Gothic', sans-serif;
             background-color: #dcebf6;
             color: #334155;
@@ -32,7 +31,7 @@
             position: relative;
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
             padding-bottom: 80px;
-            overflow-x: hidden; /* 防止雪花飄出邊界 */
+            overflow-x: hidden;
         }
 
         .curved-content {
@@ -45,33 +44,31 @@
             min-height: 500px;
         }
 
-        /* --- ICON 優化 --- */
+        /* --- ICON 位置調整 --- */
         .nav-tabs {
             position: absolute;
-            bottom: 35px; /* 稍微往下移一點點 */
+            /* 修改這裡：從 35px 改為 15px，讓它更靠下 */
+            bottom: 15px; 
             right: 15px;
             display: flex;
-            gap: 10px; /* 間距稍微縮小 */
+            gap: 10px;
             z-index: 20;
         }
         .nav-tab-btn {
-            width: 40px; /* 尺寸縮小 (原 45px) */
-            height: 40px; /* 尺寸縮小 (原 45px) */
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            /* 背景變得更透明 */
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(4px);
-            /* 邊框變得更細、更淡 */
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: rgba(255, 255, 255, 0.9);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem; /* 字體稍微縮小 */
+            font-size: 1.1rem;
             transition: all 0.3s ease;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        /* 選中狀態才變明顯 */
         .nav-tab-btn.active {
             background: #ffffff;
             color: #3B82F6;
@@ -81,14 +78,14 @@
             opacity: 1;
         }
 
-        /* --- 雪花動畫 --- */
+        /* --- 雪花動畫調整 --- */
         .snowflake {
             position: absolute;
             top: -10px;
             background-color: #fff;
             border-radius: 50%;
             opacity: 0.8;
-            pointer-events: none; /* 不會擋住滑鼠點擊 */
+            pointer-events: none;
             animation: snowfall linear infinite;
         }
 
@@ -98,13 +95,13 @@
                 opacity: 0.8;
             }
             100% {
-                /* 飄落到 280px (Banner 高度) 的位置 */
-                transform: translateY(280px) translateX(20px) rotate(360deg); 
+                /* 修改這裡：配合新的 Banner 高度，讓雪花飄到 350px 的位置 */
+                transform: translateY(350px) translateX(20px) rotate(360deg); 
                 opacity: 0.2;
             }
         }
 
-        /* 其他原有樣式保持不變 */
+        /* 其他樣式 */
         .timeline-line {
             position: absolute;
             left: 19px;
@@ -140,9 +137,9 @@
 <div id="app">
     <div class="app-container">
         
-        <div class="relative h-[280px] w-full overflow-hidden">
-            <img src="banner.jpg" alt="Banner" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+        <div class="relative h-[350px] w-full overflow-hidden">
+            <img src="banner.jpg" alt="Banner" class="w-full h-full object-cover object-center">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
             
             <div v-for="n in 30" :key="n" class="snowflake" :style="getSnowStyle()"></div>
 
