@@ -189,8 +189,8 @@
                 <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4 sticky top-0 z-10">
                     <div class="flex justify-between items-end mb-2">
                         <h3 class="font-bold text-gray-800 text-lg">行李清單</h3>
-                        <span class="text-xs font-bold" :class="packingProgress === 100 ? 'text-green-500' : 'text-blue-500'">
-                            {{ packingProgress === 100 ? 'Ready to Go!' : '準備進度' }} {{ packingProgress }}%
+                        <span class="text-xs font-bold" :class="packingProgress > 60 ? 'text-green-500' : 'text-blue-500'">
+                            {{ packingProgress > 60 ? 'Ready to Go!' : '準備進度' }} {{ packingProgress }}%
                         </span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
@@ -209,7 +209,10 @@
                                     <div class="w-5 h-5 rounded border flex items-center justify-center transition-colors" :class="item.checked ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 text-transparent'"><i class="fas fa-check text-xs"></i></div>
                                     <span class="text-sm text-gray-700" :class="{ 'line-through text-gray-400': item.checked }">{{ item.name }}</span>
                                 </div>
-                                <span v-if="item.tag" class="text-[10px] px-1.5 py-0.5 rounded font-bold" :class="item.tag === '隨身' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'">{{ item.tag }}</span>
+                                <div class="flex gap-1">
+                                    <span v-if="item.important" class="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded font-bold"><i class="fas fa-star mr-0.5"></i>重要必帶</span>
+                                    <span v-if="item.tag" class="text-[10px] px-1.5 py-0.5 rounded font-bold" :class="item.tag === '隨身' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'">{{ item.tag }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -467,8 +470,8 @@
             ]);
 
             const packingList = ref([
-                { name: '重要文件', items: [ {name:'護照',tag:'隨身'}, {name:'簽證',tag:'隨身'}, {name:'國際駕照'}, {name:'機票',tag:'隨身'}, {name:'住宿憑證'}, {name:'交通票券'}, {name:'外幣',tag:'隨身'}, {name:'信用卡',tag:'隨身'}, {name:'旅遊手冊'} ] },
-                { name: '3C 產品', items: [ {name:'手機',tag:'隨身'}, {name:'充電線'}, {name:'充電器'}, {name:'行動電源',tag:'隨身'}, {name:'萬用轉接頭'}, {name:'筆電',tag:'隨身'}, {name:'相機'}, {name:'網卡'}, {name:'自拍棒'} ] },
+                { name: '重要文件', items: [ {name:'護照',tag:'隨身',important:true}, {name:'簽證',tag:'隨身',important:true}, {name:'國際駕照'}, {name:'機票',tag:'隨身',important:true}, {name:'住宿憑證'}, {name:'交通票券'}, {name:'外幣',tag:'隨身',important:true}, {name:'信用卡',tag:'隨身',important:true}, {name:'旅遊手冊'} ] },
+                { name: '3C 產品', items: [ {name:'手機',tag:'隨身',important:true}, {name:'充電線'}, {name:'充電器'}, {name:'行動電源',tag:'隨身',important:true}, {name:'萬用轉接頭'}, {name:'筆電',tag:'隨身'}, {name:'相機'}, {name:'網卡'}, {name:'自拍棒'} ] },
                 { name: '盥洗用品', items: [ {name:'卸妝棉'}, {name:'洗面乳',tag:'托運'}, {name:'牙膏'}, {name:'牙刷'}, {name:'濕紙巾'}, {name:'面紙'}, {name:'防曬用品',tag:'托運'}, {name:'保養品',tag:'托運'}, {name:'護髮用品'} ] },
                 { name: '個人藥品', items: [ {name:'眼藥水'}, {name:'過敏藥'}, {name:'暈車藥'}, {name:'感冒藥'}, {name:'腸胃藥'}, {name:'蚊蟲止癢藥'} ] },
                 { name: '個人衣物', items: [ {name:'換洗衣物'}, {name:'外套'}, {name:'靴子'}, {name:'內衣褲'}, {name:'襪子'}, {name:'帽子'} ] },
