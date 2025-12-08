@@ -385,7 +385,13 @@
                         <p class="text-[10px] text-gray-400 text-center mt-2">*計算匯率: {{settings.rate}}</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2 mb-4 overflow-x-auto hide-scrollbar pb-1"><div v-for="member in members" :key="member" class="flex-shrink-0 bg-white border border-gray-200 px-3 py-1.5 rounded-full text-xs font-bold text-gray-600 shadow-sm">{{ member }}</div><button @click="addMember" class="flex-shrink-0 bg-gray-100 text-gray-400 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-gray-200">+ 人員</button></div>
+                <div class="flex items-center gap-2 mb-4 overflow-x-auto hide-scrollbar pb-1">
+                    <div v-for="(member, idx) in members" :key="idx" class="flex-shrink-0 bg-white border border-gray-200 px-3 py-1.5 rounded-full text-xs font-bold text-gray-600 shadow-sm flex items-center gap-2">
+                        <span @click="renameMember(idx)" class="cursor-pointer hover:text-blue-500">{{ member }} <i class="fas fa-pen ml-1 text-[8px] opacity-50"></i></span>
+                        <button v-if="idx !== 0" @click="removeMember(idx)" class="text-gray-400 hover:text-red-500 rounded-full w-4 h-4 flex items-center justify-center bg-gray-50"><i class="fas fa-times text-[10px]"></i></button>
+                    </div>
+                    <button @click="addMember" class="flex-shrink-0 bg-gray-100 text-gray-400 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-gray-200">+ 人員</button>
+                </div>
                 <div class="space-y-3">
                     <div v-for="(expense, idx) in expenses" :key="idx" class="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
                         <div class="flex justify-between items-start">
@@ -444,7 +450,7 @@
             const modalType = ref('');
             const isEditing = ref(false);
             const isDraggable = ref(false); 
-            const converter = ref({ jpy: 1000, twd: 225 }); // 初始化 TWD
+            const converter = ref({ jpy: 1000, twd: 225 });
             const weather = ref(null);
             const bannerRef = ref(null);
             
@@ -552,7 +558,6 @@
                     if(data&&data.rates&&data.rates.TWD){ 
                         settings.value.rate = data.rates.TWD; 
                         settings.value.lastUpdate = new Date(data.time_last_updated*1000).toLocaleDateString();
-                        // 初始化計算
                         calculateTWD();
                     } 
                 } catch(e){ console.error(e); }
@@ -566,7 +571,37 @@
             });
 
             const toggleSettlement = () => showSettlement.value = !showSettlement.value;
-            const addMember = () => { const n = prompt("輸入新成員:"); if(n && !members.value.includes(n)) members.value.push(n); };
+            const addMember = () => { const n = prompt("輸入新成員名字:"); if(n && !members.value.includes(n)) members.value.push(n); };
+
+            // 新增：修改成員名字
+            const renameMember = (index) => {
+                const oldName = members.value[index];
+                const newName = prompt("修改成員名字:", oldName);
+                if (newName && newName !== oldName) {
+                    if (members.value.includes(newName)) {
+                        alert("成員名字已存在！");
+                        return;
+                    }
+                    // 更新成員列表
+                    members.value[index] = newName;
+                    // 連動更新過去的花費紀錄
+                    expenses.value.forEach(ex => {
+                        if (ex.payer === oldName) ex.payer = newName;
+                        if (ex.involved && ex.involved.includes(oldName)) {
+                            const i = ex.involved.indexOf(oldName);
+                            ex.involved[i] = newName;
+                        }
+                    });
+                }
+            };
+
+            const removeMember = (index) => {
+                if(members.value[index] === '我') return;
+                if(confirm(`確定要刪除成員 ${members.value[index]} 嗎？這不會刪除他已付款的紀錄，但會從名單中移除。`)) {
+                    members.value.splice(index, 1);
+                }
+            };
+
             const toggleAllInvolved = () => { if(expenseForm.value.involved.length===members.value.length) expenseForm.value.involved=[]; else expenseForm.value.involved=[...members.value]; };
             
             const initSortable = () => { const el=document.getElementById('itinerary-list'); if(el){ sortableInstance=new Sortable(el,{ animation:150, handle:'.itinerary-item', disabled:!isDraggable.value, onEnd:(evt)=>{ const item=schedule.value[currentDayIndex.value].events.splice(evt.oldIndex,1)[0]; schedule.value[currentDayIndex.value].events.splice(evt.newIndex,0,item); } }); } };
@@ -594,7 +629,7 @@
             return {
                 currentTab, currentDayIndex, schedule, showModal, modalType, isEditing, modalTitle,
                 editForm, shoppingForm, expenseForm, shoppingList, expenses, converter, weather, settings, members, hotels, packingList,
-                totalExpenses, bannerRef, showSettlement, settlementPlan, toggleSettlement, addMember, toggleAllInvolved, packingProgress,
+                totalExpenses, bannerRef, showSettlement, settlementPlan, toggleSettlement, addMember, removeMember, renameMember, toggleAllInvolved, packingProgress,
                 openAddModal, editEvent, saveData, confirmDelete, deleteShoppingItem, handleImageUpload,
                 getDayName, getDayNum, getCategoryIcon, getCategoryColor, getTransportIcon, getWeatherIcon, getMapLink,
                 isDraggable, toggleDraggable, handleAddClick, calculateTWD, calculateJPY
