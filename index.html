@@ -14,7 +14,6 @@
     <style>
         body {
             font-family: 'Zen Maru Gothic', sans-serif;
-            /* 背景色調整為與 Banner 內縮區域一致 */
             background-color: #dcebf6;
             color: #334155;
             -webkit-tap-highlight-color: transparent;
@@ -37,8 +36,7 @@
 
         .curved-content {
             border-radius: 2rem 2rem 0 0;
-            /* 調整負邊距，配合新的 Banner 高度 */
-            margin-top: -40px;
+            margin-top: -30px;
             position: relative;
             z-index: 10;
             background-color: #f8fafc;
@@ -46,12 +44,12 @@
             min-height: 500px;
         }
 
-        /* --- ICON 位置調整 (配合內縮設計下移) --- */
+        /* --- ICON 位置微調 --- */
         .nav-tabs {
             position: absolute;
-            /* 位置下移到內縮區域的底部邊緣 */
-            bottom: 12px; 
-            right: 20px;
+            /* 修改這裡：上一版是 15px，這裡稍微往下移至 10px (約0.1-0.2cm) */
+            bottom: 10px; 
+            right: 15px;
             display: flex;
             gap: 10px;
             z-index: 20;
@@ -60,12 +58,10 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            /* 背景稍微加深一點，在淺色底上更清楚 */
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            /* 圖示顏色調整為深藍色，與整體風格搭配 */
-            color: #475569;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.9);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -82,7 +78,7 @@
             opacity: 1;
         }
 
-        /* --- 雪花動畫調整 --- */
+        /* --- 雪花動畫 --- */
         .snowflake {
             position: absolute;
             top: -10px;
@@ -99,8 +95,8 @@
                 opacity: 0.8;
             }
             100% {
-                /* 雪花飄落高度配合新的圖片區域調整 */
-                transform: translateY(320px) translateX(20px) rotate(360deg); 
+                /* 配合 Banner 高度 350px */
+                transform: translateY(350px) translateX(20px) rotate(360deg); 
                 opacity: 0.2;
             }
         }
@@ -141,14 +137,11 @@
 <div id="app">
     <div class="app-container">
         
-        <div class="relative h-[380px] w-full overflow-hidden bg-[#dcebf6] pt-8 px-6 pb-12">
+        <div class="relative h-[350px] w-full overflow-hidden">
+            <img src="banner.jpg" alt="Banner" class="w-full h-full object-cover object-center">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
             
-            <div class="relative w-full h-full rounded-[2rem] overflow-hidden shadow-xl ring-1 ring-white/50">
-                <img src="banner.jpg" alt="Banner" class="w-full h-full object-cover object-center">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
-                
-                <div v-for="n in 30" :key="n" class="snowflake" :style="getSnowStyle()"></div>
-            </div>
+            <div v-for="n in 30" :key="n" class="snowflake" :style="getSnowStyle()"></div>
 
             <div class="nav-tabs">
                 <button @click="currentTab = 'schedule'" :class="['nav-tab-btn', currentTab === 'schedule' ? 'active' : '']">
@@ -589,7 +582,7 @@
                 return map[cat] || 'bg-gray-400';
             };
             const getTransportIcon = (type) => {
-                return type === 'walk' ? 'fas fa-person-walking' : type === 'train' ? 'fas fa-train-subway' : 'fas fa-car';
+                return type === 'walk' ? 'fas fa-person-walking' : 'fas fa-train-subway';
             };
             const getWeatherIcon = (code) => {
                 if(code <= 3) return 'fas fa-sun';
