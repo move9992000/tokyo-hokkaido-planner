@@ -43,11 +43,11 @@
             min-height: 500px;
         }
 
-        /* --- ICON 位置調整 (Bottom 10px) --- */
+        /* --- ICON 位置調整 (Bottom 8px) --- */
         .nav-tabs {
             position: absolute;
-            /* 修改這裡：從 11.5px 減去 1.5px = 10px */
-            bottom: 10px;
+            /* 修改這裡：從 10px 改為 8px (再往下移 2px) */
+            bottom: 8px;
             right: 15px;
             display: flex;
             gap: 10px;
@@ -57,10 +57,11 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.15);
+            /* 背景稍微更透一點，配合無陰影風格 */
+            background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.95);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -126,7 +127,6 @@
         
         <div class="relative h-[230px] w-full overflow-hidden" ref="bannerRef">
             <img src="banner.jpg" alt="Banner" class="w-full h-full object-cover object-center">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
             
             <canvas id="snow-canvas"></canvas>
 
@@ -450,7 +450,7 @@
             const shoppingForm = ref({});
             const expenseForm = ref({});
 
-            // ---------------- 動態積雪 Canvas (無陰影版) ----------------
+            // ---------------- 動態積雪 Canvas (無陰影/透明版) ----------------
             let canvas, ctx, animationId;
             const flakes = [];
             const snowPileHeight = new Array(480).fill(0);
@@ -469,7 +469,6 @@
                 window.addEventListener('resize', resize);
                 resize();
                 for (let i = 0; i < 50; i++) {
-                    // 速度慢一點 (d 小一點)
                     flakes.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, d: Math.random() * 0.5 + 0.2 });
                 }
                 animateSnow();
@@ -480,14 +479,12 @@
                 ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // 1. 繪製積雪 (純白，無陰影)
-                ctx.fillStyle = "#ffffff";
+                // 1. 繪製積雪 (純白, 帶一點點透明度讓它更輕盈)
+                ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
                 ctx.beginPath();
                 ctx.moveTo(0, canvas.height);
                 for (let i = 0; i < canvas.width; i++) {
                     let h = snowPileHeight[i];
-                    // 加上一點底部預設高度 (與下方漸層 div 銜接)
-                    // 但因為下方 div 已經有 #f8fafc，這裡讓積雪也是純白/純背景色
                     ctx.lineTo(i, canvas.height - h);
                 }
                 ctx.lineTo(canvas.width, canvas.height);
