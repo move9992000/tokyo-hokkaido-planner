@@ -47,8 +47,8 @@
         /* --- ICON 位置調整 --- */
         .nav-tabs {
             position: absolute;
-            /* 修改這裡：從 23px 改為 18px (往下移 5px) */
-            bottom: 18px;
+            /* 修改這裡：從 18px 改為 13px (往下移 5px) */
+            bottom: 13px;
             right: 15px;
             display: flex;
             gap: 10px;
@@ -101,28 +101,19 @@
             }
         }
 
-        /* 積雪效果遮罩 */
+        /* 積雪效果遮罩 (無陰影版) */
         .snow-pile {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
             height: 45px;
-            background: linear-gradient(to top, #ffffff 30%, rgba(255,255,255,0.6) 80%, transparent 100%);
+            /* 改為更乾淨的白色漸層，沒有紋理陰影 */
+            background: linear-gradient(to top, #ffffff 50%, transparent 100%);
             z-index: 5;
             pointer-events: none;
         }
-        .snow-pile::after {
-            content: '';
-            position: absolute;
-            bottom: 25px;
-            left: 0;
-            right: 0;
-            height: 15px;
-            background: radial-gradient(circle at 50% 100%, #ffffff 40%, transparent 45%);
-            background-size: 60px 20px;
-            opacity: 0.7;
-        }
+        /* 移除了原本產生波浪陰影的 ::after 伪元素 */
 
         /* 其他樣式 */
         .timeline-line {
