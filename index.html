@@ -43,7 +43,7 @@
             min-height: 500px;
         }
 
-        /* --- 右側導航 ICON 位置 (Bottom 8px) --- */
+        /* --- ICON 位置調整 (Bottom 8px) --- */
         .nav-tabs {
             position: absolute;
             bottom: 8px;
@@ -105,11 +105,11 @@
             opacity: 1;
         }
 
-        /* --- 左側 通用新增 ICON (新位置) --- */
+        /* --- 左側 通用新增 ICON --- */
         .add-event-btn {
             position: absolute;
             bottom: 8px;
-            left: 65px; /* 15px + 40px + 10px gap */
+            left: 65px;
             z-index: 20;
             width: 40px;
             height: 40px;
@@ -316,12 +316,17 @@
                         </div>
                     </div>
                 </div>
-                
-                </div>
+            </div>
 
             <div v-show="currentTab === 'info'" class="space-y-6 pb-20">
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-                    <h3 class="font-bold text-gray-800 mb-3"><i class="fas fa-coins text-yellow-500 mr-2"></i>匯率換算 (JPY → TWD)</h3>
+                    <h3 class="font-bold text-gray-800 mb-3 flex justify-between items-center">
+                        <span><i class="fas fa-coins text-yellow-500 mr-2"></i>匯率換算</span>
+                        <span class="text-[10px] text-gray-400 font-normal bg-gray-50 px-2 py-1 rounded">
+                            <span v-if="settings.lastUpdate">更新: {{ settings.lastUpdate }}</span>
+                            <span v-else>更新中...</span>
+                        </span>
+                    </h3>
                     <div class="flex items-center gap-3">
                         <div class="flex-1">
                             <label class="text-xs text-gray-400 block mb-1">日幣 (JPY)</label>
@@ -330,12 +335,16 @@
                         <i class="fas fa-arrow-right text-gray-300 mt-4"></i>
                         <div class="flex-1">
                             <label class="text-xs text-gray-400 block mb-1">台幣 (TWD)</label>
-                            <div class="w-full bg-blue-50 border border-blue-100 text-blue-800 rounded-lg px-3 py-2 text-lg font-bold">
+                            <div class="w-full bg-blue-50 border border-blue-100 text-blue-800 rounded-lg px-3 py-2 text-lg font-bold relative">
                                 {{ (converter.jpy * settings.rate).toFixed(0) }}
+                                <div class="absolute -top-6 right-0 text-[10px] text-blue-400">匯率: {{ settings.rate }}</div>
                             </div>
                         </div>
                     </div>
-                    <p class="text-[10px] text-gray-400 mt-2 text-right">以匯率 0.22 概算</p>
+                    <div class="mt-3 pt-2 border-t border-gray-100 flex justify-end items-center gap-2">
+                        <span class="text-xs text-gray-400">手動調整:</span>
+                        <input type="number" v-model="settings.rate" class="w-16 text-right border-b border-gray-300 focus:outline-none text-sm font-bold text-gray-600" step="0.001">
+                    </div>
                 </div>
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="bg-blue-600 px-4 py-2 text-white text-sm font-bold flex justify-between items-center">
@@ -393,7 +402,7 @@
                         </div>
                     </div>
                 </div>
-                </div>
+            </div>
 
             <div v-show="currentTab === 'expenses'" class="pb-20">
                 <div class="bg-gradient-to-r from-slate-700 to-slate-800 rounded-2xl p-5 text-white shadow-lg mb-6">
@@ -453,7 +462,7 @@
                         </div>
                     </div>
                 </div>
-                </div>
+            </div>
 
         </div>
 
@@ -536,13 +545,13 @@
             const weather = ref(null);
             const bannerRef = ref(null);
             
-            const settings = ref({ rate: 0.225 });
+            const settings = ref({ rate: 0.225, lastUpdate: '' });
             const members = ref(['我']);
             const showSettlement = ref(false);
 
             let sortableInstance = null;
 
-            // --- 行程資料更新 (12天, 2025/12/24 - 2026/01/04) ---
+            // --- 行程資料 (12天) ---
             const schedule = ref([
                 { date: "2025-12-24", location: "Tokyo", events: [
                     { id: 1, category: 'flight', name: '台北(TSA) ✈️ 東京(HND)', startTime: '13:30', endTime: '17:30', depCode: 'TSA', arrCode: 'HND', duration: '3h', transportType: 'train', transportTime: '45分' },
@@ -579,7 +588,7 @@
             const shoppingForm = ref({});
             const expenseForm = ref({});
 
-            // ---------------- 動態積雪 Canvas (無陰影/透明版) ----------------
+            // --- 動態積雪 Canvas ---
             let canvas, ctx, animationId;
             const flakes = [];
             const snowPileHeight = new Array(480).fill(0);
@@ -598,7 +607,6 @@
                 window.addEventListener('resize', resize);
                 resize();
                 for (let i = 0; i < 50; i++) {
-                    // 速度慢一點 (d 小一點)
                     flakes.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, d: Math.random() * 0.5 + 0.2 });
                 }
                 animateSnow();
@@ -608,21 +616,15 @@
                 if (!canvas) return;
                 ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // 1. 繪製積雪 (純白, 帶一點點透明度讓它更輕盈)
                 ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
                 ctx.beginPath();
                 ctx.moveTo(0, canvas.height);
                 for (let i = 0; i < canvas.width; i++) {
                     let h = snowPileHeight[i];
-                    // 加上一點底部預設高度 (與下方漸層 div 銜接)
-                    // 但因為下方 div 已經有 #f8fafc，這裡讓積雪也是純白/純背景色
                     ctx.lineTo(i, canvas.height - h);
                 }
                 ctx.lineTo(canvas.width, canvas.height);
                 ctx.fill();
-
-                // 2. 繪製雪花
                 ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
                 ctx.beginPath();
                 for (let i = 0; i < flakes.length; i++) {
@@ -638,13 +640,13 @@
             const updateFlakes = () => {
                 for (let i = 0; i < flakes.length; i++) {
                     const f = flakes[i];
-                    f.y += Math.pow(f.d, 2) * 0.5 + 0.3; // 速度慢
+                    f.y += Math.pow(f.d, 2) * 0.5 + 0.3; 
                     f.x += Math.sin(f.y * 0.05) * 0.3;
                     const floorIndex = Math.floor(f.x);
                     if (floorIndex >= 0 && floorIndex < canvas.width) {
                         const pileHeight = snowPileHeight[floorIndex];
                         if (f.y + f.r >= canvas.height - pileHeight) {
-                            if (pileHeight < 25) { // 積雪高度上限
+                            if (pileHeight < 25) { 
                                 for(let k = -2; k <= 2; k++) {
                                     if (floorIndex + k >= 0 && floorIndex + k < canvas.width) {
                                         snowPileHeight[floorIndex + k] += 0.4 * (3 - Math.abs(k));
@@ -659,14 +661,11 @@
                 }
             };
             const resetFlake = (f) => { f.y = -10; f.x = Math.random() * canvas.width; };
-            // ------------------------------------------------
 
             onMounted(() => {
                 const savedData = localStorage.getItem('tripData');
                 if (savedData) {
                     const parsed = JSON.parse(savedData);
-                    // 為了強制更新日期，這裡註解掉 schedule 的讀取，若您希望保留舊資料請自行斟酌
-                    // schedule.value = parsed.schedule || schedule.value; 
                     shoppingList.value = parsed.shoppingList || [];
                     expenses.value = parsed.expenses || [];
                     members.value = parsed.members || ['我'];
@@ -674,6 +673,7 @@
                 }
                 initSortable();
                 fetchWeather();
+                fetchExchangeRate(); // 呼叫匯率 API
                 setTimeout(initCanvas, 100);
             });
 
@@ -685,15 +685,26 @@
                 }));
             }, { deep: true });
 
-            // 監聽拖曳模式開關
             watch(isDraggable, (val) => {
-                if (sortableInstance) {
-                    sortableInstance.option("disabled", !val); 
-                }
+                if (sortableInstance) { sortableInstance.option("disabled", !val); }
             });
 
-            const toggleDraggable = () => {
-                isDraggable.value = !isDraggable.value;
+            const toggleDraggable = () => isDraggable.value = !isDraggable.value;
+
+            // --- 匯率 API ---
+            const fetchExchangeRate = async () => {
+                try {
+                    const response = await fetch('https://api.exchangerate-api.com/v4/latest/JPY');
+                    const data = await response.json();
+                    if (data && data.rates && data.rates.TWD) {
+                        settings.value.rate = data.rates.TWD;
+                        // 格式化日期
+                        const date = new Date(data.time_last_updated * 1000);
+                        settings.value.lastUpdate = date.toLocaleDateString();
+                    }
+                } catch (error) {
+                    console.error("匯率抓取失敗", error);
+                }
             };
 
             const settlementPlan = computed(() => {
@@ -746,13 +757,12 @@
             const getCategoryIcon = (c) => ({ flight: 'fa-plane', hotel: 'fa-bed', spot: 'fa-camera', food: 'fa-utensils', shop: 'fa-bag-shopping', transport: 'fa-train', ticket: 'fa-ticket', other: 'fa-star' }[c] || 'fa-circle');
             const getCategoryColor = (c) => ({ flight: 'bg-blue-400', hotel: 'bg-indigo-400', spot: 'bg-pink-400', food: 'bg-orange-400', shop: 'bg-yellow-400', transport: 'bg-green-400' }[c] || 'bg-gray-400');
             
-            // --- 新增的交通圖示邏輯 ---
             const getTransportIcon = (type) => {
                 switch(type) {
                     case 'walk': return 'fas fa-person-walking';
                     case 'subway': return 'fas fa-train-subway';
                     case 'train': return 'fas fa-train';
-                    case 'hsr': return 'fas fa-train'; // 高鐵 (字庫無 HSR 專用，暫用火車)
+                    case 'hsr': return 'fas fa-train'; 
                     case 'tram': return 'fas fa-train-tram';
                     case 'taxi': return 'fas fa-taxi';
                     case 'bus': return 'fas fa-bus';
@@ -765,15 +775,11 @@
             const totalExpenses = computed(() => expenses.value.reduce((sum, item) => sum + Number(item.amount), 0));
             const modalTitle = computed(() => ({ schedule: isEditing.value?'編輯行程':'新增行程', shopping:'新增購物清單', expense:'新增花費' }[modalType.value] || ''));
 
-            // --- 新增按鈕的點擊處理 (統一管理) ---
+            // --- 新增按鈕邏輯 (統一管理) ---
             const handleAddClick = () => {
-                if (currentTab.value === 'schedule') {
-                    openAddModal('schedule');
-                } else if (currentTab.value === 'shopping') {
-                    openAddModal('shopping');
-                } else if (currentTab.value === 'expenses') {
-                    openAddModal('expense');
-                }
+                if (currentTab.value === 'schedule') openAddModal('schedule');
+                else if (currentTab.value === 'shopping') openAddModal('shopping');
+                else if (currentTab.value === 'expenses') openAddModal('expense');
             };
 
             const openAddModal = (type) => {
@@ -804,7 +810,7 @@
                 totalExpenses, bannerRef, showSettlement, settlementPlan, toggleSettlement, addMember, toggleAllInvolved,
                 openAddModal, editEvent, saveData, confirmDelete, deleteShoppingItem, handleImageUpload,
                 getDayName, getDayNum, getCategoryIcon, getCategoryColor, getTransportIcon, getWeatherIcon, getMapLink,
-                isDraggable, toggleDraggable, handleAddClick // 記得匯出新函數
+                isDraggable, toggleDraggable, handleAddClick
             };
         }
     }).mount('#app');
