@@ -43,10 +43,9 @@
             min-height: 500px;
         }
 
-        /* --- ICON 位置調整 (Bottom 8px) --- */
+        /* --- 右側 ICON 位置 (Bottom 8px) --- */
         .nav-tabs {
             position: absolute;
-            /* 修改這裡：從 10px 改為 8px (再往下移 2px) */
             bottom: 8px;
             right: 15px;
             display: flex;
@@ -57,7 +56,6 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            /* 背景稍微更透一點，配合無陰影風格 */
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(4px);
             border: 1px solid rgba(255, 255, 255, 0.4);
@@ -75,6 +73,36 @@
             border-color: #ffffff;
             transform: scale(1.05);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            opacity: 1;
+        }
+
+        /* --- 左側 鉛筆 ICON (新增) --- */
+        .edit-mode-btn {
+            position: absolute;
+            bottom: 8px; /* 與右側平行 */
+            left: 15px;
+            z-index: 20;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        /* 啟動編輯模式時的樣式 */
+        .edit-mode-btn.active {
+            background: #ffffff;
+            color: #F59E0B; /* 橘黃色代表編輯中，或用藍色也可以 */
+            border-color: #ffffff;
+            transform: scale(1.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             opacity: 1;
         }
 
@@ -118,6 +146,19 @@
         }
         .boarding-pass::before { left: -11px; border-right-color: transparent; border-top-color: transparent; border-bottom-color: transparent; transform: translateY(-50%) rotate(45deg); }
         .boarding-pass::after { right: -11px; border-left-color: transparent; border-top-color: transparent; border-bottom-color: transparent; transform: translateY(-50%) rotate(-45deg); }
+        
+        /* 抖動動畫 (編輯模式下行程卡片微微抖動，提示可拖曳) */
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(0.5deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-0.5deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .draggable-shake {
+            animation: shake 0.3s infinite ease-in-out;
+            cursor: move; /* 電腦版游標提示 */
+        }
     </style>
 </head>
 <body>
@@ -129,6 +170,14 @@
             <img src="banner.jpg" alt="Banner" class="w-full h-full object-cover object-center">
             
             <canvas id="snow-canvas"></canvas>
+
+            <button 
+                @click="toggleDraggable" 
+                class="edit-mode-btn" 
+                :class="{ 'active': isDraggable }"
+            >
+                <i class="fas fa-pencil-alt"></i>
+            </button>
 
             <div class="nav-tabs">
                 <button @click="currentTab = 'schedule'" :class="['nav-tab-btn', currentTab === 'schedule' ? 'active' : '']">
@@ -212,15 +261,20 @@
                             </div>
                         </div>
 
-                        <div v-else class="relative pl-12 cursor-pointer" @click="editEvent(item)">
+                        <div v-else class="relative pl-12 cursor-pointer" 
+                             @click="editEvent(item)"
+                             :class="{ 'opacity-90': isDraggable }"> <div v-if="isDraggable" class="absolute right-2 top-2 text-gray-300 z-20">
+                                <i class="fas fa-bars"></i>
+                            </div>
+
                             <div class="absolute left-0 top-0 w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md z-10 border-2 border-white"
-                                 :class="getCategoryColor(item.category)">
+                                 :class="[getCategoryColor(item.category), isDraggable ? 'draggable-shake' : '']">
                                 <i :class="getCategoryIcon(item.category)"></i>
                             </div>
                             <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 hover:shadow-md transition active:scale-95">
                                 <div class="flex justify-between items-start">
                                     <h3 class="font-bold text-gray-800 text-lg">{{ item.name }}</h3>
-                                    <a :href="getMapLink(item.name)" @click.stop target="_blank" class="text-blue-500 bg-blue-50 w-8 h-8 rounded-full flex items-center justify-center">
+                                    <a v-if="!isDraggable" :href="getMapLink(item.name)" @click.stop target="_blank" class="text-blue-500 bg-blue-50 w-8 h-8 rounded-full flex items-center justify-center">
                                         <i class="fas fa-location-arrow"></i>
                                     </a>
                                 </div>
@@ -430,6 +484,7 @@
             const showModal = ref(false);
             const modalType = ref('');
             const isEditing = ref(false);
+            const isDraggable = ref(false); // 拖曳模式狀態
             const converter = ref({ jpy: 1000 });
             const weather = ref(null);
             const bannerRef = ref(null);
@@ -437,6 +492,9 @@
             const settings = ref({ rate: 0.225 });
             const members = ref(['我']);
             const showSettlement = ref(false);
+
+            // Sortable 實例
+            let sortableInstance = null;
 
             const schedule = ref([
                 { date: "2025-12-24", location: "Tokyo", events: [{ id: 1, category: 'flight', name: '前往東京', startTime: '08:00', endTime: '12:35', depCode: 'TPE', arrCode: 'CTS', transportType: 'train', transportTime: '45分' }, { id: 2, category: 'hotel', name: '東京王子飯店', startTime: '15:00', endTime: '', notes: 'Check-in', transportType: 'walk', transportTime: '10分' }, { id: 3, category: 'spot', name: '六本木聖誕燈飾', startTime: '18:00', endTime: '20:00', cost: '免費', notes: '櫸坂通點燈', transportType: 'walk', transportTime: '-' }] },
@@ -552,6 +610,17 @@
                 }));
             }, { deep: true });
 
+            // 監聽拖曳模式開關
+            watch(isDraggable, (val) => {
+                if (sortableInstance) {
+                    sortableInstance.option("disabled", !val); // true=disabled, false=enabled
+                }
+            });
+
+            const toggleDraggable = () => {
+                isDraggable.value = !isDraggable.value;
+            };
+
             const settlementPlan = computed(() => {
                 let balance = {}; members.value.forEach(m => balance[m] = 0);
                 expenses.value.forEach(ex => {
@@ -579,7 +648,21 @@
             const addMember = () => { const name = prompt("輸入新成員名字:"); if (name && !members.value.includes(name)) members.value.push(name); };
             const toggleAllInvolved = () => { if (expenseForm.value.involved.length === members.value.length) expenseForm.value.involved = []; else expenseForm.value.involved = [...members.value]; };
             
-            const initSortable = () => { const el = document.getElementById('itinerary-list'); if(el) { new Sortable(el, { animation: 150, handle: '.itinerary-item', onEnd: function (evt) { const item = schedule.value[currentDayIndex.value].events.splice(evt.oldIndex, 1)[0]; schedule.value[currentDayIndex.value].events.splice(evt.newIndex, 0, item); } }); } };
+            const initSortable = () => { 
+                const el = document.getElementById('itinerary-list'); 
+                if(el) { 
+                    sortableInstance = new Sortable(el, { 
+                        animation: 150, 
+                        handle: '.itinerary-item', 
+                        disabled: !isDraggable.value, // 初始狀態
+                        onEnd: function (evt) { 
+                            const item = schedule.value[currentDayIndex.value].events.splice(evt.oldIndex, 1)[0]; 
+                            schedule.value[currentDayIndex.value].events.splice(evt.newIndex, 0, item); 
+                        } 
+                    }); 
+                } 
+            };
+            
             watch(currentDayIndex, () => { setTimeout(initSortable, 100); fetchWeather(); });
             const fetchWeather = async () => { weather.value = { temp: -2, feelsLike: -5, code: 71, desc: '降雪' }; };
             
@@ -600,7 +683,11 @@
                 expenseForm.value = { category: 'food', payment: '現金', date: schedule.value[currentDayIndex.value].date, payer: '我', involved: [...members.value] };
                 showModal.value = true;
             };
-            const editEvent = (item) => { if(item.category==='flight')return; modalType.value='schedule'; isEditing.value=true; editForm.value=JSON.parse(JSON.stringify(item)); showModal.value=true; };
+            const editEvent = (item) => { 
+                if(isDraggable.value) return; // 編輯模式下點擊不觸發編輯，避免誤觸
+                if(item.category==='flight')return; 
+                modalType.value='schedule'; isEditing.value=true; editForm.value=JSON.parse(JSON.stringify(item)); showModal.value=true; 
+            };
             const handleImageUpload = (e) => { const f=e.target.files[0]; if(f){ const r=new FileReader(); r.onload=(e)=>shoppingForm.value.image=e.target.result; r.readAsDataURL(f); } };
             const saveData = () => {
                 if(modalType.value==='schedule') { if(isEditing.value){ const idx=schedule.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); if(idx!==-1) schedule.value[currentDayIndex.value].events[idx]=editForm.value; } else { editForm.value.id=Date.now(); schedule.value[currentDayIndex.value].events.push(editForm.value); } }
@@ -616,7 +703,8 @@
                 editForm, shoppingForm, expenseForm, shoppingList, expenses, converter, weather, settings, members,
                 totalExpenses, bannerRef, showSettlement, settlementPlan, toggleSettlement, addMember, toggleAllInvolved,
                 openAddModal, editEvent, saveData, confirmDelete, deleteShoppingItem, handleImageUpload,
-                getDayName, getDayNum, getCategoryIcon, getCategoryColor, getTransportIcon, getWeatherIcon, getMapLink
+                getDayName, getDayNum, getCategoryIcon, getCategoryColor, getTransportIcon, getWeatherIcon, getMapLink,
+                isDraggable, toggleDraggable
             };
         }
     }).mount('#app');
