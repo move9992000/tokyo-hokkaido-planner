@@ -14,7 +14,7 @@
     <style>
         body {
             font-family: 'Zen Maru Gothic', sans-serif;
-            background-color: #dcebf6;
+            background-color: #f8fafc; /* 背景色統一 */
             color: #334155;
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
@@ -34,13 +34,13 @@
             overflow-x: hidden;
         }
 
-        .curved-content {
-            border-radius: 2rem 2rem 0 0;
-            margin-top: -30px;
+        /* --- 修改：移除圓角與負邊距，達成一致性 --- */
+        .content-area {
             position: relative;
             z-index: 10;
             background-color: #f8fafc;
-            padding-top: 1.5rem;
+            /* 移除 border-radius 和 margin-top */
+            padding-top: 0.5rem; 
             min-height: 500px;
         }
 
@@ -88,6 +88,19 @@
             z-index: 5;
         }
 
+        /* --- 積雪效果遮罩 (無陰影 + 無縫銜接) --- */
+        .snow-pile {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px; /* 稍微增高以確保漸層平滑 */
+            /* 從透明漸層到 #f8fafc (與下方內容背景色一致)，消除分割線 */
+            background: linear-gradient(to top, #f8fafc 25%, rgba(248, 250, 252, 0.8) 60%, transparent 100%);
+            z-index: 5;
+            pointer-events: none;
+        }
+
         /* 其他樣式 */
         .timeline-line {
             position: absolute;
@@ -129,6 +142,8 @@
             <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
             
             <canvas id="snow-canvas"></canvas>
+            
+            <div class="snow-pile"></div>
 
             <div class="nav-tabs">
                 <button @click="currentTab = 'schedule'" :class="['nav-tab-btn', currentTab === 'schedule' ? 'active' : '']">
@@ -146,7 +161,7 @@
             </div>
         </div>
 
-        <div class="curved-content px-5">
+        <div class="content-area px-5">
 
             <div v-show="currentTab === 'schedule'">
                 
@@ -434,12 +449,10 @@
             const weather = ref(null);
             const bannerRef = ref(null);
             
-            // 全域設定
             const settings = ref({ rate: 0.225 });
             const members = ref(['我']);
             const showSettlement = ref(false);
 
-            // 資料 Refs
             const schedule = ref([
                 { date: "2025-12-24", location: "Tokyo", events: [{ id: 1, category: 'flight', name: '前往東京', startTime: '08:00', endTime: '12:35', depCode: 'TPE', arrCode: 'CTS', transportType: 'train', transportTime: '45分' }, { id: 2, category: 'hotel', name: '東京王子飯店', startTime: '15:00', endTime: '', notes: 'Check-in', transportType: 'walk', transportTime: '10分' }, { id: 3, category: 'spot', name: '六本木聖誕燈飾', startTime: '18:00', endTime: '20:00', cost: '免費', notes: '櫸坂通點燈', transportType: 'walk', transportTime: '-' }] },
                 { date: "2025-12-25", location: "Tokyo", events: [{ id: 10, category: 'spot', name: '迪士尼樂園', startTime: '09:00', endTime: '21:00', cost: '¥9400', notes: '聖誕遊行必看', transportType: 'train', transportTime: '30分' }] },
@@ -448,12 +461,11 @@
             const shoppingList = ref([]);
             const expenses = ref([]);
 
-            // Forms
             const editForm = ref({});
             const shoppingForm = ref({});
             const expenseForm = ref({});
 
-            // ---------------- 動態積雪 Canvas ----------------
+            // ---------------- 動態積雪 Canvas (無陰影版) ----------------
             let canvas, ctx, animationId;
             const flakes = [];
             const snowPileHeight = new Array(480).fill(0);
@@ -471,8 +483,9 @@
                 };
                 window.addEventListener('resize', resize);
                 resize();
-                for (let i = 0; i < 60; i++) {
-                    flakes.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, d: Math.random() * 1 + 0.5 });
+                for (let i = 0; i < 50; i++) {
+                    // 速度慢一點 (d 小一點)
+                    flakes.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, d: Math.random() * 0.5 + 0.2 });
                 }
                 animateSnow();
             };
@@ -482,18 +495,20 @@
                 ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // 1. 繪製積雪
-                ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+                // 1. 繪製積雪 (純白，無陰影)
+                ctx.fillStyle = "#ffffff";
                 ctx.beginPath();
                 ctx.moveTo(0, canvas.height);
                 for (let i = 0; i < canvas.width; i++) {
                     let h = snowPileHeight[i];
+                    // 加上一點底部預設高度 (與下方漸層 div 銜接)
+                    // 但因為下方 div 已經有 #f8fafc，這裡讓積雪也是純白/純背景色
                     ctx.lineTo(i, canvas.height - h);
                 }
                 ctx.lineTo(canvas.width, canvas.height);
                 ctx.fill();
 
-                // 2. 繪製與更新雪花
+                // 2. 繪製雪花
                 ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
                 ctx.beginPath();
                 for (let i = 0; i < flakes.length; i++) {
@@ -509,16 +524,16 @@
             const updateFlakes = () => {
                 for (let i = 0; i < flakes.length; i++) {
                     const f = flakes[i];
-                    f.y += Math.pow(f.d, 2) + 1;
-                    f.x += Math.sin(f.y * 0.05) * 0.5;
+                    f.y += Math.pow(f.d, 2) * 0.5 + 0.3; // 速度慢
+                    f.x += Math.sin(f.y * 0.05) * 0.3;
                     const floorIndex = Math.floor(f.x);
                     if (floorIndex >= 0 && floorIndex < canvas.width) {
                         const pileHeight = snowPileHeight[floorIndex];
                         if (f.y + f.r >= canvas.height - pileHeight) {
-                            if (pileHeight < 35) {
+                            if (pileHeight < 25) { // 積雪高度上限
                                 for(let k = -2; k <= 2; k++) {
                                     if (floorIndex + k >= 0 && floorIndex + k < canvas.width) {
-                                        snowPileHeight[floorIndex + k] += 0.5 * (3 - Math.abs(k));
+                                        snowPileHeight[floorIndex + k] += 0.4 * (3 - Math.abs(k));
                                     }
                                 }
                             }
