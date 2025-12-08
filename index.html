@@ -223,7 +223,6 @@
             </div>
 
             <div v-show="currentTab === 'schedule'">
-                
                 <div class="flex space-x-3 overflow-x-auto hide-scrollbar mb-4 pb-2">
                     <button 
                         v-for="(day, index) in schedule" 
@@ -236,7 +235,6 @@
                         <span class="text-lg font-bold">{{ getDayNum(day.date) }}</span>
                     </button>
                 </div>
-
                 <div v-if="weather" class="mb-6 bg-blue-50/80 rounded-xl p-3 flex items-center justify-between border border-blue-100 shadow-sm">
                     <div class="flex items-center gap-3">
                         <i :class="getWeatherIcon(weather.code)" class="text-3xl text-blue-500"></i>
@@ -250,16 +248,13 @@
                         <div class="text-xs text-gray-400">體感 {{ weather.feelsLike }}°</div>
                     </div>
                 </div>
-
                 <div id="itinerary-list" class="space-y-0 relative pb-20">
                     <div v-for="(item, idx) in schedule[currentDayIndex].events" :key="item.id" class="relative group itinerary-item pb-6" :data-id="item.id">
-                        
                         <div v-if="idx < schedule[currentDayIndex].events.length - 1" class="absolute left-[19px] top-10 bottom-0 w-[2px] bg-gray-200 z-0 flex flex-col items-center justify-center">
                             <div class="bg-gray-100 text-[10px] text-gray-500 px-1 py-0.5 rounded border border-gray-200 mt-4 whitespace-nowrap z-10 flex items-center gap-1">
                                 <i :class="getTransportIcon(item.transportType)"></i> {{ item.transportTime }}
                             </div>
                         </div>
-
                         <div v-if="item.category === 'flight' && idx === 0" class="pl-0 mb-4">
                             <div class="boarding-pass rounded-2xl p-4 shadow-sm relative">
                                 <div class="flex justify-between items-center mb-3 border-b border-dashed border-gray-300 pb-2">
@@ -267,25 +262,13 @@
                                     <div class="text-gray-400 text-xs">{{ item.date }}</div>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <div class="text-center">
-                                        <div class="text-3xl font-bold text-gray-800">{{ item.depCode }}</div>
-                                        <div class="text-xs text-gray-500">{{ item.startTime }}</div>
-                                    </div>
-                                    <div class="flex-1 flex flex-col items-center px-2">
-                                        <i class="fas fa-plane text-blue-300 transform rotate-90"></i>
-                                        <div class="text-[10px] text-gray-400 mt-1">{{ item.duration || '飛行中' }}</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="text-3xl font-bold text-gray-800">{{ item.arrCode }}</div>
-                                        <div class="text-xs text-gray-500">{{ item.endTime }}</div>
-                                    </div>
+                                    <div class="text-center"><div class="text-3xl font-bold text-gray-800">{{ item.depCode }}</div><div class="text-xs text-gray-500">{{ item.startTime }}</div></div>
+                                    <div class="flex-1 flex flex-col items-center px-2"><i class="fas fa-plane text-blue-300 transform rotate-90"></i><div class="text-[10px] text-gray-400 mt-1">{{ item.duration || '飛行中' }}</div></div>
+                                    <div class="text-center"><div class="text-3xl font-bold text-gray-800">{{ item.arrCode }}</div><div class="text-xs text-gray-500">{{ item.endTime }}</div></div>
                                 </div>
-                                <div class="mt-3 text-center text-sm font-medium text-gray-600 bg-gray-50 py-1 rounded">
-                                    {{ item.name }}
-                                </div>
+                                <div class="mt-3 text-center text-sm font-medium text-gray-600 bg-gray-50 py-1 rounded">{{ item.name }}</div>
                             </div>
                         </div>
-
                         <div v-else class="relative pl-12 cursor-pointer" 
                              @click="editEvent(item)"
                              :class="{ 'opacity-90': isDraggable }">
@@ -297,9 +280,7 @@
                             <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 hover:shadow-md transition active:scale-95">
                                 <div class="flex justify-between items-start">
                                     <h3 class="font-bold text-gray-800 text-lg">{{ item.name }}</h3>
-                                    <a v-if="!isDraggable" :href="getMapLink(item.name)" @click.stop target="_blank" class="text-blue-500 bg-blue-50 w-8 h-8 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-location-arrow"></i>
-                                    </a>
+                                    <a v-if="!isDraggable" :href="getMapLink(item.name)" @click.stop target="_blank" class="text-blue-500 bg-blue-50 w-8 h-8 rounded-full flex items-center justify-center"><i class="fas fa-location-arrow"></i></a>
                                 </div>
                                 <div class="mt-1 flex flex-wrap gap-2 text-xs text-gray-500">
                                     <span v-if="item.startTime" class="bg-gray-100 px-2 py-1 rounded"><i class="far fa-clock mr-1"></i>{{ item.startTime }}~{{item.endTime}}</span>
@@ -318,22 +299,34 @@
                     <h3 class="font-bold text-gray-800 mb-3 flex justify-between items-center">
                         <span><i class="fas fa-coins text-yellow-500 mr-2"></i>匯率換算</span>
                         <span class="text-[10px] text-gray-400 font-normal bg-gray-50 px-2 py-1 rounded">
-                            <span v-if="settings.lastUpdate">更新: {{ settings.lastUpdate }}</span>
+                            <span v-if="exchangeData.lastUpdate">更新: {{ exchangeData.lastUpdate }}</span>
                             <span v-else>更新中...</span>
                         </span>
                     </h3>
-                    <div class="flex items-center gap-3">
-                        <div class="flex-1">
-                            <label class="text-xs text-gray-400 block mb-1">日幣 (JPY)</label>
-                            <input type="number" v-model="converter.jpy" @input="calculateTWD" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-lg font-bold text-blue-600" placeholder="0">
+                    <div class="flex flex-col gap-3 relative">
+                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                            <select v-model="exchangeData.fromCurrency" @change="fetchExchangeRate" class="bg-transparent font-bold text-gray-700 outline-none w-16 text-sm">
+                                <option v-for="c in currencyList" :key="c" :value="c">{{ c }}</option>
+                            </select>
+                            <input type="number" v-model="exchangeData.amountFrom" @input="calculateTo" class="w-full bg-transparent text-right text-xl font-bold text-blue-600 outline-none" placeholder="0">
                         </div>
-                        <i class="fas fa-exchange-alt text-gray-300 mt-4"></i>
-                        <div class="flex-1">
-                            <label class="text-xs text-gray-400 block mb-1">台幣 (TWD)</label>
-                            <input type="number" v-model="converter.twd" @input="calculateJPY" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-lg font-bold text-green-600" placeholder="0">
+                        
+                        <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+                            <button @click="swapCurrencies" class="w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center text-gray-400 hover:text-blue-500 transition border border-gray-100">
+                                <i class="fas fa-exchange-alt text-xs"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                            <select v-model="exchangeData.toCurrency" @change="fetchExchangeRate" class="bg-transparent font-bold text-gray-700 outline-none w-16 text-sm">
+                                <option v-for="c in currencyList" :key="c" :value="c">{{ c }}</option>
+                            </select>
+                            <input type="number" v-model="exchangeData.amountTo" @input="calculateFrom" class="w-full bg-transparent text-right text-xl font-bold text-green-600 outline-none" placeholder="0">
                         </div>
                     </div>
-                    <div class="text-[10px] text-right mt-2 text-gray-400">當前匯率: {{ settings.rate }}</div>
+                    <div class="text-[10px] text-right mt-2 text-gray-400">
+                        匯率: 1 {{ exchangeData.fromCurrency }} ≈ {{ exchangeData.rate.toFixed(4) }} {{ exchangeData.toCurrency }}
+                    </div>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -373,7 +366,7 @@
             <div v-show="currentTab === 'expenses'" class="pb-20">
                 <div class="bg-gradient-to-r from-slate-700 to-slate-800 rounded-2xl p-5 text-white shadow-lg mb-6">
                     <div class="flex justify-between items-start">
-                        <div><div class="text-sm opacity-70">總公費 (JPY)</div><div class="text-3xl font-bold mt-1">¥ {{ totalExpenses.toLocaleString() }}</div><div class="text-xs opacity-60 mt-1">約 TWD {{ (totalExpenses * settings.rate).toFixed(0).toLocaleString() }}</div></div>
+                        <div><div class="text-sm opacity-70">總公費 (JPY)</div><div class="text-3xl font-bold mt-1">¥ {{ totalExpenses.toLocaleString() }}</div><div class="text-xs opacity-60 mt-1">約 TWD {{ (totalExpenses * exchangeData.rate).toFixed(0).toLocaleString() }}</div></div>
                         <button @click="toggleSettlement" class="bg-white/20 text-xs px-3 py-1 rounded backdrop-blur-sm hover:bg-white/30 transition"><i class="fas fa-calculator mr-1"></i>結算報表</button>
                     </div>
                 </div>
@@ -382,7 +375,7 @@
                     <div v-if="settlementPlan.length === 0" class="text-sm text-gray-500 text-center py-2">目前結餘平衡，無需轉帳</div>
                     <div v-else class="space-y-2">
                         <div v-for="(plan, idx) in settlementPlan" :key="idx" class="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm"><div class="flex items-center gap-2"><span class="font-bold text-gray-700">{{ plan.from }}</span><i class="fas fa-arrow-right text-gray-400 text-xs"></i><span class="font-bold text-gray-700">{{ plan.to }}</span></div><div class="text-blue-600 font-bold">¥{{ Math.round(plan.amount).toLocaleString() }}</div></div>
-                        <p class="text-[10px] text-gray-400 text-center mt-2">*計算匯率: {{settings.rate}}</p>
+                        <p class="text-[10px] text-gray-400 text-center mt-2">*計算匯率: {{exchangeData.rate.toFixed(4)}}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 mb-4 overflow-x-auto hide-scrollbar pb-1">
@@ -450,15 +443,25 @@
             const modalType = ref('');
             const isEditing = ref(false);
             const isDraggable = ref(false); 
-            const converter = ref({ jpy: 1000, twd: 225 });
             const weather = ref(null);
             const bannerRef = ref(null);
             
-            const settings = ref({ rate: 0.225, lastUpdate: '' });
+            // 匯率資料結構
+            const currencyList = ['JPY', 'TWD', 'USD', 'KRW', 'CNY', 'EUR', 'HKD'];
+            const exchangeData = ref({
+                fromCurrency: 'JPY',
+                toCurrency: 'TWD',
+                rate: 0.225, // 預設
+                amountFrom: 1000,
+                amountTo: 225,
+                lastUpdate: ''
+            });
+
+            const settings = ref({ rate: 0.225, lastUpdate: '' }); // 保留舊結構相容
             const members = ref(['我']);
             const showSettlement = ref(false);
 
-            // 住宿與行程資料
+            // 住宿與行程資料 (維持不變)
             const hotels = ref([
                 { name: 'Hotel Sunroute Asakusa', dates: '12/24 - 12/27', address: '東京都台東區雷門1-8-5', phone: '+81-3-3847-1511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Sunroute+Asakusa' },
                 { name: 'Hotel Nets Sapporo', dates: '12/27 - 12/31', address: '北海道札幌市中央區南7条西4丁目1-1', phone: '+81-11-530-5511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Nets+Sapporo' },
@@ -511,7 +514,12 @@
                     shoppingList.value = parsed.shoppingList || [];
                     expenses.value = parsed.expenses || [];
                     members.value = parsed.members || ['我'];
-                    settings.value = parsed.settings || { rate: 0.225 };
+                    // 恢復匯率資料
+                    if(parsed.exchangeData) {
+                        exchangeData.value = { ...exchangeData.value, ...parsed.exchangeData };
+                        // 為了相容記帳功能，同步更新 settings.rate
+                        settings.value.rate = exchangeData.value.rate;
+                    }
                     if (parsed.packingList) {
                         parsed.packingList.forEach(savedCat => {
                             const currentCat = packingList.value.find(c => c.name === savedCat.name);
@@ -526,15 +534,20 @@
                 }
                 initSortable();
                 fetchWeather();
-                fetchExchangeRate();
+                fetchExchangeRate(); // 初始抓取
                 setTimeout(initCanvas, 100);
             });
 
             onUnmounted(() => { cancelAnimationFrame(animationId); });
 
-            watch([schedule, shoppingList, expenses, members, settings, packingList], () => {
+            watch([schedule, shoppingList, expenses, members, exchangeData, packingList], () => {
                 localStorage.setItem('tripData', JSON.stringify({
-                    schedule: schedule.value, shoppingList: shoppingList.value, expenses: expenses.value, members: members.value, settings: settings.value, packingList: packingList.value
+                    schedule: schedule.value, 
+                    shoppingList: shoppingList.value, 
+                    expenses: expenses.value, 
+                    members: members.value, 
+                    exchangeData: exchangeData.value,
+                    packingList: packingList.value
                 }));
             }, { deep: true });
 
@@ -547,18 +560,38 @@
                 return total === 0 ? 0 : Math.round((checked / total) * 100);
             });
 
-            // 雙向匯率換算邏輯
-            const calculateTWD = () => { currency.value.twd = (currency.value.jpy * settings.value.rate).toFixed(0); };
-            const calculateJPY = () => { currency.value.jpy = (currency.value.twd / settings.value.rate).toFixed(0); };
+            // --- 雙向匯率計算 ---
+            const calculateTo = () => {
+                if(exchangeData.value.rate) {
+                    exchangeData.value.amountTo = (exchangeData.value.amountFrom * exchangeData.value.rate).toFixed(2);
+                }
+            };
+            const calculateFrom = () => {
+                if(exchangeData.value.rate) {
+                    exchangeData.value.amountFrom = (exchangeData.value.amountTo / exchangeData.value.rate).toFixed(2);
+                }
+            };
+            const swapCurrencies = () => {
+                const temp = exchangeData.value.fromCurrency;
+                exchangeData.value.fromCurrency = exchangeData.value.toCurrency;
+                exchangeData.value.toCurrency = temp;
+                fetchExchangeRate(); // 交換後重抓匯率
+            };
 
             const fetchExchangeRate = async () => {
                 try { 
-                    const res = await fetch('https://api.exchangerate-api.com/v4/latest/JPY'); 
+                    const base = exchangeData.value.fromCurrency;
+                    const target = exchangeData.value.toCurrency;
+                    const res = await fetch(`https://api.exchangerate-api.com/v4/latest/${base}`); 
                     const data = await res.json(); 
-                    if(data&&data.rates&&data.rates.TWD){ 
-                        settings.value.rate = data.rates.TWD; 
-                        settings.value.lastUpdate = new Date(data.time_last_updated*1000).toLocaleDateString();
-                        calculateTWD();
+                    if(data && data.rates && data.rates[target]){ 
+                        exchangeData.value.rate = data.rates[target]; 
+                        exchangeData.value.lastUpdate = new Date(data.time_last_updated*1000).toLocaleDateString();
+                        calculateTo(); // 更新顯示
+                        // 同步更新記帳用的匯率 (如果是 JPY/TWD)
+                        if(base === 'JPY' && target === 'TWD') {
+                            settings.value.rate = data.rates[target];
+                        }
                     } 
                 } catch(e){ console.error(e); }
             };
@@ -572,36 +605,8 @@
 
             const toggleSettlement = () => showSettlement.value = !showSettlement.value;
             const addMember = () => { const n = prompt("輸入新成員名字:"); if(n && !members.value.includes(n)) members.value.push(n); };
-
-            // 新增：修改成員名字
-            const renameMember = (index) => {
-                const oldName = members.value[index];
-                const newName = prompt("修改成員名字:", oldName);
-                if (newName && newName !== oldName) {
-                    if (members.value.includes(newName)) {
-                        alert("成員名字已存在！");
-                        return;
-                    }
-                    // 更新成員列表
-                    members.value[index] = newName;
-                    // 連動更新過去的花費紀錄
-                    expenses.value.forEach(ex => {
-                        if (ex.payer === oldName) ex.payer = newName;
-                        if (ex.involved && ex.involved.includes(oldName)) {
-                            const i = ex.involved.indexOf(oldName);
-                            ex.involved[i] = newName;
-                        }
-                    });
-                }
-            };
-
-            const removeMember = (index) => {
-                if(members.value[index] === '我') return;
-                if(confirm(`確定要刪除成員 ${members.value[index]} 嗎？這不會刪除他已付款的紀錄，但會從名單中移除。`)) {
-                    members.value.splice(index, 1);
-                }
-            };
-
+            const renameMember = (i) => { const old=members.value[i], n=prompt("修改名字:",old); if(n&&n!==old&&!members.value.includes(n)){ members.value[i]=n; expenses.value.forEach(e=>{ if(e.payer===old)e.payer=n; if(e.involved.includes(old))e.involved[e.involved.indexOf(old)]=n; }); } };
+            const removeMember = (i) => { if(members.value[i]==='我')return; if(confirm("刪除成員?")){ members.value.splice(i,1); } };
             const toggleAllInvolved = () => { if(expenseForm.value.involved.length===members.value.length) expenseForm.value.involved=[]; else expenseForm.value.involved=[...members.value]; };
             
             const initSortable = () => { const el=document.getElementById('itinerary-list'); if(el){ sortableInstance=new Sortable(el,{ animation:150, handle:'.itinerary-item', disabled:!isDraggable.value, onEnd:(evt)=>{ const item=schedule.value[currentDayIndex.value].events.splice(evt.oldIndex,1)[0]; schedule.value[currentDayIndex.value].events.splice(evt.newIndex,0,item); } }); } };
@@ -628,11 +633,13 @@
 
             return {
                 currentTab, currentDayIndex, schedule, showModal, modalType, isEditing, modalTitle,
-                editForm, shoppingForm, expenseForm, shoppingList, expenses, converter, weather, settings, members, hotels, packingList,
+                editForm, shoppingForm, expenseForm, shoppingList, expenses, weather, settings, members, hotels, packingList,
                 totalExpenses, bannerRef, showSettlement, settlementPlan, toggleSettlement, addMember, removeMember, renameMember, toggleAllInvolved, packingProgress,
                 openAddModal, editEvent, saveData, confirmDelete, deleteShoppingItem, handleImageUpload,
                 getDayName, getDayNum, getCategoryIcon, getCategoryColor, getTransportIcon, getWeatherIcon, getMapLink,
-                isDraggable, toggleDraggable, handleAddClick, calculateTWD, calculateJPY
+                isDraggable, toggleDraggable, handleAddClick, 
+                // 匯出新變數與函數
+                currencyList, exchangeData, calculateTWD, calculateJPY, fetchExchangeRate, swapCurrencies
             };
         }
     }).mount('#app');
