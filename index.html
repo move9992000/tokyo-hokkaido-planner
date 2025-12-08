@@ -149,7 +149,7 @@
 
             <div class="absolute bottom-[8px] left-[15px] right-[15px] flex justify-between items-end z-20 pointer-events-none">
                 
-                <div class="flex gap-[8px] pointer-events-auto">
+                <div class="flex gap-2 pointer-events-auto">
                     <button @click="toggleDraggable" class="glass-btn" :class="{ 'edit-active': isDraggable }">
                         <i class="fas fa-pencil-alt"></i>
                     </button>
@@ -162,7 +162,7 @@
                     </button>
                 </div>
 
-                <div class="flex gap-[8px] pointer-events-auto">
+                <div class="flex gap-2 pointer-events-auto">
                     <button @click="currentTab = 'checklist'" :class="['glass-btn', currentTab === 'checklist' ? 'active' : '']">
                         <i class="fas fa-clipboard-check"></i>
                     </button>
@@ -268,7 +268,7 @@
                 
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
                     <h3 class="font-bold text-gray-800 mb-3 flex justify-between items-center">
-                        <span><i class="fas fa-coins text-yellow-500 mr-2"></i>匯率換算</span>
+                        <span><i class="fas fa-coins text-yellow-500 mr-2"></i>匯率換算 (JPY / TWD)</span>
                         <span class="text-[10px] text-gray-400 font-normal bg-gray-50 px-2 py-1 rounded">
                             <span v-if="settings.lastUpdate">更新: {{ settings.lastUpdate }}</span>
                             <span v-else>更新中...</span>
@@ -285,7 +285,7 @@
                             <input type="number" v-model="converter.twd" @input="calculateJPY" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-lg font-bold text-green-600" placeholder="0">
                         </div>
                     </div>
-                    <div class="text-[10px] text-right mt-2 text-gray-400">當前匯率 (JPY→TWD): {{ settings.rate }}</div>
+                    <div class="text-[10px] text-right mt-2 text-gray-400">當前匯率: {{ settings.rate }}</div>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -402,16 +402,18 @@
             const modalType = ref('');
             const isEditing = ref(false);
             const isDraggable = ref(false); 
-            const converter = ref({ jpy: 1000, twd: 225 }); // 初始化 TWD
+            // 恢復成最穩定的 converter 結構
+            const converter = ref({ jpy: 1000, twd: 225 }); 
             const weather = ref(null);
             const bannerRef = ref(null);
             
+            // 統一使用 settings.rate 存匯率
             const settings = ref({ rate: 0.225, lastUpdate: '' });
             const members = ref(['我']);
             const showSettlement = ref(false);
             const currentChecklistMember = ref('我');
 
-            // 住宿與行程資料
+            // 住宿與行程資料 (維持不變)
             const hotels = ref([
                 { name: 'Hotel Sunroute Asakusa', dates: '12/24 - 12/27', address: '東京都台東區雷門1-8-5', phone: '+81-3-3847-1511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Sunroute+Asakusa' },
                 { name: 'Hotel Nets Sapporo', dates: '12/27 - 12/31', address: '北海道札幌市中央區南7条西4丁目1-1', phone: '+81-11-530-5511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Nets+Sapporo' },
@@ -469,29 +471,74 @@
             const updateFlakes = () => { for (let i = 0; i < flakes.length; i++) { const f = flakes[i]; f.y += Math.pow(f.d, 2) * 0.5 + 0.3; f.x += Math.sin(f.y * 0.05) * 0.3; const floorIndex = Math.floor(f.x); if (floorIndex >= 0 && floorIndex < canvas.width) { const pileHeight = snowPileHeight[floorIndex]; if (f.y + f.r >= canvas.height - pileHeight) { if (pileHeight < 25) { for(let k = -2; k <= 2; k++) { if (floorIndex + k >= 0 && floorIndex + k < canvas.width) { snowPileHeight[floorIndex + k] += 0.4 * (3 - Math.abs(k)); } } } resetFlake(f); } } else if (f.y > canvas.height) { resetFlake(f); } } };
             const resetFlake = (f) => { f.y = -10; f.x = Math.random() * canvas.width; };
 
+            // --- 天氣 API ---
+            const cityMap = { 'Tokyo': { lat: 35.6895, lon: 139.6917 }, 'Sapporo': { lat: 43.0618, lon: 141.3545 }, 'Hakodate': { lat: 41.7687, 140.7288 } };
+            const getWeatherDesc = (code) => { if(code <= 3) return '晴時多雲'; if(code <= 60) return '有雨'; if(code <= 80) return '降雪'; return '陰天'; };
+            const fetchWeather = async () => {
+                const locName = schedule.value[currentDayIndex.value].location.split('/')[0];
+                const coords = cityMap[locName] || cityMap['Tokyo'];
+                try {
+                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,apparent_temperature,weather_code&daily=uv_index_max&timezone=auto`;
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    if(data.current && data.daily) {
+                        weather.value = {
+                            temp: Math.round(data.current.temperature_2m),
+                            feelsLike: Math.round(data.current.apparent_temperature),
+                            code: data.current.weather_code,
+                            desc: getWeatherDesc(data.current.weather_code),
+                            uv: data.daily.uv_index_max[0]
+                        };
+                    }
+                } catch(e) { console.error(e); }
+            };
+
+            // --- 匯率 API ---
+            const calculateTWD = () => { converter.value.twd = (converter.value.jpy * settings.value.rate).toFixed(0); };
+            const calculateJPY = () => { converter.value.jpy = (converter.value.twd / settings.value.rate).toFixed(0); };
+            const fetchExchangeRate = async () => {
+                try { 
+                    const res = await fetch('https://api.exchangerate-api.com/v4/latest/JPY'); 
+                    const data = await res.json(); 
+                    if(data && data.rates && data.rates.TWD){ 
+                        settings.value.rate = data.rates.TWD; 
+                        settings.value.lastUpdate = new Date(data.time_last_updated*1000).toLocaleDateString();
+                        calculateTWD(); // 初始計算
+                    } 
+                } catch(e){ console.error(e); }
+            };
+
             onMounted(() => {
                 try {
+                    // 自動清除舊資料以防崩潰 (Safety Reset)
                     const savedData = localStorage.getItem('tripData');
                     if (savedData) {
                         const parsed = JSON.parse(savedData);
-                        shoppingList.value = parsed.shoppingList || [];
-                        expenses.value = parsed.expenses || [];
-                        members.value = parsed.members || ['我'];
-                        
-                        if (parsed.packingData) {
-                            packingData.value = parsed.packingData;
-                        } else if (parsed.packingList && Array.isArray(parsed.packingList)) {
-                            // 舊資料遷移
-                            packingData.value['我'] = parsed.packingList;
+                        // 如果資料結構不對（例如缺少 packingData），就只讀取部分或重置
+                        if (!parsed.packingData && !parsed.packingList) {
+                            console.log("Old data format detected, resetting dangerous parts...");
+                        } else {
+                            shoppingList.value = parsed.shoppingList || [];
+                            expenses.value = parsed.expenses || [];
+                            members.value = parsed.members || ['我'];
+                            if (parsed.settings) settings.value = parsed.settings;
+                            
+                            // 讀取行李清單 (相容舊版)
+                            if (parsed.packingData) {
+                                packingData.value = parsed.packingData;
+                            } else if (parsed.packingList && Array.isArray(parsed.packingList)) {
+                                packingData.value['我'] = parsed.packingList;
+                            }
                         }
                         
-                        // 資料修復防呆
+                        // 補齊所有人清單
                         members.value.forEach(m => {
                             if(!packingData.value[m]) packingData.value[m] = getNewPackingList();
                         });
                     }
                 } catch (e) {
-                    console.error("Data load error", e);
+                    console.error("Data error, resetting...", e);
+                    localStorage.removeItem('tripData');
                 }
                 
                 initSortable();
@@ -516,28 +563,17 @@
             watch(isDraggable, (val) => { if (sortableInstance) { sortableInstance.option("disabled", !val); } });
             const toggleDraggable = () => isDraggable.value = !isDraggable.value;
 
+            watch(currentDayIndex, () => {
+                setTimeout(initSortable, 100);
+                fetchWeather(); 
+            });
+
             const packingProgress = computed(() => {
                 let total = 0, checked = 0;
                 const list = currentChecklistData.value;
                 if(list) list.forEach(cat => cat.items.forEach(i => { total++; if(i.checked) checked++; }));
                 return total === 0 ? 0 : Math.round((checked / total) * 100);
             });
-
-            // --- 簡單的匯率計算 ---
-            const calculateTWD = () => { converter.value.twd = (converter.value.jpy * settings.value.rate).toFixed(0); };
-            const calculateJPY = () => { converter.value.jpy = (converter.value.twd / settings.value.rate).toFixed(0); };
-
-            const fetchExchangeRate = async () => {
-                try { 
-                    const res = await fetch('https://api.exchangerate-api.com/v4/latest/JPY'); 
-                    const data = await res.json(); 
-                    if(data && data.rates && data.rates.TWD){ 
-                        settings.value.rate = data.rates.TWD; 
-                        settings.value.lastUpdate = new Date(data.time_last_updated*1000).toLocaleDateString();
-                        calculateTWD(); 
-                    } 
-                } catch(e){ console.error(e); }
-            };
 
             const settlementPlan = computed(() => {
                 let balance = {}; members.value.forEach(m => balance[m] = 0);
@@ -547,21 +583,35 @@
             });
 
             const toggleSettlement = () => showSettlement.value = !showSettlement.value;
-            const addMember = () => { const n = prompt("輸入新成員名字:"); if(n && !members.value.includes(n)) members.value.push(n); };
-            const renameMember = (i) => { const old=members.value[i], n=prompt("修改名字:",old); if(n&&n!==old&&!members.value.includes(n)){ members.value[i]=n; if(packingData.value[old]) { packingData.value[n] = packingData.value[old]; delete packingData.value[old]; } else { packingData.value[n] = getNewPackingList(); } expenses.value.forEach(e=>{ if(e.payer===old)e.payer=n; if(e.involved.includes(old))e.involved[e.involved.indexOf(old)]=n; }); if (currentChecklistMember.value === old) currentChecklistMember.value = n; } };
-            const removeMember = (i) => { if(members.value[i]==='我')return; if(confirm("刪除成員?")){ const nameToRemove = members.value[i]; members.value.splice(i,1); delete packingData.value[nameToRemove]; if (currentChecklistMember.value === nameToRemove) currentChecklistMember.value = '我'; } };
+            const addMember = () => { const n = prompt("輸入新成員名字:"); if(n && !members.value.includes(n)) { members.value.push(n); packingData.value[n] = getNewPackingList(); } };
+            const renameMember = (i) => { 
+                const old=members.value[i], n=prompt("修改名字:",old); 
+                if(n&&n!==old&&!members.value.includes(n)){ 
+                    members.value[i]=n; 
+                    if(packingData.value[old]) { packingData.value[n] = packingData.value[old]; delete packingData.value[old]; } else { packingData.value[n] = getNewPackingList(); } 
+                    expenses.value.forEach(e=>{ if(e.payer===old)e.payer=n; if(e.involved.includes(old))e.involved[e.involved.indexOf(old)]=n; }); 
+                    if (currentChecklistMember.value === old) currentChecklistMember.value = n;
+                } 
+            };
+            const removeMember = (i) => { 
+                if(members.value[i]==='我')return; 
+                if(confirm("刪除成員?")){ 
+                    const nameToRemove = members.value[i];
+                    members.value.splice(i,1); 
+                    delete packingData.value[nameToRemove];
+                    if (currentChecklistMember.value === nameToRemove) currentChecklistMember.value = '我';
+                } 
+            };
             const toggleAllInvolved = () => { if(expenseForm.value.involved.length===members.value.length) expenseForm.value.involved=[]; else expenseForm.value.involved=[...members.value]; };
             
             const initSortable = () => { const el=document.getElementById('itinerary-list'); if(el){ sortableInstance=new Sortable(el,{ animation:150, handle:'.itinerary-item', disabled:!isDraggable.value, onEnd:(evt)=>{ const item=schedule.value[currentDayIndex.value].events.splice(evt.oldIndex,1)[0]; schedule.value[currentDayIndex.value].events.splice(evt.newIndex,0,item); } }); } };
-            watch(currentDayIndex, () => { setTimeout(initSortable, 100); fetchWeather(); });
-            const fetchWeather = async () => { weather.value = { temp: -2, feelsLike: -5, code: 71, desc: '降雪' }; };
             
             const getDayName = (d) => new Date(d).toLocaleDateString('en-US', { weekday: 'short' });
             const getDayNum = (d) => new Date(d).getDate();
             const getCategoryIcon = (c) => ({ flight:'fa-plane', hotel:'fa-bed', spot:'fa-camera', food:'fa-utensils', shop:'fa-bag-shopping', transport:'fa-train', ticket:'fa-ticket', other:'fa-star' }[c] || 'fa-circle');
             const getCategoryColor = (c) => ({ flight:'bg-blue-400', hotel:'bg-indigo-400', spot:'bg-pink-400', food:'bg-orange-400', shop:'bg-yellow-400', transport:'bg-green-400' }[c] || 'bg-gray-400');
             const getTransportIcon = (t) => { const map={walk:'fa-person-walking', subway:'fa-train-subway', train:'fa-train', hsr:'fa-train', tram:'fa-train-tram', taxi:'fa-taxi', bus:'fa-bus'}; return `fas ${map[t]||'fa-person-walking'}`; };
-            const getWeatherIcon = () => 'fas fa-snowflake';
+            const getWeatherIcon = (code) => { if(code<=3)return 'fas fa-sun'; if(code<=60)return 'fas fa-cloud-rain'; if(code<=80)return 'fas fa-snowflake'; return 'fas fa-cloud'; };
             const getMapLink = (n) => `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(n)}`;
             const totalExpenses = computed(() => expenses.value.reduce((sum, item) => sum + Number(item.amount), 0));
             const modalTitle = computed(() => ({ schedule: isEditing.value?'編輯行程':'新增行程', shopping:'新增購物清單', expense:'新增花費' }[modalType.value] || ''));
@@ -580,7 +630,7 @@
                 totalExpenses, bannerRef, showSettlement, settlementPlan, toggleSettlement, addMember, removeMember, renameMember, toggleAllInvolved, packingProgress,
                 openAddModal, editEvent, saveData, confirmDelete, deleteShoppingItem, handleImageUpload,
                 getDayName, getDayNum, getCategoryIcon, getCategoryColor, getTransportIcon, getWeatherIcon, getMapLink,
-                isDraggable, toggleDraggable, handleAddClick, calculateTWD, calculateJPY,
+                isDraggable, toggleDraggable, handleAddClick, calculateTWD, calculateJPY, 
                 currentChecklistMember, currentChecklistData
             };
         }
