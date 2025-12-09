@@ -43,11 +43,11 @@
             <canvas id="snow-canvas"></canvas>
 
             <div class="absolute bottom-[8px] left-[15px] right-[15px] flex justify-between items-end z-20 pointer-events-none">
-                <div class="flex gap-[8px] pointer-events-auto">
+                <div class="flex gap-2 pointer-events-auto">
                     <button @click="toggleDraggable" class="glass-btn" :class="{ 'edit-active': isDraggable }"><i class="fas fa-pencil-alt"></i></button>
                     <button v-if="['schedule', 'shopping', 'expenses'].includes(currentTab)" @click="handleAddClick" class="glass-btn"><i class="fas fa-plus"></i></button>
                 </div>
-                <div class="flex gap-[8px] pointer-events-auto">
+                <div class="flex gap-2 pointer-events-auto">
                     <button @click="currentTab = 'checklist'" :class="['glass-btn', currentTab === 'checklist' ? 'active' : '']"><i class="fas fa-clipboard-check"></i></button>
                     <button @click="currentTab = 'schedule'" :class="['glass-btn', currentTab === 'schedule' ? 'active' : '']"><i class="fas fa-map-location-dot"></i></button>
                     <button @click="currentTab = 'info'" :class="['glass-btn', currentTab === 'info' ? 'active' : '']"><i class="fas fa-circle-info"></i></button>
@@ -76,9 +76,9 @@
                     <div v-if="currentChecklistData" v-for="(category, cIdx) in currentChecklistData" :key="cIdx" class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
                         <div class="bg-gray-50 px-4 py-2 border-b border-gray-100 flex justify-between items-center"><span class="font-bold text-gray-700 text-sm">{{ category.name }}</span><span class="text-[10px] text-gray-400">{{ category.items.filter(i => i.checked).length }}/{{ category.items.length }}</span></div>
                         <div class="p-2">
-                            <div v-for="(item, iIdx) in category.items" :key="iIdx" class="flex items-center justify-between p-2 rounded hover:bg-gray-50 transition cursor-pointer" @click="item.checked = !item.checked">
+                            <div v-for="(item, iIdx) in category.items" :key="iIdx" class="flex items-center justify-between p-2 rounded hover:bg-gray-50 transition cursor-pointer" @click="toggleCheckItem(item)">
                                 <div class="flex items-center gap-3"><div class="w-5 h-5 rounded border flex items-center justify-center transition-colors" :class="item.checked ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 text-transparent'"><i class="fas fa-check text-xs"></i></div><span class="text-sm text-gray-700" :class="{ 'line-through text-gray-400': item.checked }">{{ item.name }}</span></div>
-                                <div class="flex gap-1"><span v-if="item.important" class="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded font-bold"><i class="fas fa-star mr-0.5"></i>重要</span><span v-if="item.tag" class="text-[10px] px-1.5 py-0.5 rounded font-bold" :class="item.tag === '隨身' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'">{{ item.tag }}</span></div>
+                                <div class="flex gap-1"><span v-if="item.important" class="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded font-bold"><i class="fas fa-star mr-0.5"></i>重要必帶</span><span v-if="item.tag" class="text-[10px] px-1.5 py-0.5 rounded font-bold" :class="item.tag === '隨身' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'">{{ item.tag }}</span></div>
                             </div>
                         </div>
                     </div>
@@ -91,27 +91,10 @@
                         <span class="text-xs uppercase font-bold">{{ getDayName(day.date) }}</span><span class="text-lg font-bold">{{ getDayNum(day.date) }}</span>
                     </button>
                 </div>
-                
-                <div v-if="weather" class="mb-6 bg-blue-50/80 rounded-xl p-3 flex items-center justify-between border border-blue-100 shadow-sm transition-all duration-500">
-                    <div class="flex items-center gap-3">
-                        <div class="text-3xl" :class="weather.iconClass">
-                            <i :class="weather.icon"></i>
-                        </div>
-                        <div>
-                            <div class="text-sm font-bold text-gray-700">{{ schedule[currentDayIndex].location.split('/')[0] }}</div>
-                            <div class="text-xs text-gray-500">{{ weather.desc }}</div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-2xl font-bold text-gray-800">{{ weather.temp }}°</div>
-                        <div class="text-[10px] text-gray-500">體感 {{ weather.feelsLike }}°</div>
-                        <div v-if="weather.uv !== undefined" class="text-[10px] font-bold mt-0.5" 
-                             :class="getUVColor(weather.uv)">
-                            <i class="fas fa-sun mr-0.5"></i>UV: {{ weather.uv }}
-                        </div>
-                    </div>
+                <div v-if="weather" class="mb-6 bg-blue-50/80 rounded-xl p-3 flex items-center justify-between border border-blue-100 shadow-sm">
+                    <div class="flex items-center gap-3"><div class="text-3xl" :class="weather.iconClass"><i :class="weather.icon"></i></div><div><div class="text-sm font-bold text-gray-700">{{ schedule[currentDayIndex].location.split('/')[0] }}</div><div class="text-xs text-gray-500">{{ weather.desc }}</div></div></div>
+                    <div class="text-right"><div class="text-2xl font-bold text-gray-800">{{ weather.temp }}°</div><div class="text-xs text-gray-400">體感 {{ weather.feelsLike }}°</div><div v-if="weather.uv !== undefined" class="text-[10px] font-bold mt-0.5" :class="getUVColor(weather.uv)"><i class="fas fa-sun mr-0.5"></i>UV: {{ weather.uv }}</div></div>
                 </div>
-
                 <div id="itinerary-list" class="space-y-0 relative pb-20">
                     <div v-for="(item, idx) in schedule[currentDayIndex].events" :key="item.id" class="relative group itinerary-item pb-6" :data-id="item.id">
                         <div v-if="idx < schedule[currentDayIndex].events.length - 1" class="absolute left-[19px] top-10 bottom-0 w-[2px] bg-gray-200 z-0 flex flex-col items-center justify-center"><div class="bg-gray-100 text-[10px] text-gray-500 px-1 py-0.5 rounded border border-gray-200 mt-4 whitespace-nowrap z-10 flex items-center gap-1"><i :class="getTransportIcon(item.transportType)"></i> {{ item.transportTime }}</div></div>
@@ -149,18 +132,8 @@
                     <div class="p-4 border-b border-gray-100 relative group"><div class="flex justify-between mb-2"><span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded font-bold">航班 3</span><span class="text-xs text-gray-500">01/02</span></div><div class="flex justify-between items-center text-center"><div><div class="text-2xl font-black text-gray-800">HKD</div><div class="text-xs text-gray-500">11:45</div><div class="text-[10px] text-gray-400 mt-1">函館</div></div><div class="flex-1 px-2 flex flex-col items-center"><div class="text-[10px] text-green-500 font-bold mb-1">1h 30m</div><div class="w-full h-[1px] bg-gray-300 relative"><i class="fas fa-plane absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 text-gray-400 text-xs rotate-180"></i></div><div class="text-[10px] text-gray-400 mt-1">NH554</div></div><div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">13:15</div><div class="text-[10px] text-gray-400 mt-1">羽田 T2</div></div></div></div>
                     <div class="p-4 relative group"><div class="flex justify-between mb-2"><span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded font-bold">航班 4</span><span class="text-xs text-gray-500">01/04</span></div><div class="flex justify-between items-center text-center"><div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">12:40</div><div class="text-[10px] text-gray-400 mt-1">羽田 T2</div></div><div class="flex-1 px-2 flex flex-col items-center"><div class="text-[10px] text-green-500 font-bold mb-1">4h 10m</div><div class="w-full h-[1px] bg-gray-300 relative"><i class="fas fa-plane absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 text-gray-400 text-xs rotate-180"></i></div><div class="text-[10px] text-gray-400 mt-1">NH853</div></div><div><div class="text-2xl font-black text-gray-800">TSA</div><div class="text-xs text-gray-500">15:50</div><div class="text-[10px] text-gray-400 mt-1">松山 T1</div></div></div></div>
                 </div>
-
-                <h3 class="font-bold text-gray-800 mt-2 mb-1"><i class="fas fa-bed text-indigo-500 mr-2"></i>住宿資訊</h3>
-                <div class="grid grid-cols-1 gap-3">
-                    <div v-for="(hotel, idx) in hotels" :key="idx" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col">
-                        <div class="flex items-start justify-between"><div><h4 class="font-bold text-gray-800 text-lg">{{ hotel.name }}</h4><span class="inline-block bg-indigo-50 text-indigo-600 text-[10px] px-2 py-0.5 rounded mt-1 font-bold">{{ hotel.dates }}</span></div><div class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center shrink-0"><i class="fas fa-hotel"></i></div></div>
-                        <div class="mt-3 space-y-1 text-sm text-gray-500"><p><i class="fas fa-map-marker-alt w-4 text-center mr-1"></i>{{ hotel.address }}</p><p><i class="fas fa-phone w-4 text-center mr-1"></i>{{ hotel.phone }}</p></div>
-                        <a :href="hotel.mapLink" target="_blank" class="mt-3 bg-indigo-50 text-indigo-600 py-2 rounded-lg text-xs font-bold text-center hover:bg-indigo-100 transition"><i class="fas fa-location-arrow mr-1"></i> 開啟導航</a>
-                    </div>
-                </div>
-                
-                <h3 class="font-bold text-gray-800 mt-2 mb-1"><i class="fas fa-kit-medical text-red-500 mr-2"></i>緊急聯絡</h3>
-                <div class="grid grid-cols-2 gap-3"><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3"><div class="w-10 h-10 bg-red-100 text-red-500 rounded-full flex items-center justify-center font-bold text-lg">119</div><div><div class="font-bold text-gray-800">救護車/火警</div><div class="text-xs text-gray-400">日本全境</div></div></div><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3"><div class="w-10 h-10 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center font-bold text-lg">110</div><div><div class="font-bold text-gray-800">警察局</div><div class="text-xs text-gray-400">日本全境</div></div></div><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 col-span-2"><div class="font-bold text-gray-800 text-sm mb-1">台北駐日代表處 (東京)</div><div class="text-xs text-gray-500">緊急電話: +81-3-3280-7917</div><div class="text-xs text-gray-500">地址: 東京都港區白金台5-20-2</div></div></div>
+                <div class="grid grid-cols-1 gap-3"><div v-for="(hotel, idx) in hotels" :key="idx" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col"><div class="flex items-start justify-between"><div><h4 class="font-bold text-gray-800 text-lg">{{ hotel.name }}</h4><span class="inline-block bg-indigo-50 text-indigo-600 text-[10px] px-2 py-0.5 rounded mt-1 font-bold">{{ hotel.dates }}</span></div><div class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center shrink-0"><i class="fas fa-hotel"></i></div></div><div class="mt-3 space-y-1 text-sm text-gray-500"><p><i class="fas fa-map-marker-alt w-4 text-center mr-1"></i>{{ hotel.address }}</p><p><i class="fas fa-phone w-4 text-center mr-1"></i>{{ hotel.phone }}</p></div><a :href="hotel.mapLink" target="_blank" class="mt-3 bg-indigo-50 text-indigo-600 py-2 rounded-lg text-xs font-bold text-center hover:bg-indigo-100 transition"><i class="fas fa-location-arrow mr-1"></i> 開啟導航</a></div></div>
+                <div class="grid grid-cols-2 gap-3 mt-6"><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3"><div class="w-10 h-10 bg-red-100 text-red-500 rounded-full flex items-center justify-center font-bold text-lg">119</div><div><div class="font-bold text-gray-800">救護車/火警</div><div class="text-xs text-gray-400">日本全境</div></div></div><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3"><div class="w-10 h-10 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center font-bold text-lg">110</div><div><div class="font-bold text-gray-800">警察局</div><div class="text-xs text-gray-400">日本全境</div></div></div><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 col-span-2"><div class="font-bold text-gray-800 text-sm mb-1">台北駐日代表處 (東京)</div><div class="text-xs text-gray-500">緊急電話: +81-3-3280-7917</div><div class="text-xs text-gray-500">地址: 東京都港區白金台5-20-2</div></div></div>
             </div>
 
             <div v-show="currentTab === 'shopping'" class="pb-20">
@@ -189,13 +162,7 @@
                         <p class="text-[10px] text-gray-400 text-center mt-2">*計算匯率: {{settings.rate}}</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2 mb-4 overflow-x-auto hide-scrollbar pb-1">
-                    <div v-for="(member, idx) in members" :key="idx" class="flex-shrink-0 bg-white border border-gray-200 px-3 py-1.5 rounded-full text-xs font-bold text-gray-600 shadow-sm flex items-center gap-2">
-                        <span @click="renameMember(idx)" class="cursor-pointer hover:text-blue-500">{{ member }} <i class="fas fa-pen ml-1 text-[8px] opacity-50"></i></span>
-                        <button v-if="idx !== 0" @click="removeMember(idx)" class="text-gray-400 hover:text-red-500 rounded-full w-4 h-4 flex items-center justify-center bg-gray-50"><i class="fas fa-times text-[10px]"></i></button>
-                    </div>
-                    <button @click="addMember" class="flex-shrink-0 bg-gray-100 text-gray-400 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-gray-200">+ 人員</button>
-                </div>
+                <div class="flex items-center gap-2 mb-4 overflow-x-auto hide-scrollbar pb-1"><div v-for="(member, idx) in members" :key="idx" class="flex-shrink-0 bg-white border border-gray-200 px-3 py-1.5 rounded-full text-xs font-bold text-gray-600 shadow-sm flex items-center gap-2"><span @click="renameMember(idx)" class="cursor-pointer hover:text-blue-500">{{ member }} <i class="fas fa-pen ml-1 text-[8px] opacity-50"></i></span><button v-if="idx !== 0" @click="removeMember(idx)" class="text-gray-400 hover:text-red-500 rounded-full w-4 h-4 flex items-center justify-center bg-gray-50"><i class="fas fa-times text-[10px]"></i></button></div><button @click="addMember" class="flex-shrink-0 bg-gray-100 text-gray-400 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-gray-200">+ 人員</button></div>
                 <div class="space-y-3">
                     <div v-for="(expense, idx) in expenses" :key="idx" class="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
                         <div class="flex justify-between items-start">
@@ -206,9 +173,7 @@
                 </div>
             </div>
 
-            <div class="text-center pb-8 mt-12 opacity-50 hover:opacity-100 transition">
-                 <button @click="resetAllData" class="text-[10px] text-red-300 border border-red-100 px-3 py-1 rounded-full hover:bg-red-50 hover:text-red-500 transition">⚠️ 如果畫面異常請點我重置</button>
-            </div>
+            <div class="text-center pb-8 mt-12 opacity-50 hover:opacity-100 transition"><button @click="resetAllData" class="text-[10px] text-red-300 border border-red-100 px-3 py-1 rounded-full hover:bg-red-50 hover:text-red-500 transition">⚠️ 如果畫面異常請點我重置</button></div>
 
         </div>
 
@@ -258,7 +223,7 @@
             const modalType = ref('');
             const isEditing = ref(false);
             const isDraggable = ref(false); 
-            const converter = ref({ jpy: 1000, twd: 225 }); // 預設匯率
+            const converter = ref({ jpy: 1000, twd: 225 }); 
             const weather = ref(null);
             const bannerRef = ref(null);
             
@@ -267,7 +232,7 @@
             const showSettlement = ref(false);
             const currentChecklistMember = ref('我');
 
-            // 住宿與行程資料 (更新為 ANA + 正確飯店)
+            // 住宿與行程資料
             const hotels = ref([
                 { name: 'Hotel Sunroute Asakusa', dates: '12/24 - 12/27', address: '東京都台東區雷門1-8-5', phone: '+81-3-3847-1511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Sunroute+Asakusa' },
                 { name: 'Hotel Nets Sapporo', dates: '12/27 - 12/31', address: '北海道札幌市中央區南7条西4丁目1-1', phone: '+81-11-530-5511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Nets+Sapporo' },
@@ -325,7 +290,7 @@
             const updateFlakes = () => { for (let i = 0; i < flakes.length; i++) { const f = flakes[i]; f.y += Math.pow(f.d, 2) * 0.5 + 0.3; f.x += Math.sin(f.y * 0.05) * 0.3; const floorIndex = Math.floor(f.x); if (floorIndex >= 0 && floorIndex < canvas.width) { const pileHeight = snowPileHeight[floorIndex]; if (f.y + f.r >= canvas.height - pileHeight) { if (pileHeight < 25) { for(let k = -2; k <= 2; k++) { if (floorIndex + k >= 0 && floorIndex + k < canvas.width) { snowPileHeight[floorIndex + k] += 0.4 * (3 - Math.abs(k)); } } } resetFlake(f); } } else if (f.y > canvas.height) { resetFlake(f); } } };
             const resetFlake = (f) => { f.y = -10; f.x = Math.random() * canvas.width; };
 
-            // --- 天氣 API (Open-Meteo) ---
+            // --- 天氣 API ---
             const cityMap = { 'Tokyo': { lat: 35.6895, lon: 139.6917 }, 'Sapporo': { lat: 43.0618, lon: 141.3545 }, 'Hakodate': { lat: 41.7687, lon: 140.7288 } };
             const getWeatherDesc = (code) => {
                 if (code === 0) return '晴天';
@@ -415,6 +380,7 @@
                         if (parsed.packingData) {
                             packingData.value = parsed.packingData;
                         } else if (parsed.packingList && Array.isArray(parsed.packingList)) {
+                            // 舊資料遷移
                             packingData.value['我'] = parsed.packingList;
                         }
                         
@@ -435,7 +401,8 @@
 
             onUnmounted(() => { cancelAnimationFrame(animationId); });
 
-            watch([schedule, shoppingList, expenses, members, settings, packingData], () => {
+            // 確保資料即時保存
+            const persistData = () => {
                 localStorage.setItem('tripData', JSON.stringify({
                     schedule: schedule.value, 
                     shoppingList: shoppingList.value, 
@@ -444,6 +411,10 @@
                     settings: settings.value, 
                     packingData: packingData.value
                 }));
+            };
+
+            watch([schedule, shoppingList, expenses, members, settings, packingData], () => {
+                persistData();
             }, { deep: true });
 
             watch(isDraggable, (val) => { if (sortableInstance) { sortableInstance.option("disabled", !val); } });
@@ -469,12 +440,51 @@
             });
 
             const toggleSettlement = () => showSettlement.value = !showSettlement.value;
-            const addMember = () => { const n = prompt("輸入新成員名字:"); if(n && !members.value.includes(n)) { members.value.push(n); packingData.value[n] = getNewPackingList(); } };
-            const renameMember = (i) => { const old=members.value[i], n=prompt("修改名字:",old); if(n&&n!==old&&!members.value.includes(n)){ members.value[i]=n; if(packingData.value[old]) { packingData.value[n] = packingData.value[old]; delete packingData.value[old]; } else { packingData.value[n] = getNewPackingList(); } expenses.value.forEach(e=>{ if(e.payer===old)e.payer=n; if(e.involved.includes(old))e.involved[e.involved.indexOf(old)]=n; }); if (currentChecklistMember.value === old) currentChecklistMember.value = n; } };
-            const removeMember = (i) => { if(members.value[i]==='我')return; if(confirm("刪除成員?")){ const nameToRemove = members.value[i]; members.value.splice(i,1); delete packingData.value[nameToRemove]; if (currentChecklistMember.value === nameToRemove) currentChecklistMember.value = '我'; } };
+            const addMember = () => { 
+                const n = prompt("輸入新成員名字:"); 
+                if(n && !members.value.includes(n)) { 
+                    members.value.push(n); 
+                    packingData.value[n] = getNewPackingList(); 
+                    persistData();
+                } 
+            };
+            const renameMember = (i) => { 
+                const old=members.value[i], n=prompt("修改名字:",old); 
+                if(n&&n!==old&&!members.value.includes(n)){ 
+                    members.value[i]=n; 
+                    if(packingData.value[old]) { packingData.value[n] = packingData.value[old]; delete packingData.value[old]; } else { packingData.value[n] = getNewPackingList(); } 
+                    expenses.value.forEach(e=>{ if(e.payer===old)e.payer=n; if(e.involved.includes(old))e.involved[e.involved.indexOf(old)]=n; }); 
+                    if (currentChecklistMember.value === old) currentChecklistMember.value = n;
+                    persistData();
+                } 
+            };
+            const removeMember = (i) => { 
+                if(members.value[i]==='我')return; 
+                if(confirm("刪除成員?")){ 
+                    const nameToRemove = members.value[i]; 
+                    members.value.splice(i,1); 
+                    delete packingData.value[nameToRemove]; 
+                    if (currentChecklistMember.value === nameToRemove) currentChecklistMember.value = '我'; 
+                    persistData();
+                } 
+            };
             const toggleAllInvolved = () => { if(expenseForm.value.involved.length===members.value.length) expenseForm.value.involved=[]; else expenseForm.value.involved=[...members.value]; };
             
-            const initSortable = () => { const el=document.getElementById('itinerary-list'); if(el){ sortableInstance=new Sortable(el,{ animation:150, handle:'.itinerary-item', disabled:!isDraggable.value, onEnd:(evt)=>{ const item=schedule.value[currentDayIndex.value].events.splice(evt.oldIndex,1)[0]; schedule.value[currentDayIndex.value].events.splice(evt.newIndex,0,item); } }); } };
+            const initSortable = () => { 
+                const el=document.getElementById('itinerary-list'); 
+                if(el){ 
+                    sortableInstance=new Sortable(el,{ 
+                        animation:150, 
+                        handle:'.itinerary-item', 
+                        disabled:!isDraggable.value, 
+                        onEnd:(evt)=>{ 
+                            const item=schedule.value[currentDayIndex.value].events.splice(evt.oldIndex,1)[0]; 
+                            schedule.value[currentDayIndex.value].events.splice(evt.newIndex,0,item); 
+                            persistData();
+                        } 
+                    }); 
+                } 
+            };
             
             const getDayName = (d) => new Date(d).toLocaleDateString('en-US', { weekday: 'short' });
             const getDayNum = (d) => new Date(d).getDate();
@@ -490,9 +500,35 @@
             const openAddModal = (t) => { modalType.value=t; isEditing.value=false; editForm.value={category:'spot',transportType:'train',transportTime:'20分'}; shoppingForm.value={}; expenseForm.value={category:'food',payment:'現金',date:schedule.value[currentDayIndex.value].date,payer:'我',involved:[...members.value]}; showModal.value=true; };
             const editEvent = (i) => { if(isDraggable.value)return; if(i.category==='flight')return; modalType.value='schedule'; isEditing.value=true; editForm.value=JSON.parse(JSON.stringify(i)); showModal.value=true; };
             const handleImageUpload = (e) => { const f=e.target.files[0]; if(f){ const r=new FileReader(); r.onload=(e)=>shoppingForm.value.image=e.target.result; r.readAsDataURL(f); } };
-            const saveData = () => { if(modalType.value==='schedule'){ if(isEditing.value){ const idx=schedule.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); if(idx!==-1)schedule.value[currentDayIndex.value].events[idx]=editForm.value; } else { editForm.value.id=Date.now(); schedule.value[currentDayIndex.value].events.push(editForm.value); } } else if(modalType.value==='shopping') shoppingList.value.push(shoppingForm.value); else if(modalType.value==='expense') expenses.value.push(expenseForm.value); showModal.value=false; };
-            const confirmDelete = () => { if(confirm("刪除?")){ const idx=schedule.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); if(idx!==-1)schedule.value[currentDayIndex.value].events.splice(idx,1); showModal.value=false; } };
-            const deleteShoppingItem = (i) => { if(confirm("刪除?")) shoppingList.value.splice(i,1); };
+            
+            const saveData = () => { 
+                if(modalType.value==='schedule'){ 
+                    if(isEditing.value){ const idx=schedule.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); if(idx!==-1)schedule.value[currentDayIndex.value].events[idx]=editForm.value; } 
+                    else { editForm.value.id=Date.now(); schedule.value[currentDayIndex.value].events.push(editForm.value); } 
+                } else if(modalType.value==='shopping') {
+                    shoppingList.value.push(shoppingForm.value); 
+                } else if(modalType.value==='expense') {
+                    expenses.value.push(expenseForm.value); 
+                }
+                persistData();
+                showModal.value=false; 
+            };
+            
+            const confirmDelete = () => { 
+                if(confirm("刪除?")){ 
+                    const idx=schedule.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); 
+                    if(idx!==-1)schedule.value[currentDayIndex.value].events.splice(idx,1); 
+                    persistData();
+                    showModal.value=false; 
+                } 
+            };
+            
+            const deleteShoppingItem = (i) => { 
+                if(confirm("刪除?")) {
+                    shoppingList.value.splice(i,1); 
+                    persistData();
+                }
+            };
 
             return {
                 currentTab, currentDayIndex, schedule, showModal, modalType, isEditing, modalTitle,
@@ -500,7 +536,7 @@
                 totalExpenses, bannerRef, showSettlement, settlementPlan, toggleSettlement, addMember, removeMember, renameMember, toggleAllInvolved, packingProgress,
                 openAddModal, editEvent, saveData, confirmDelete, deleteShoppingItem, handleImageUpload,
                 getDayName, getDayNum, getCategoryIcon, getCategoryColor, getTransportIcon, getWeatherIcon, getMapLink, getUVColor,
-                isDraggable, toggleDraggable, handleAddClick, calculateTWD, calculateJPY, resetAllData,
+                isDraggable, toggleDraggable, handleAddClick, calculateTWD, calculateJPY, resetAllData, toggleCheckItem: (item) => { item.checked = !item.checked; persistData(); },
                 currentChecklistMember, currentChecklistData
             };
         }
