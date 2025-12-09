@@ -1,45 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Japan Winter Trip 2025-26</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Zen Maru Gothic', sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background-color: #f8fafc;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            padding-bottom: 80px;
+            overflow-x: hidden;
+        }
+
+        /* 內容區域 */
+        .content-area {
+            position: relative;
+            z-index: 10;
+            background-color: #f8fafc;
+            padding-top: 0.5rem; 
+            min-height: 500px;
+        }
+
+        /* --- 統一按鈕樣式 --- */
+        .glass-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            cursor: pointer;
+        }
+        .glass-btn:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.4);
+        }
+        /* 激活狀態 */
+        .glass-btn.active {
+            background: #ffffff;
+            color: #3B82F6; /* 導航選中藍色 */
+            border-color: #ffffff;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            opacity: 1;
+        }
+        /* 編輯模式激活狀態 */
+        .glass-btn.edit-active {
+            background: #ffffff;
+            color: #F59E0B; /* 編輯模式橘色 */
+            border-color: #ffffff;
+            transform: scale(1.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            opacity: 1;
+        }
+
+        /* Canvas for Snow Effect */
+        #snow-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* 其他樣式 */
+        .timeline-line {
+            position: absolute;
+            left: 19px;
+            top: 45px;
+            bottom: -20px;
+            width: 2px;
+            background-color: #e2e8f0;
+            z-index: 0;
+        }
+        .boarding-pass {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            border: 1px solid #cbd5e1;
+            position: relative;
+            overflow: hidden;
+        }
+        .boarding-pass::before, .boarding-pass::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 20px;
+            height: 20px;
+            background-color: #f8fafc;
+            border-radius: 50%;
+            border: 1px solid #cbd5e1;
+            transform: translateY(-50%);
+        }
+        .boarding-pass::before { left: -11px; border-right-color: transparent; border-top-color: transparent; border-bottom-color: transparent; transform: translateY(-50%) rotate(45deg); }
+        .boarding-pass::after { right: -11px; border-left-color: transparent; border-top-color: transparent; border-bottom-color: transparent; transform: translateY(-50%) rotate(-45deg); }
+        
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(0.5deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-0.5deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .draggable-shake {
+            animation: shake 0.3s infinite ease-in-out;
+            cursor: move;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak>
+    <div class="app-container">
+        
+        <div class="relative h-[230px] w-full overflow-hidden" ref="bannerRef">
+            <img src="banner.jpg" alt="Banner" class="w-full h-full object-cover object-center">
+            
+            <canvas id="snow-canvas"></canvas>
+
+            <div class="absolute bottom-[8px] left-[15px] right-[15px] flex justify-between items-end z-20 pointer-events-none">
+                
+                <div class="flex gap-[8px] pointer-events-auto">
+                    <button @click="toggleDraggable" class="glass-btn" :class="{ 'edit-active': isDraggable }">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button 
+                        v-if="['schedule', 'shopping', 'expenses'].includes(currentTab)" 
+                        @click="handleAddClick" 
+                        class="glass-btn"
+                    >
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <div class="flex gap-[8px] pointer-events-auto">
+                    <button @click="currentTab = 'checklist'" :class="['glass-btn', currentTab === 'checklist' ? 'active' : '']">
+                        <i class="fas fa-clipboard-check"></i>
+                    </button>
+                    <button @click="currentTab = 'schedule'" :class="['glass-btn', currentTab === 'schedule' ? 'active' : '']">
+                        <i class="fas fa-map-location-dot"></i>
+                    </button>
+                    <button @click="currentTab = 'info'" :class="['glass-btn', currentTab === 'info' ? 'active' : '']">
+                        <i class="fas fa-circle-info"></i>
+                    </button>
+                    <button @click="currentTab = 'shopping'" :class="['glass-btn', currentTab === 'shopping' ? 'active' : '']">
+                        <i class="fas fa-basket-shopping"></i>
+                    </button>
+                    <button @click="currentTab = 'expenses'" :class="['glass-btn', currentTab === 'expenses' ? 'active' : '']">
+                        <i class="fas fa-yen-sign"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="content-area px-5">
+
+            <div v-show="currentTab === 'checklist'" class="pb-20">
+                <div class="flex items-center gap-2 mb-4 overflow-x-auto hide-scrollbar pb-1">
+                    <div v-for="member in members" :key="member" 
+                         @click="currentChecklistMember = member"
+                         class="flex-shrink-0 border px-4 py-1.5 rounded-full text-xs font-bold shadow-sm cursor-pointer transition-colors"
+                         :class="currentChecklistMember === member ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'">
+                        {{ member }}
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4 sticky top-0 z-10">
+                    <div class="flex justify-between items-end mb-2">
+                        <h3 class="font-bold text-gray-800 text-lg">行李清單</h3>
+                        <span class="text-xs font-bold" :class="packingProgress > 60 ? 'text-green-500' : 'text-blue-500'">
+                            {{ packingProgress > 60 ? 'Ready to Go! 100%' : '準備進度 ' + packingProgress + '%' }}
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                        <div class="h-2.5 rounded-full transition-all duration-500" 
+                             :class="packingProgress > 60 ? 'bg-gradient-to-r from-green-400 to-emerald-500' : 'bg-gradient-to-r from-blue-400 to-indigo-500'"
+                             :style="{ width: (packingProgress > 60 ? 100 : packingProgress) + '%' }">
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div v-for="(category, cIdx) in currentChecklistData" :key="cIdx" class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                        <div class="bg-gray-50 px-4 py-2 border-b border-gray-100 flex justify-between items-center">
+                            <span class="font-bold text-gray-700 text-sm">{{ category.name }}</span>
+                            <span class="text-[10px] text-gray-400">{{ category.items.filter(i => i.checked).length }}/{{ category.items.length }}</span>
+                        </div>
+                        <div class="p-2">
+                            <div v-for="(item, iIdx) in category.items" :key="iIdx" class="flex items-center justify-between p-2 rounded hover:bg-gray-50 transition cursor-pointer" @click="item.checked = !item.checked">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-5 h-5 rounded border flex items-center justify-center transition-colors" :class="item.checked ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 text-transparent'"><i class="fas fa-check text-xs"></i></div>
+                                    <span class="text-sm text-gray-700" :class="{ 'line-through text-gray-400': item.checked }">{{ item.name }}</span>
+                                </div>
+                                <div class="flex gap-1">
+                                    <span v-if="item.important" class="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded font-bold"><i class="fas fa-star mr-0.5"></i>重要必帶</span>
+                                    <span v-if="item.tag" class="text-[10px] px-1.5 py-0.5 rounded font-bold" :class="item.tag === '隨身' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'">{{ item.tag }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-show="currentTab === 'schedule'">
+                <div class="flex space-x-3 overflow-x-auto hide-scrollbar mb-4 pb-2">
+                    <button v-for="(day, index) in schedule" :key="index" @click="currentDayIndex = index" class="flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl transition-all border" :class="currentDayIndex === index ? 'bg-blue-600 text-white shadow-lg scale-105 border-blue-600' : 'bg-white text-gray-400 border-gray-100'">
+                        <span class="text-xs uppercase font-bold">{{ getDayName(day.date) }}</span><span class="text-lg font-bold">{{ getDayNum(day.date) }}</span>
+                    </button>
+                </div>
+                <div v-if="weather" class="mb-6 bg-blue-50/80 rounded-xl p-3 flex items-center justify-between border border-blue-100 shadow-sm">
+                    <div class="flex items-center gap-3"><i :class="getWeatherIcon(weather.code)" class="text-3xl text-blue-500"></i><div><div class="text-sm font-bold text-gray-700">{{ schedule[currentDayIndex].location }}</div><div class="text-xs text-gray-500">{{ weather.desc }}</div></div></div>
+                    <div class="text-right"><div class="text-2xl font-bold text-gray-800">{{ weather.temp }}°</div><div class="text-xs text-gray-400">體感 {{ weather.feelsLike }}°</div></div>
+                </div>
+                <div id="itinerary-list" class="space-y-0 relative pb-20">
+                    <div v-for="(item, idx) in schedule[currentDayIndex].events" :key="item.id" class="relative group itinerary-item pb-6" :data-id="item.id">
+                        <div v-if="idx < schedule[currentDayIndex].events.length - 1" class="absolute left-[19px] top-10 bottom-0 w-[2px] bg-gray-200 z-0 flex flex-col items-center justify-center"><div class="bg-gray-100 text-[10px] text-gray-500 px-1 py-0.5 rounded border border-gray-200 mt-4 whitespace-nowrap z-10 flex items-center gap-1"><i :class="getTransportIcon(item.transportType)"></i> {{ item.transportTime }}</div></div>
+                        <div v-if="item.category === 'flight' && idx === 0" class="pl-0 mb-4">
+                            <div class="boarding-pass rounded-2xl p-4 shadow-sm relative">
+                                <div class="flex justify-between items-center mb-3 border-b border-dashed border-gray-300 pb-2"><div class="text-blue-800 font-bold tracking-widest"><i class="fas fa-plane-departure mr-1"></i> ANA</div><div class="text-gray-400 text-xs">{{ item.date }}</div></div>
+                                <div class="flex justify-between items-center"><div class="text-center"><div class="text-3xl font-bold text-gray-800">{{ item.depCode }}</div><div class="text-xs text-gray-500">{{ item.startTime }}</div></div><div class="flex-1 flex flex-col items-center px-2"><i class="fas fa-plane text-blue-300 transform rotate-90"></i><div class="text-[10px] text-gray-400 mt-1">{{ item.duration || '飛行中' }}</div></div><div class="text-center"><div class="text-3xl font-bold text-gray-800">{{ item.arrCode }}</div><div class="text-xs text-gray-500">{{ item.endTime }}</div></div></div>
+                                <div class="mt-3 text-center text-sm font-medium text-gray-600 bg-gray-50 py-1 rounded">{{ item.name }}</div>
+                            </div>
+                        </div>
+                        <div v-else class="relative pl-12 cursor-pointer" @click="editEvent(item)" :class="{ 'opacity-90': isDraggable }">
+                            <div v-if="isDraggable" class="absolute right-2 top-2 text-gray-300 z-20"><i class="fas fa-bars"></i></div>
+                            <div class="absolute left-0 top-0 w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md z-10 border-2 border-white" :class="[getCategoryColor(item.category), isDraggable ? 'draggable-shake' : '']"><i :class="getCategoryIcon(item.category)"></i></div>
+                            <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 hover:shadow-md transition active:scale-95">
+                                <div class="flex justify-between items-start"><h3 class="font-bold text-gray-800 text-lg">{{ item.name }}</h3><a v-if="!isDraggable" :href="getMapLink(item.name)" @click.stop target="_blank" class="text-blue-500 bg-blue-50 w-8 h-8 rounded-full flex items-center justify-center"><i class="fas fa-location-arrow"></i></a></div>
+                                <div class="mt-1 flex flex-wrap gap-2 text-xs text-gray-500"><span v-if="item.startTime" class="bg-gray-100 px-2 py-1 rounded"><i class="far fa-clock mr-1"></i>{{ item.startTime }}~{{item.endTime}}</span><span v-if="item.category === 'spot' && item.cost" class="bg-yellow-50 text-yellow-600 px-2 py-1 rounded"><i class="fas fa-ticket-alt mr-1"></i>{{ item.cost }}</span></div>
+                                <p v-if="item.notes" class="mt-2 text-sm text-gray-500 border-l-2 border-gray-200 pl-2 line-clamp-2">{{ item.notes }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-show="currentTab === 'info'" class="space-y-6 pb-20">
+                
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-gray-800 mb-3 flex justify-between items-center">
+                        <span><i class="fas fa-coins text-yellow-500 mr-2"></i>匯率換算</span>
+                        <span class="text-[10px] text-gray-400 font-normal bg-gray-50 px-2 py-1 rounded">
+                            <span v-if="settings.lastUpdate">更新: {{ settings.lastUpdate }}</span>
+                            <span v-else>更新中...</span>
+                        </span>
+                    </h3>
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1">
+                            <label class="text-xs text-gray-400 block mb-1">日幣 (JPY)</label>
+                            <input type="number" v-model="converter.jpy" @input="calculateTWD" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-lg font-bold text-blue-600" placeholder="0">
+                        </div>
+                        <i class="fas fa-exchange-alt text-gray-300 mt-4"></i>
+                        <div class="flex-1">
+                            <label class="text-xs text-gray-400 block mb-1">台幣 (TWD)</label>
+                            <input type="number" v-model="converter.twd" @input="calculateJPY" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-lg font-bold text-green-600" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="text-[10px] text-right mt-2 text-gray-400">當前匯率 (JPY→TWD): {{ settings.rate }}</div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="bg-blue-600 px-4 py-2 text-white text-sm font-bold flex justify-between items-center">
+                        <span><i class="fas fa-plane mr-2"></i>航班資訊 (ANA)</span>
+                    </div>
+                    <div class="p-4 border-b border-gray-100 relative group"><div class="flex justify-between mb-2"><span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold">去程 1</span><span class="text-xs text-gray-500">12/24</span></div><div class="flex justify-between items-center text-center"><div><div class="text-2xl font-black text-gray-800">TSA</div><div class="text-xs text-gray-500">13:30</div><div class="text-[10px] text-gray-400 mt-1">松山 T1</div></div><div class="flex-1 px-2 flex flex-col items-center"><div class="text-[10px] text-blue-500 font-bold mb-1">3h</div><div class="w-full h-[1px] bg-gray-300 relative"><i class="fas fa-plane absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 text-gray-400 text-xs"></i></div><div class="text-[10px] text-gray-400 mt-1">NH852</div></div><div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">17:30</div><div class="text-[10px] text-gray-400 mt-1">羽田 T2</div></div></div></div>
+                    <div class="p-4 border-b border-gray-100 relative group"><div class="flex justify-between mb-2"><span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold">去程 2</span><span class="text-xs text-gray-500">12/27</span></div><div class="flex justify-between items-center text-center"><div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">18:00</div><div class="text-[10px] text-gray-400 mt-1">羽田 T2</div></div><div class="flex-1 px-2 flex flex-col items-center"><div class="text-[10px] text-blue-500 font-bold mb-1">1h 35m</div><div class="w-full h-[1px] bg-gray-300 relative"><i class="fas fa-plane absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 text-gray-400 text-xs"></i></div><div class="text-[10px] text-gray-400 mt-1">NH75</div></div><div><div class="text-2xl font-black text-gray-800">CTS</div><div class="text-xs text-gray-500">19:35</div><div class="text-[10px] text-gray-400 mt-1">新千歲</div></div></div></div>
+                    <div class="p-4 border-b border-gray-100 relative group"><div class="flex justify-between mb-2"><span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded font-bold">回程 1</span><span class="text-xs text-gray-500">01/02</span></div><div class="flex justify-between items-center text-center"><div><div class="text-2xl font-black text-gray-800">HKD</div><div class="text-xs text-gray-500">11:45</div><div class="text-[10px] text-gray-400 mt-1">函館</div></div><div class="flex-1 px-2 flex flex-col items-center"><div class="text-[10px] text-green-500 font-bold mb-1">1h 30m</div><div class="w-full h-[1px] bg-gray-300 relative"><i class="fas fa-plane absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 text-gray-400 text-xs rotate-180"></i></div><div class="text-[10px] text-gray-400 mt-1">NH554</div></div><div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">13:15</div><div class="text-[10px] text-gray-400 mt-1">羽田 T2</div></div></div></div>
+                    <div class="p-4 relative group"><div class="flex justify-between mb-2"><span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded font-bold">回程 2</span><span class="text-xs text-gray-500">01/04</span></div><div class="flex justify-between items-center text-center"><div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">12:40</div><div class="text-[10px] text-gray-400 mt-1">羽田 T2</div></div><div class="flex-1 px-2 flex flex-col items-center"><div class="text-[10px] text-green-500 font-bold mb-1">4h 10m</div><div class="w-full h-[1px] bg-gray-300 relative"><i class="fas fa-plane absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 text-gray-400 text-xs rotate-180"></i></div><div class="text-[10px] text-gray-400 mt-1">NH853</div></div><div><div class="text-2xl font-black text-gray-800">TSA</div><div class="text-xs text-gray-500">15:50</div><div class="text-[10px] text-gray-400 mt-1">松山 T1</div></div></div></div>
+                </div>
+
+                <h3 class="font-bold text-gray-800 mt-2 mb-1"><i class="fas fa-bed text-indigo-500 mr-2"></i>住宿資訊</h3>
+                <div class="grid grid-cols-1 gap-3">
+                    <div v-for="(hotel, idx) in hotels" :key="idx" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+                        <div class="flex items-start justify-between"><div><h4 class="font-bold text-gray-800 text-lg">{{ hotel.name }}</h4><span class="inline-block bg-indigo-50 text-indigo-600 text-[10px] px-2 py-0.5 rounded mt-1 font-bold">{{ hotel.dates }}</span></div><div class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center shrink-0"><i class="fas fa-hotel"></i></div></div>
+                        <div class="mt-3 space-y-1 text-sm text-gray-500"><p><i class="fas fa-map-marker-alt w-4 text-center mr-1"></i>{{ hotel.address }}</p><p><i class="fas fa-phone w-4 text-center mr-1"></i>{{ hotel.phone }}</p></div>
+                        <a :href="hotel.mapLink" target="_blank" class="mt-3 bg-indigo-50 text-indigo-600 py-2 rounded-lg text-xs font-bold text-center hover:bg-indigo-100 transition"><i class="fas fa-location-arrow mr-1"></i> 開啟導航</a>
+                    </div>
+                </div>
+                
+                <h3 class="font-bold text-gray-800 mt-2 mb-1"><i class="fas fa-kit-medical text-red-500 mr-2"></i>緊急聯絡</h3>
+                <div class="grid grid-cols-2 gap-3"><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3"><div class="w-10 h-10 bg-red-100 text-red-500 rounded-full flex items-center justify-center font-bold text-lg">119</div><div><div class="font-bold text-gray-800">救護車/火警</div><div class="text-xs text-gray-400">日本全境</div></div></div><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3"><div class="w-10 h-10 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center font-bold text-lg">110</div><div><div class="font-bold text-gray-800">警察局</div><div class="text-xs text-gray-400">日本全境</div></div></div><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 col-span-2"><div class="font-bold text-gray-800 text-sm mb-1">台北駐日代表處 (東京)</div><div class="text-xs text-gray-500">緊急電話: +81-3-3280-7917</div><div class="text-xs text-gray-500">地址: 東京都港區白金台5-20-2</div></div></div>
+            </div>
+
+            <div v-show="currentTab === 'shopping'" class="pb-20">
+                <h3 class="font-bold text-xl text-gray-800 mb-4">購物清單 <span class="text-sm font-normal text-gray-400">({{ shoppingList.length }})</span></h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div v-for="(item, idx) in shoppingList" :key="idx" class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 relative group">
+                        <button @click="deleteShoppingItem(idx)" class="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10"><i class="fas fa-times"></i></button>
+                        <div class="h-32 bg-gray-100 relative"><img v-if="item.image" :src="item.image" class="w-full h-full object-cover"><div v-else class="absolute inset-0 flex items-center justify-center text-gray-300"><i class="fas fa-image text-2xl"></i></div></div>
+                        <div class="p-3"><div class="font-bold text-gray-700 truncate">{{ item.name }}</div><div class="flex items-center gap-1 text-xs text-gray-400 mt-1"><input type="checkbox" v-model="item.checked" class="rounded text-blue-500"><span>已購買</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-show="currentTab === 'expenses'" class="pb-20">
+                <div class="bg-gradient-to-r from-slate-700 to-slate-800 rounded-2xl p-5 text-white shadow-lg mb-6">
+                    <div class="flex justify-between items-start">
+                        <div><div class="text-sm opacity-70">總公費 (JPY)</div><div class="text-3xl font-bold mt-1">¥ {{ totalExpenses.toLocaleString() }}</div><div class="text-xs opacity-60 mt-1">約 TWD {{ (totalExpenses * settings.rate).toFixed(0).toLocaleString() }}</div></div>
+                        <button @click="toggleSettlement" class="bg-white/20 text-xs px-3 py-1 rounded backdrop-blur-sm hover:bg-white/30 transition"><i class="fas fa-calculator mr-1"></i>結算報表</button>
+                    </div>
+                </div>
+                <div v-if="showSettlement" class="bg-blue-50 rounded-2xl p-4 border border-blue-100 mb-6 animate-fade-in">
+                    <h4 class="font-bold text-blue-800 mb-3"><i class="fas fa-file-invoice-dollar mr-2"></i>分帳建議</h4>
+                    <div v-if="settlementPlan.length === 0" class="text-sm text-gray-500 text-center py-2">目前結餘平衡，無需轉帳</div>
+                    <div v-else class="space-y-2">
+                        <div v-for="(plan, idx) in settlementPlan" :key="idx" class="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm"><div class="flex items-center gap-2"><span class="font-bold text-gray-700">{{ plan.from }}</span><i class="fas fa-arrow-right text-gray-400 text-xs"></i><span class="font-bold text-gray-700">{{ plan.to }}</span></div><div class="text-blue-600 font-bold">¥{{ Math.round(plan.amount).toLocaleString() }}</div></div>
+                        <p class="text-[10px] text-gray-400 text-center mt-2">*計算匯率: {{settings.rate}}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mb-4 overflow-x-auto hide-scrollbar pb-1">
+                    <div v-for="(member, idx) in members" :key="idx" class="flex-shrink-0 bg-white border border-gray-200 px-3 py-1.5 rounded-full text-xs font-bold text-gray-600 shadow-sm flex items-center gap-2">
+                        <span @click="renameMember(idx)" class="cursor-pointer hover:text-blue-500">{{ member }} <i class="fas fa-pen ml-1 text-[8px] opacity-50"></i></span>
+                        <button v-if="idx !== 0" @click="removeMember(idx)" class="text-gray-400 hover:text-red-500 rounded-full w-4 h-4 flex items-center justify-center bg-gray-50"><i class="fas fa-times text-[10px]"></i></button>
+                    </div>
+                    <button @click="addMember" class="flex-shrink-0 bg-gray-100 text-gray-400 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-gray-200">+ 人員</button>
+                </div>
+                <div class="space-y-3">
+                    <div v-for="(expense, idx) in expenses" :key="idx" class="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm" :class="getCategoryColor(expense.category)"><i :class="getCategoryIcon(expense.category)"></i></div><div><div class="font-bold text-gray-800">{{ expense.name }}</div><div class="text-[10px] text-gray-400 mt-0.5"><span class="bg-gray-100 px-1.5 py-0.5 rounded text-gray-500 mr-1">{{ expense.payer }} 付款</span><span v-if="expense.involved.length < members.length">({{ expense.involved.join(', ') }})</span><span v-else>(全員)</span></div></div></div>
+                            <div class="text-right"><div class="font-bold text-gray-700">¥{{ expense.amount }}</div><div class="text-[10px] text-gray-400">{{ expense.date }}</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div v-if="showModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+            <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl transform transition-all scale-100 max-h-[90vh] overflow-y-auto">
+                <h3 class="text-lg font-bold mb-4">{{ modalTitle }}</h3>
+                
+                <div v-if="modalType === 'schedule'" class="space-y-3">
+                    <select v-model="editForm.category" class="w-full p-2 border rounded-lg bg-gray-50"><option value="spot">景點</option><option value="food">美食</option><option value="shop">購物</option><option value="hotel">住宿</option><option value="flight">航班</option></select>
+                    <input v-model="editForm.name" placeholder="名稱" class="w-full p-2 border rounded-lg">
+                    <div class="flex gap-2"><input v-model="editForm.startTime" type="time" class="w-1/2 p-2 border rounded-lg"><input v-model="editForm.endTime" type="time" class="w-1/2 p-2 border rounded-lg"></div>
+                    <div class="bg-gray-50 p-2 rounded-lg"><label class="text-xs text-gray-500">交通方式</label><div class="flex gap-2 mt-1"><select v-model="editForm.transportType" class="p-1 text-sm border rounded"><option value="walk">步行</option><option value="subway">地鐵</option><option value="train">火車</option><option value="hsr">高鐵</option><option value="tram">路面電車</option><option value="taxi">計程車</option><option value="bus">客運/公車</option></select><input v-model="editForm.transportTime" placeholder="時間" class="flex-1 p-1 text-sm border rounded"></div></div>
+                    <textarea v-model="editForm.notes" placeholder="備註" class="w-full p-2 border rounded-lg h-20"></textarea>
+                </div>
+
+                <div v-if="modalType === 'shopping'" class="space-y-3">
+                    <input v-model="shoppingForm.name" placeholder="商品名稱" class="w-full p-2 border rounded-lg">
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer relative"><input type="file" @change="handleImageUpload" class="absolute inset-0 opacity-0"><span class="text-gray-400 text-sm"><i class="fas fa-camera mr-1"></i> 上傳圖片</span></div>
+                </div>
+
+                <div v-if="modalType === 'expense'" class="space-y-3">
+                    <input v-model="expenseForm.name" placeholder="項目名稱" class="w-full p-2 border rounded-lg">
+                    <div class="flex gap-2"><input v-model="expenseForm.amount" type="number" placeholder="金額" class="w-2/3 p-2 border rounded-lg text-lg font-bold"><select v-model="expenseForm.category" class="w-1/3 p-2 border rounded-lg bg-gray-50 text-sm"><option value="food">飲食</option><option value="transport">交通</option><option value="shop">購物</option><option value="ticket">門票</option><option value="hotel">住宿</option><option value="other">其他</option></select></div>
+                    <div class="bg-gray-50 p-3 rounded-lg"><label class="text-xs text-gray-500 font-bold block mb-2">誰先付錢?</label><div class="flex flex-wrap gap-2"><button v-for="m in members" :key="m" @click="expenseForm.payer = m" class="px-3 py-1 rounded-full text-xs transition border" :class="expenseForm.payer === m ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200'">{{ m }}</button></div></div>
+                    <div class="bg-gray-50 p-3 rounded-lg"><div class="flex justify-between mb-2"><label class="text-xs text-gray-500 font-bold">分攤給誰?</label><button @click="toggleAllInvolved" class="text-[10px] text-blue-500 font-bold">全選/全不選</button></div><div class="flex flex-wrap gap-2"><label v-for="m in members" :key="m" class="flex items-center gap-1 bg-white px-2 py-1 rounded border border-gray-200 text-xs"><input type="checkbox" :value="m" v-model="expenseForm.involved" class="rounded text-blue-600">{{ m }}</label></div></div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button v-if="isEditing" @click="confirmDelete" class="flex-1 bg-red-100 text-red-500 py-2 rounded-lg font-bold">刪除</button>
+                    <button @click="showModal = false" class="flex-1 bg-gray-100 text-gray-500 py-2 rounded-lg font-bold">取消</button>
+                    <button @click="saveData" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">儲存</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 <script>
-    const { createApp, ref, computed, onMounted, watch, onUnmounted, nextTick } = Vue;
+    const { createApp, ref, computed, onMounted, watch, onUnmounted } = Vue;
 
     createApp({
         setup() {
-            // --- 核心狀態 ---
             const currentTab = ref('schedule');
             const currentDayIndex = ref(0);
             const showModal = ref(false);
-            const modalType = ref(''); // schedule, shopping, expense
+            const modalType = ref('');
             const isEditing = ref(false);
-            const isDraggable = ref(false);
-            
-            // --- 資料狀態 (預設值) ---
-            const members = ref(['我']);
-            const currentChecklistMember = ref('我');
-            const settings = ref({ rate: 0.225, lastUpdate: '' });
-            const converter = ref({ jpy: 1000, twd: 225 });
+            const isDraggable = ref(false); 
+            const converter = ref({ jpy: 1000, twd: 225 }); // 初始化 TWD
             const weather = ref(null);
+            const bannerRef = ref(null);
             
-            // 編輯用表單暫存
-            const editForm = ref({});
-            const shoppingForm = ref({});
-            const expenseForm = ref({});
+            const settings = ref({ rate: 0.225, lastUpdate: '' });
+            const members = ref(['我']);
+            const showSettlement = ref(false);
+            const currentChecklistMember = ref('我');
 
-            // 住宿清單
+            // 住宿與行程資料
             const hotels = ref([
                 { name: 'Hotel Sunroute Asakusa', dates: '12/24 - 12/27', address: '東京都台東區雷門1-8-5', phone: '+81-3-3847-1511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Sunroute+Asakusa' },
                 { name: 'Hotel Nets Sapporo', dates: '12/27 - 12/31', address: '北海道札幌市中央區南7条西4丁目1-1', phone: '+81-11-530-5511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Nets+Sapporo' },
-                { name: 'LA JOLIE MOTOMACHI', dates: '12/31 - 01/02', address: '北海道函館市末廣町6-6', phone: '+81-138-23-3322', mapLink: 'https://www.google.com/maps/search/?api=1&query=LA+JOLIE+MOTOMACHI' },
-                { name: 'Sotetsu Fresa Inn Tokyo-Roppongi', dates: '01/02 - 01/04', address: '東京都港區六本木3-10-1', phone: '+81-3-5413-2031', mapLink: 'https://www.google.com/maps/search/?api=1&query=Sotetsu+Fresa+Inn+Tokyo-Roppongi' }
+                { name: 'LA JOLIE MOTOMACHI', dates: '12/31 - 01/02', address: '北海道函館市末廣町6-6', phone: '+81-138-23-3322', mapLink: 'https://www.google.com/maps/search/?api=1&query=LA+JOLIE+MOTOMACHI+Hakodate' },
+                { name: 'Sotetsu Fresa Inn Tokyo-Roppongi', dates: '01/02 - 01/04', address: '東京都港區六本木3-10-1', phone: '+81-3-5413-2031', mapLink: 'https://www.google.com/maps/search/?api=1&query=Sotetsu+Fresa+Inn+Tokyo+Roppongi' }
             ]);
 
-            // 行程資料結構
             const schedule = ref([
                 { date: "2025-12-24", location: "Tokyo", events: [{ id: 1, category: 'flight', name: '台北(TSA) ✈️ 東京(HND)', startTime: '13:30', endTime: '17:30', depCode: 'TSA', arrCode: 'HND', duration: '3h', transportType: 'train', transportTime: '45分' }, { id: 2, category: 'hotel', name: '東京住宿 Check-in', startTime: '19:00', endTime: '', notes: '第一晚東京', transportType: 'walk', transportTime: '10分' }] },
-                { date: "2025-12-25", location: "Tokyo", events: [] }, 
-                { date: "2025-12-26", location: "Tokyo", events: [] },
+                { date: "2025-12-25", location: "Tokyo", events: [] }, { date: "2025-12-26", location: "Tokyo", events: [] },
                 { date: "2025-12-27", location: "Tokyo/Sapporo", events: [{ id: 10, category: 'flight', name: '東京(HND) ✈️ 札幌(CTS)', startTime: '18:00', endTime: '19:35', depCode: 'HND', arrCode: 'CTS', duration: '1h 35m', transportType: 'train', transportTime: '40分' }, { id: 11, category: 'hotel', name: '札幌住宿 Check-in', startTime: '21:00', endTime: '', notes: '抵達北海道', transportType: 'walk', transportTime: '-' }] },
-                { date: "2025-12-28", location: "Sapporo", events: [] }, 
-                { date: "2025-12-29", location: "Sapporo", events: [] }, 
-                { date: "2025-12-30", location: "Sapporo", events: [] },
+                { date: "2025-12-28", location: "Sapporo", events: [] }, { date: "2025-12-29", location: "Sapporo", events: [] }, { date: "2025-12-30", location: "Sapporo", events: [] },
                 { date: "2025-12-31", location: "Hakodate", events: [{ id: 20, category: 'transport', name: '札幌 🚄 函館 (JR特急)', startTime: '10:56', endTime: '14:41', notes: '移動日', transportType: 'walk', transportTime: '20分' }, { id: 21, category: 'hotel', name: '函館住宿', startTime: '15:30', endTime: '', notes: '跨年夜', transportType: 'walk', transportTime: '-' }] },
                 { date: "2026-01-01", location: "Hakodate", events: [] },
                 { date: "2026-01-02", location: "Tokyo", events: [{ id: 30, category: 'flight', name: '函館(HKD) ✈️ 東京(HND)', startTime: '11:45', endTime: '13:15', depCode: 'HKD', arrCode: 'HND', duration: '1h 30m', transportType: 'train', transportTime: '40分' }, { id: 31, category: 'hotel', name: '東京住宿', startTime: '15:00', endTime: '', notes: '回到東京', transportType: 'walk', transportTime: '-' }] },
@@ -47,11 +431,7 @@
                 { date: "2026-01-04", location: "Tokyo", events: [{ id: 40, category: 'flight', name: '東京(HND) ✈️ 台北(TSA)', startTime: '12:40', endTime: '15:50', depCode: 'HND', arrCode: 'TSA', duration: '4h 10m', transportType: 'walk', transportTime: '-' }] }
             ]);
 
-            // 購物與花費
-            const shoppingList = ref([]);
-            const expenses = ref([]);
-
-            // 行李清單模板與資料
+            // --- 多人行李清單結構 ---
             const defaultPackingTemplate = [
                 { name: '重要文件', items: [ {name:'護照',tag:'隨身',important:true}, {name:'簽證',tag:'隨身',important:true}, {name:'國際駕照'}, {name:'機票',tag:'隨身',important:true}, {name:'住宿憑證'}, {name:'交通票券'}, {name:'外幣',tag:'隨身',important:true}, {name:'信用卡',tag:'隨身',important:true}, {name:'旅遊手冊'} ] },
                 { name: '3C 產品', items: [ {name:'手機',tag:'隨身',important:true}, {name:'充電線'}, {name:'充電器'}, {name:'行動電源',tag:'隨身',important:true}, {name:'萬用轉接頭'}, {name:'筆電',tag:'隨身'}, {name:'相機'}, {name:'網卡'}, {name:'自拍棒'} ] },
@@ -60,72 +440,68 @@
                 { name: '個人衣物', items: [ {name:'換洗衣物'}, {name:'外套'}, {name:'靴子'}, {name:'內衣褲'}, {name:'襪子'}, {name:'帽子'} ] },
                 { name: '其他用品', items: [ {name:'耳塞'}, {name:'口罩'}, {name:'雨傘',tag:'托運'}, {name:'手套'}, {name:'衛生棉'}, {name:'化妝品'} ] }
             ];
+
             const getNewPackingList = () => JSON.parse(JSON.stringify(defaultPackingTemplate));
             const packingData = ref({ '我': getNewPackingList() });
 
-            // --- 計算屬性 ---
+            // 確保資料正確，避免 undefined 錯誤
             const currentChecklistData = computed(() => {
                 const member = currentChecklistMember.value || '我';
-                if (!packingData.value[member]) packingData.value[member] = getNewPackingList();
+                if (!packingData.value[member]) {
+                    packingData.value[member] = getNewPackingList();
+                }
                 return packingData.value[member];
             });
 
-            const packingProgress = computed(() => {
-                let total = 0, checked = 0;
-                const list = currentChecklistData.value;
-                if(list) list.forEach(cat => cat.items.forEach(i => { total++; if(i.checked) checked++; }));
-                return total === 0 ? 0 : Math.round((checked / total) * 100);
+            const shoppingList = ref([]);
+            const expenses = ref([]);
+            const editForm = ref({});
+            const shoppingForm = ref({});
+            const expenseForm = ref({});
+            let sortableInstance = null;
+
+            // --- Canvas 積雪 ---
+            let canvas, ctx, animationId;
+            const flakes = [];
+            const snowPileHeight = new Array(480).fill(0);
+            const initCanvas = () => { canvas = document.getElementById('snow-canvas'); if (!canvas) return; const resize = () => { canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight; if (snowPileHeight.length !== canvas.width) { snowPileHeight.length = canvas.width; for(let i=0; i<canvas.width; i++) snowPileHeight[i] = 0; } }; window.addEventListener('resize', resize); resize(); for (let i = 0; i < 50; i++) { flakes.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, d: Math.random() * 0.5 + 0.2 }); } animateSnow(); };
+            const animateSnow = () => { if (!canvas) return; ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = "rgba(255, 255, 255, 0.95)"; ctx.beginPath(); ctx.moveTo(0, canvas.height); for (let i = 0; i < canvas.width; i++) { let h = snowPileHeight[i]; ctx.lineTo(i, canvas.height - h); } ctx.lineTo(canvas.width, canvas.height); ctx.fill(); ctx.fillStyle = "rgba(255, 255, 255, 0.8)"; ctx.beginPath(); for (let i = 0; i < flakes.length; i++) { const f = flakes[i]; ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true); } ctx.fill(); updateFlakes(); animationId = requestAnimationFrame(animateSnow); };
+            const updateFlakes = () => { for (let i = 0; i < flakes.length; i++) { const f = flakes[i]; f.y += Math.pow(f.d, 2) * 0.5 + 0.3; f.x += Math.sin(f.y * 0.05) * 0.3; const floorIndex = Math.floor(f.x); if (floorIndex >= 0 && floorIndex < canvas.width) { const pileHeight = snowPileHeight[floorIndex]; if (f.y + f.r >= canvas.height - pileHeight) { if (pileHeight < 25) { for(let k = -2; k <= 2; k++) { if (floorIndex + k >= 0 && floorIndex + k < canvas.width) { snowPileHeight[floorIndex + k] += 0.4 * (3 - Math.abs(k)); } } } resetFlake(f); } } else if (f.y > canvas.height) { resetFlake(f); } } };
+            const resetFlake = (f) => { f.y = -10; f.x = Math.random() * canvas.width; };
+
+            onMounted(() => {
+                try {
+                    const savedData = localStorage.getItem('tripData');
+                    if (savedData) {
+                        const parsed = JSON.parse(savedData);
+                        shoppingList.value = parsed.shoppingList || [];
+                        expenses.value = parsed.expenses || [];
+                        members.value = parsed.members || ['我'];
+                        
+                        if (parsed.packingData) {
+                            packingData.value = parsed.packingData;
+                        } else if (parsed.packingList && Array.isArray(parsed.packingList)) {
+                            // 舊資料遷移
+                            packingData.value['我'] = parsed.packingList;
+                        }
+                        
+                        // 資料修復防呆
+                        members.value.forEach(m => {
+                            if(!packingData.value[m]) packingData.value[m] = getNewPackingList();
+                        });
+                    }
+                } catch (e) {
+                    console.error("Data load error", e);
+                }
+                
+                initSortable();
+                fetchWeather();
+                fetchExchangeRate();
+                setTimeout(initCanvas, 100);
             });
 
-            const totalExpenses = computed(() => expenses.value.reduce((sum, item) => sum + Number(item.amount), 0));
-            
-            const modalTitle = computed(() => ({ 
-                schedule: isEditing.value ? '編輯行程' : '新增行程', 
-                shopping: '新增購物清單', 
-                expense: '新增花費' 
-            }[modalType.value] || ''));
+            onUnmounted(() => { cancelAnimationFrame(animationId); });
 
-            // 結算邏輯
-            const showSettlement = ref(false);
-            const settlementPlan = computed(() => {
-                let balance = {}; 
-                members.value.forEach(m => balance[m] = 0);
-                expenses.value.forEach(ex => { 
-                    const amt = parseFloat(ex.amount); 
-                    if(!amt || !ex.involved || ex.involved.length === 0) return; 
-                    
-                    // 付款人 +
-                    balance[ex.payer] = (balance[ex.payer] || 0) + amt; 
-                    
-                    // 分攤人 -
-                    const share = amt / ex.involved.length; 
-                    ex.involved.forEach(p => { balance[p] = (balance[p] || 0) - share; }); 
-                });
-                
-                let d = [], c = []; 
-                for(let p in balance){ 
-                    if(balance[p] < -1) d.push({name:p, amount:balance[p]}); // 欠錢的 (Debtors)
-                    else if(balance[p] > 1) c.push({name:p, amount:balance[p]}); // 該收錢的 (Creditors)
-                } 
-                d.sort((a,b) => a.amount - b.amount); 
-                c.sort((a,b) => b.amount - a.amount);
-                
-                let plan = [], i=0, j=0; 
-                while(i < d.length && j < c.length){ 
-                    let db = d[i], cr = c[j]; 
-                    let amt = Math.min(Math.abs(db.amount), cr.amount); 
-                    plan.push({from: db.name, to: cr.name, amount: amt}); 
-                    db.amount += amt; 
-                    cr.amount -= amt; 
-                    if(Math.abs(db.amount) < 1) i++; 
-                    if(cr.amount < 1) j++; 
-                } 
-                return plan;
-            });
-
-            // --- 方法 ---
-
-            // 即時儲存 (Watch)
             watch([schedule, shoppingList, expenses, members, settings, packingData], () => {
                 localStorage.setItem('tripData', JSON.stringify({
                     schedule: schedule.value, 
@@ -135,134 +511,22 @@
                     settings: settings.value, 
                     packingData: packingData.value
                 }));
-                // 這裡可以加一個 console.log 確認是否有在存
-                console.log('Auto-saved to LocalStorage'); 
             }, { deep: true });
 
-            // 讀取資料
-            onMounted(() => {
-                try {
-                    const savedData = localStorage.getItem('tripData');
-                    if (savedData) {
-                        const parsed = JSON.parse(savedData);
-                        if(parsed.schedule) schedule.value = parsed.schedule;
-                        if(parsed.shoppingList) shoppingList.value = parsed.shoppingList;
-                        if(parsed.expenses) expenses.value = parsed.expenses;
-                        if(parsed.members) members.value = parsed.members;
-                        if(parsed.settings) settings.value = parsed.settings;
-                        if(parsed.packingData) packingData.value = parsed.packingData;
-                        
-                        // 資料修復與遷移
-                        members.value.forEach(m => {
-                            if(!packingData.value[m]) packingData.value[m] = getNewPackingList();
-                        });
-                    }
-                } catch (e) { console.error("Data load error", e); }
-                
-                initSortable();
-                fetchWeather();
-                fetchExchangeRate();
-                setTimeout(initCanvas, 100);
+            watch(isDraggable, (val) => { if (sortableInstance) { sortableInstance.option("disabled", !val); } });
+            const toggleDraggable = () => isDraggable.value = !isDraggable.value;
+
+            const packingProgress = computed(() => {
+                let total = 0, checked = 0;
+                const list = currentChecklistData.value;
+                if(list) list.forEach(cat => cat.items.forEach(i => { total++; if(i.checked) checked++; }));
+                return total === 0 ? 0 : Math.round((checked / total) * 100);
             });
 
-            // 核心：新增與編輯回寫邏輯
-            const saveData = () => {
-                if(modalType.value === 'schedule') {
-                    // 深拷貝表單資料，切斷參照
-                    const eventData = JSON.parse(JSON.stringify(editForm.value));
-                    
-                    if(isEditing.value) {
-                        // 編輯模式：找到該事件並更新
-                        const currentEvents = schedule.value[currentDayIndex.value].events;
-                        const idx = currentEvents.findIndex(e => e.id === eventData.id);
-                        if(idx !== -1) {
-                            currentEvents[idx] = eventData; // Vue 3 會偵測到陣列元素變更
-                        }
-                    } else {
-                        // 新增模式
-                        eventData.id = Date.now(); // 賦予新 ID
-                        schedule.value[currentDayIndex.value].events.push(eventData);
-                    }
-                } 
-                else if(modalType.value === 'shopping') {
-                    shoppingList.value.push({...shoppingForm.value});
-                } 
-                else if(modalType.value === 'expense') {
-                    expenses.value.push({...expenseForm.value});
-                }
-                
-                showModal.value = false;
-            };
+            // --- 簡單的匯率計算 ---
+            const calculateTWD = () => { converter.value.twd = (converter.value.jpy * settings.value.rate).toFixed(0); };
+            const calculateJPY = () => { converter.value.jpy = (converter.value.twd / settings.value.rate).toFixed(0); };
 
-            // Modal 操作
-            const handleAddClick = () => { 
-                if(currentTab.value === 'schedule') openAddModal('schedule'); 
-                else if(currentTab.value === 'shopping') openAddModal('shopping'); 
-                else if(currentTab.value === 'expenses') openAddModal('expense'); 
-            };
-            
-            const openAddModal = (type) => { 
-                modalType.value = type; 
-                isEditing.value = false; 
-                // 初始化表單
-                if(type === 'schedule') {
-                    editForm.value = { 
-                        category: 'spot', 
-                        transportType: 'train', 
-                        transportTime: '20分',
-                        startTime: '10:00',
-                        endTime: '12:00',
-                        name: ''
-                    };
-                } else if(type === 'shopping') {
-                    shoppingForm.value = { name: '', checked: false, image: null };
-                } else if(type === 'expense') {
-                    expenseForm.value = { 
-                        category: 'food', 
-                        amount: '', 
-                        date: schedule.value[currentDayIndex.value].date, 
-                        payer: '我', 
-                        involved: [...members.value] 
-                    };
-                }
-                showModal.value = true; 
-            };
-
-            const editEvent = (item) => { 
-                if(isDraggable.value) return; 
-                if(item.category === 'flight') return; // 航班暫不開放編輯
-                
-                modalType.value = 'schedule'; 
-                isEditing.value = true; 
-                editForm.value = JSON.parse(JSON.stringify(item)); // 深拷貝避免直接修改
-                showModal.value = true; 
-            };
-
-            const confirmDelete = () => {
-                if(!confirm("確定要刪除此項目嗎？")) return;
-                
-                if(modalType.value === 'schedule') {
-                    const idx = schedule.value[currentDayIndex.value].events.findIndex(e => e.id === editForm.value.id);
-                    if(idx !== -1) schedule.value[currentDayIndex.value].events.splice(idx, 1);
-                }
-                showModal.value = false;
-            };
-
-            const deleteShoppingItem = (idx) => {
-                if(confirm("確定刪除此商品？")) shoppingList.value.splice(idx, 1);
-            };
-
-            // 圖片上傳
-            const handleImageUpload = (e) => { 
-                const file = e.target.files[0]; 
-                if(file) { 
-                    const reader = new FileReader(); 
-                    reader.onload = (evt) => { shoppingForm.value.image = evt.target.result; }; 
-                    reader.readAsDataURL(file); 
-                } 
-            };
-
-            // 匯率與天氣
             const fetchExchangeRate = async () => {
                 try { 
                     const res = await fetch('https://api.exchangerate-api.com/v4/latest/JPY'); 
@@ -272,177 +536,58 @@
                         settings.value.lastUpdate = new Date(data.time_last_updated*1000).toLocaleDateString();
                         calculateTWD(); 
                     } 
-                } catch(e){ console.error("Exchange rate error", e); }
-            };
-            const calculateTWD = () => { converter.value.twd = (converter.value.jpy * settings.value.rate).toFixed(0); };
-            const calculateJPY = () => { converter.value.jpy = (converter.value.twd / settings.value.rate).toFixed(0); };
-            const fetchWeather = async () => { 
-                // 這裡模擬天氣 API 回傳
-                weather.value = { temp: -2, feelsLike: -5, code: 71, desc: '小雪' }; 
+                } catch(e){ console.error(e); }
             };
 
-            // 成員管理
-            const addMember = () => { const n = prompt("輸入新成員名字:"); if(n && !members.value.includes(n)) members.value.push(n); };
-            const renameMember = (i) => { 
-                const oldName = members.value[i];
-                const newName = prompt("修改名字:", oldName); 
-                if(newName && newName !== oldName && !members.value.includes(newName)){ 
-                    members.value[i] = newName; 
-                    // 遷移 Packing Data
-                    if(packingData.value[oldName]) { 
-                        packingData.value[newName] = packingData.value[oldName]; 
-                        delete packingData.value[oldName]; 
-                    } else { packingData.value[newName] = getNewPackingList(); }
-                    
-                    // 遷移 Expenses 關聯
-                    expenses.value.forEach(e => { 
-                        if(e.payer === oldName) e.payer = newName; 
-                        const invIdx = e.involved.indexOf(oldName);
-                        if(invIdx !== -1) e.involved[invIdx] = newName; 
-                    }); 
-                    
-                    if (currentChecklistMember.value === oldName) currentChecklistMember.value = newName; 
-                } 
-            };
-            const removeMember = (i) => { 
-                if(members.value[i] === '我') return alert("不能刪除自己！"); 
-                if(confirm("確定刪除成員？(會一併刪除其行李清單)")){ 
-                    const nameToRemove = members.value[i]; 
-                    members.value.splice(i, 1); 
-                    delete packingData.value[nameToRemove]; 
-                    if (currentChecklistMember.value === nameToRemove) currentChecklistMember.value = '我'; 
-                    // 清理 Expenses (可選)
-                } 
-            };
-            const toggleAllInvolved = () => { 
-                if(expenseForm.value.involved.length === members.value.length) expenseForm.value.involved = []; 
-                else expenseForm.value.involved = [...members.value]; 
-            };
-
-            // 拖曳排序
-            let sortableInstance = null;
-            const toggleDraggable = () => isDraggable.value = !isDraggable.value;
-            watch(isDraggable, (val) => { if (sortableInstance) sortableInstance.option("disabled", !val); });
-            
-            const initSortable = () => { 
-                const el = document.getElementById('itinerary-list'); 
-                if(el){ 
-                    if(sortableInstance) sortableInstance.destroy();
-                    sortableInstance = new Sortable(el, { 
-                        animation: 150, 
-                        handle: '.itinerary-item', // 指定只能拖曳這個 class
-                        disabled: !isDraggable.value, 
-                        onEnd: (evt) => { 
-                            const item = schedule.value[currentDayIndex.value].events.splice(evt.oldIndex, 1)[0]; 
-                            schedule.value[currentDayIndex.value].events.splice(evt.newIndex, 0, item); 
-                        } 
-                    }); 
-                } 
-            };
-            watch(currentDayIndex, () => { 
-                setTimeout(initSortable, 100); 
-                fetchWeather(); 
+            const settlementPlan = computed(() => {
+                let balance = {}; members.value.forEach(m => balance[m] = 0);
+                expenses.value.forEach(ex => { const amt = parseFloat(ex.amount); if(!amt||!ex.involved||ex.involved.length===0)return; balance[ex.payer]=(balance[ex.payer]||0)+amt; const share=amt/ex.involved.length; ex.involved.forEach(p=>{balance[p]=(balance[p]||0)-share;}); });
+                let d=[], c=[]; for(let p in balance){ if(balance[p]<-1)d.push({name:p,amount:balance[p]}); else if(balance[p]>1)c.push({name:p,amount:balance[p]}); } d.sort((a,b)=>a.amount-b.amount); c.sort((a,b)=>b.amount-a.amount);
+                let plan=[], i=0, j=0; while(i<d.length && j<c.length){ let db=d[i], cr=c[j], amt=Math.min(Math.abs(db.amount), cr.amount); plan.push({from:db.name, to:cr.name, amount:amt}); db.amount+=amt; cr.amount-=amt; if(Math.abs(db.amount)<1)i++; if(cr.amount<1)j++; } return plan;
             });
 
-            // 輔助函式
+            const toggleSettlement = () => showSettlement.value = !showSettlement.value;
+            const addMember = () => { const n = prompt("輸入新成員名字:"); if(n && !members.value.includes(n)) members.value.push(n); };
+            const renameMember = (i) => { const old=members.value[i], n=prompt("修改名字:",old); if(n&&n!==old&&!members.value.includes(n)){ members.value[i]=n; if(packingData.value[old]) { packingData.value[n] = packingData.value[old]; delete packingData.value[old]; } else { packingData.value[n] = getNewPackingList(); } expenses.value.forEach(e=>{ if(e.payer===old)e.payer=n; if(e.involved.includes(old))e.involved[e.involved.indexOf(old)]=n; }); if (currentChecklistMember.value === old) currentChecklistMember.value = n; } };
+            const removeMember = (i) => { if(members.value[i]==='我')return; if(confirm("刪除成員?")){ const nameToRemove = members.value[i]; members.value.splice(i,1); delete packingData.value[nameToRemove]; if (currentChecklistMember.value === nameToRemove) currentChecklistMember.value = '我'; } };
+            const toggleAllInvolved = () => { if(expenseForm.value.involved.length===members.value.length) expenseForm.value.involved=[]; else expenseForm.value.involved=[...members.value]; };
+            
+            const initSortable = () => { const el=document.getElementById('itinerary-list'); if(el){ sortableInstance=new Sortable(el,{ animation:150, handle:'.itinerary-item', disabled:!isDraggable.value, onEnd:(evt)=>{ const item=schedule.value[currentDayIndex.value].events.splice(evt.oldIndex,1)[0]; schedule.value[currentDayIndex.value].events.splice(evt.newIndex,0,item); } }); } };
+            watch(currentDayIndex, () => { setTimeout(initSortable, 100); fetchWeather(); });
+            const fetchWeather = async () => { weather.value = { temp: -2, feelsLike: -5, code: 71, desc: '降雪' }; };
+            
             const getDayName = (d) => new Date(d).toLocaleDateString('en-US', { weekday: 'short' });
             const getDayNum = (d) => new Date(d).getDate();
             const getCategoryIcon = (c) => ({ flight:'fa-plane', hotel:'fa-bed', spot:'fa-camera', food:'fa-utensils', shop:'fa-bag-shopping', transport:'fa-train', ticket:'fa-ticket', other:'fa-star' }[c] || 'fa-circle');
             const getCategoryColor = (c) => ({ flight:'bg-blue-400', hotel:'bg-indigo-400', spot:'bg-pink-400', food:'bg-orange-400', shop:'bg-yellow-400', transport:'bg-green-400' }[c] || 'bg-gray-400');
             const getTransportIcon = (t) => { const map={walk:'fa-person-walking', subway:'fa-train-subway', train:'fa-train', hsr:'fa-train', tram:'fa-train-tram', taxi:'fa-taxi', bus:'fa-bus'}; return `fas ${map[t]||'fa-person-walking'}`; };
             const getWeatherIcon = () => 'fas fa-snowflake';
-            
-            // 修正地圖連結：使用 Google Maps Search API
-            const getMapLink = (name) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}`;
+            const getMapLink = (n) => `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(n)}`;
+            const totalExpenses = computed(() => expenses.value.reduce((sum, item) => sum + Number(item.amount), 0));
+            const modalTitle = computed(() => ({ schedule: isEditing.value?'編輯行程':'新增行程', shopping:'新增購物清單', expense:'新增花費' }[modalType.value] || ''));
 
-            // --- Canvas 積雪動畫 (保持原樣) ---
-            const bannerRef = ref(null);
-            let canvas, ctx, animationId;
-            const flakes = [];
-            const snowPileHeight = new Array(480).fill(0);
-            const initCanvas = () => { 
-                canvas = document.getElementById('snow-canvas'); 
-                if (!canvas) return; 
-                const resize = () => { 
-                    canvas.width = canvas.parentElement.offsetWidth; 
-                    canvas.height = canvas.parentElement.offsetHeight; 
-                    if (snowPileHeight.length !== canvas.width) { 
-                        const oldLen = snowPileHeight.length;
-                        snowPileHeight.length = canvas.width; 
-                        for(let i=oldLen; i<canvas.width; i++) snowPileHeight[i] = 0; 
-                    } 
-                }; 
-                window.addEventListener('resize', resize); 
-                resize(); 
-                for (let i = 0; i < 50; i++) { flakes.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, d: Math.random() * 0.5 + 0.2 }); } 
-                animateSnow(); 
-            };
-            const animateSnow = () => { 
-                if (!canvas) return; 
-                ctx = canvas.getContext('2d'); 
-                ctx.clearRect(0, 0, canvas.width, canvas.height); 
-                
-                // Draw Pile
-                ctx.fillStyle = "rgba(255, 255, 255, 0.95)"; 
-                ctx.beginPath(); 
-                ctx.moveTo(0, canvas.height); 
-                for (let i = 0; i < canvas.width; i++) { let h = snowPileHeight[i]; ctx.lineTo(i, canvas.height - h); } 
-                ctx.lineTo(canvas.width, canvas.height); 
-                ctx.fill(); 
-                
-                // Draw Flakes
-                ctx.fillStyle = "rgba(255, 255, 255, 0.8)"; 
-                ctx.beginPath(); 
-                for (let i = 0; i < flakes.length; i++) { const f = flakes[i]; ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true); } 
-                ctx.fill(); 
-                
-                updateFlakes(); 
-                animationId = requestAnimationFrame(animateSnow); 
-            };
-            const updateFlakes = () => { 
-                for (let i = 0; i < flakes.length; i++) { 
-                    const f = flakes[i]; 
-                    f.y += Math.pow(f.d, 2) * 0.5 + 0.3; 
-                    f.x += Math.sin(f.y * 0.05) * 0.3; 
-                    const floorIndex = Math.floor(f.x); 
-                    if (floorIndex >= 0 && floorIndex < canvas.width) { 
-                        const pileHeight = snowPileHeight[floorIndex] || 0; 
-                        if (f.y + f.r >= canvas.height - pileHeight) { 
-                            if (pileHeight < 25) { 
-                                for(let k = -2; k <= 2; k++) { 
-                                    if (floorIndex + k >= 0 && floorIndex + k < canvas.width) { 
-                                        snowPileHeight[floorIndex + k] = (snowPileHeight[floorIndex + k] || 0) + 0.4 * (3 - Math.abs(k)); 
-                                    } 
-                                } 
-                            } 
-                            resetFlake(f); 
-                        } 
-                    } else if (f.y > canvas.height) { resetFlake(f); } 
-                } 
-            };
-            const resetFlake = (f) => { f.y = -10; f.x = Math.random() * canvas.width; };
-            onUnmounted(() => { cancelAnimationFrame(animationId); });
+            const handleAddClick = () => { if(currentTab.value==='schedule')openAddModal('schedule'); else if(currentTab.value==='shopping')openAddModal('shopping'); else if(currentTab.value==='expenses')openAddModal('expense'); };
+            const openAddModal = (t) => { modalType.value=t; isEditing.value=false; editForm.value={category:'spot',transportType:'train',transportTime:'20分'}; shoppingForm.value={}; expenseForm.value={category:'food',payment:'現金',date:schedule.value[currentDayIndex.value].date,payer:'我',involved:[...members.value]}; showModal.value=true; };
+            const editEvent = (i) => { if(isDraggable.value)return; if(i.category==='flight')return; modalType.value='schedule'; isEditing.value=true; editForm.value=JSON.parse(JSON.stringify(i)); showModal.value=true; };
+            const handleImageUpload = (e) => { const f=e.target.files[0]; if(f){ const r=new FileReader(); r.onload=(e)=>shoppingForm.value.image=e.target.result; r.readAsDataURL(f); } };
+            const saveData = () => { if(modalType.value==='schedule'){ if(isEditing.value){ const idx=schedule.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); if(idx!==-1)schedule.value[currentDayIndex.value].events[idx]=editForm.value; } else { editForm.value.id=Date.now(); schedule.value[currentDayIndex.value].events.push(editForm.value); } } else if(modalType.value==='shopping') shoppingList.value.push(shoppingForm.value); else if(modalType.value==='expense') expenses.value.push(expenseForm.value); showModal.value=false; };
+            const confirmDelete = () => { if(confirm("刪除?")){ const idx=schedule.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); if(idx!==-1)schedule.value[currentDayIndex.value].events.splice(idx,1); showModal.value=false; } };
+            const deleteShoppingItem = (i) => { if(confirm("刪除?")) shoppingList.value.splice(i,1); };
 
             return {
-                // State
-                currentTab, currentDayIndex, schedule, showModal, modalType, isEditing, 
-                editForm, shoppingForm, expenseForm, shoppingList, expenses, 
-                converter, weather, settings, members, hotels, packingList: currentChecklistData,
-                currentChecklistMember, currentChecklistData, isDraggable, bannerRef,
-                
-                // Computed
-                totalExpenses, modalTitle, showSettlement, settlementPlan, packingProgress,
-                
-                // Methods
-                toggleDraggable, handleAddClick, openAddModal, editEvent, saveData, 
-                confirmDelete, deleteShoppingItem, handleImageUpload,
-                calculateTWD, calculateJPY, toggleSettlement, 
-                addMember, removeMember, renameMember, toggleAllInvolved,
-                
-                // Display Helpers
-                getDayName, getDayNum, getCategoryIcon, getCategoryColor, 
-                getTransportIcon, getWeatherIcon, getMapLink
+                currentTab, currentDayIndex, schedule, showModal, modalType, isEditing, modalTitle,
+                editForm, shoppingForm, expenseForm, shoppingList, expenses, converter, weather, settings, members, hotels, packingList: currentChecklistData,
+                totalExpenses, bannerRef, showSettlement, settlementPlan, toggleSettlement, addMember, removeMember, renameMember, toggleAllInvolved, packingProgress,
+                openAddModal, editEvent, saveData, confirmDelete, deleteShoppingItem, handleImageUpload,
+                getDayName, getDayNum, getCategoryIcon, getCategoryColor, getTransportIcon, getWeatherIcon, getMapLink,
+                isDraggable, toggleDraggable, handleAddClick, calculateTWD, calculateJPY,
+                currentChecklistMember, currentChecklistData
             };
         }
     }).mount('#app');
 </script>
+
+</body>
+</html>
+
+
