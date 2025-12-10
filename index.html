@@ -40,19 +40,42 @@
         
         <div class="relative h-[230px] w-full overflow-hidden" ref="bannerRef">
             <img src="banner.jpg" alt="Banner" class="w-full h-full object-cover object-center">
+            
             <canvas id="snow-canvas"></canvas>
+
             <div class="absolute bottom-[8px] left-[15px] right-[15px] flex justify-between items-end z-20 pointer-events-none">
+                
                 <div class="flex gap-2 pointer-events-auto">
-                    <button @click="toggleDraggable" class="glass-btn" :class="{ 'edit-active': isDraggable }"><i class="fas fa-pencil-alt"></i></button>
-                    <button v-if="['schedule', 'shopping', 'expenses'].includes(currentTab)" @click="handleAddClick" class="glass-btn"><i class="fas fa-plus"></i></button>
+                    <button @click="toggleDraggable" class="glass-btn" :class="{ 'edit-active': isDraggable }">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button 
+                        v-if="['schedule', 'shopping', 'expenses'].includes(currentTab)" 
+                        @click="handleAddClick" 
+                        class="glass-btn"
+                    >
+                        <i class="fas fa-plus"></i>
+                    </button>
                 </div>
+
                 <div class="flex gap-2 pointer-events-auto">
-                    <button @click="currentTab = 'checklist'" :class="['glass-btn', currentTab === 'checklist' ? 'active' : '']"><i class="fas fa-clipboard-check"></i></button>
-                    <button @click="currentTab = 'schedule'" :class="['glass-btn', currentTab === 'schedule' ? 'active' : '']"><i class="fas fa-map-location-dot"></i></button>
-                    <button @click="currentTab = 'info'" :class="['glass-btn', currentTab === 'info' ? 'active' : '']"><i class="fas fa-circle-info"></i></button>
-                    <button @click="currentTab = 'shopping'" :class="['glass-btn', currentTab === 'shopping' ? 'active' : '']"><i class="fas fa-basket-shopping"></i></button>
-                    <button @click="currentTab = 'expenses'" :class="['glass-btn', currentTab === 'expenses' ? 'active' : '']"><i class="fas fa-yen-sign"></i></button>
+                    <button @click="currentTab = 'checklist'" :class="['glass-btn', currentTab === 'checklist' ? 'active' : '']">
+                        <i class="fas fa-clipboard-check"></i>
+                    </button>
+                    <button @click="currentTab = 'schedule'" :class="['glass-btn', currentTab === 'schedule' ? 'active' : '']">
+                        <i class="fas fa-map-location-dot"></i>
+                    </button>
+                    <button @click="currentTab = 'info'" :class="['glass-btn', currentTab === 'info' ? 'active' : '']">
+                        <i class="fas fa-circle-info"></i>
+                    </button>
+                    <button @click="currentTab = 'shopping'" :class="['glass-btn', currentTab === 'shopping' ? 'active' : '']">
+                        <i class="fas fa-basket-shopping"></i>
+                    </button>
+                    <button @click="currentTab = 'expenses'" :class="['glass-btn', currentTab === 'expenses' ? 'active' : '']">
+                        <i class="fas fa-yen-sign"></i>
+                    </button>
                 </div>
+
             </div>
         </div>
 
@@ -60,24 +83,44 @@
 
             <div v-show="currentTab === 'checklist'" class="pb-20">
                 <div class="flex items-center gap-2 mb-4 overflow-x-auto hide-scrollbar pb-1">
-                    <div v-for="member in members" :key="member" @click="currentChecklistMember = member" class="flex-shrink-0 border px-4 py-1.5 rounded-full text-xs font-bold shadow-sm cursor-pointer transition-colors" :class="currentChecklistMember === member ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'">{{ member }}</div>
+                    <div v-for="member in members" :key="member" 
+                         @click="currentChecklistMember = member"
+                         class="flex-shrink-0 border px-4 py-1.5 rounded-full text-xs font-bold shadow-sm cursor-pointer transition-colors"
+                         :class="currentChecklistMember === member ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'">
+                        {{ member }}
+                    </div>
                 </div>
+
                 <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4 sticky top-0 z-10">
                     <div class="flex justify-between items-end mb-2">
                         <h3 class="font-bold text-gray-800 text-lg">行李清單</h3>
-                        <span class="text-xs font-bold" :class="packingProgress > 60 ? 'text-green-500' : 'text-blue-500'">{{ packingProgress > 60 ? 'Ready to Go! 100%' : '準備進度 ' + packingProgress + '%' }}</span>
+                        <span class="text-xs font-bold" :class="packingProgress > 60 ? 'text-green-500' : 'text-blue-500'">
+                            {{ packingProgress > 60 ? 'Ready to Go! 100%' : '準備進度 ' + packingProgress + '%' }}
+                        </span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                        <div class="h-2.5 rounded-full transition-all duration-500" :class="packingProgress > 60 ? 'bg-gradient-to-r from-green-400 to-emerald-500' : 'bg-gradient-to-r from-blue-400 to-indigo-500'" :style="{ width: (packingProgress > 60 ? 100 : packingProgress) + '%' }"></div>
+                        <div class="h-2.5 rounded-full transition-all duration-500" 
+                             :class="packingProgress > 60 ? 'bg-gradient-to-r from-green-400 to-emerald-500' : 'bg-gradient-to-r from-blue-400 to-indigo-500'"
+                             :style="{ width: (packingProgress > 60 ? 100 : packingProgress) + '%' }">
+                        </div>
                     </div>
                 </div>
                 <div class="space-y-4">
                     <div v-if="currentChecklistData" v-for="(category, cIdx) in currentChecklistData" :key="cIdx" class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
-                        <div class="bg-gray-50 px-4 py-2 border-b border-gray-100 flex justify-between items-center"><span class="font-bold text-gray-700 text-sm">{{ category.name }}</span><span class="text-[10px] text-gray-400">{{ category.items.filter(i => i.checked).length }}/{{ category.items.length }}</span></div>
+                        <div class="bg-gray-50 px-4 py-2 border-b border-gray-100 flex justify-between items-center">
+                            <span class="font-bold text-gray-700 text-sm">{{ category.name }}</span>
+                            <span class="text-[10px] text-gray-400">{{ category.items.filter(i => i.checked).length }}/{{ category.items.length }}</span>
+                        </div>
                         <div class="p-2">
                             <div v-for="(item, iIdx) in category.items" :key="iIdx" class="flex items-center justify-between p-2 rounded hover:bg-gray-50 transition cursor-pointer" @click="toggleCheckItem(item)">
-                                <div class="flex items-center gap-3"><div class="w-5 h-5 rounded border flex items-center justify-center transition-colors" :class="item.checked ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 text-transparent'"><i class="fas fa-check text-xs"></i></div><span class="text-sm text-gray-700" :class="{ 'line-through text-gray-400': item.checked }">{{ item.name }}</span></div>
-                                <div class="flex gap-1"><span v-if="item.important" class="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded font-bold"><i class="fas fa-star mr-0.5"></i>重要</span><span v-if="item.tag" class="text-[10px] px-1.5 py-0.5 rounded font-bold" :class="item.tag === '隨身' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'">{{ item.tag }}</span></div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-5 h-5 rounded border flex items-center justify-center transition-colors" :class="item.checked ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 text-transparent'"><i class="fas fa-check text-xs"></i></div>
+                                    <span class="text-sm text-gray-700" :class="{ 'line-through text-gray-400': item.checked }">{{ item.name }}</span>
+                                </div>
+                                <div class="flex gap-1">
+                                    <span v-if="item.important" class="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded font-bold"><i class="fas fa-star mr-0.5"></i>重要必帶</span>
+                                    <span v-if="item.tag" class="text-[10px] px-1.5 py-0.5 rounded font-bold" :class="item.tag === '隨身' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'">{{ item.tag }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -90,13 +133,31 @@
                         <span class="text-xs uppercase font-bold">{{ getDayName(day.date) }}</span><span class="text-lg font-bold">{{ getDayNum(day.date) }}</span>
                     </button>
                 </div>
-                <div v-if="weather" class="mb-6 bg-blue-50/80 rounded-xl p-3 flex items-center justify-between border border-blue-100 shadow-sm">
-                    <div class="flex items-center gap-3"><div class="text-3xl" :class="weather.iconClass"><i :class="weather.icon"></i></div><div><div class="text-sm font-bold text-gray-700">{{ schedule[currentDayIndex].location.split('/')[0] }}</div><div class="text-xs text-gray-500">{{ weather.desc }}</div></div></div>
-                    <div class="text-right"><div class="text-2xl font-bold text-gray-800">{{ weather.temp }}°</div><div class="text-xs text-gray-400">體感 {{ weather.feelsLike }}°</div><div v-if="weather.uv !== undefined" class="text-[10px] font-bold mt-0.5" :class="getUVColor(weather.uv)"><i class="fas fa-sun mr-0.5"></i>UV: {{ weather.uv }}</div></div>
+                
+                <div v-if="weather" class="mb-6 bg-blue-50/80 rounded-xl p-3 flex items-center justify-between border border-blue-100 shadow-sm transition-all duration-500">
+                    <div class="flex items-center gap-3">
+                        <div class="text-3xl" :class="weather.iconClass">
+                            <i :class="weather.icon"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold text-gray-700">{{ schedule[currentDayIndex].location.split('/')[0] }}</div>
+                            <div class="text-xs text-gray-500">{{ weather.desc }}</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-gray-800">{{ weather.temp }}°</div>
+                        <div class="text-xs text-gray-400">體感 {{ weather.feelsLike }}°</div>
+                        <div v-if="weather.uv !== undefined" class="text-[10px] font-bold mt-0.5" 
+                             :class="getUVColor(weather.uv)">
+                            <i class="fas fa-sun mr-0.5"></i>UV: {{ weather.uv }}
+                        </div>
+                    </div>
                 </div>
+
                 <div id="itinerary-list" class="space-y-0 relative pb-20">
                     <div v-for="(item, idx) in schedule[currentDayIndex].events" :key="item.id" class="relative group itinerary-item pb-6" :data-id="item.id">
                         <div v-if="idx < schedule[currentDayIndex].events.length - 1" class="absolute left-[19px] top-10 bottom-0 w-[2px] bg-gray-200 z-0 flex flex-col items-center justify-center"><div class="bg-gray-100 text-[10px] text-gray-500 px-1 py-0.5 rounded border border-gray-200 mt-4 whitespace-nowrap z-10 flex items-center gap-1"><i :class="getTransportIcon(item.transportType)"></i> {{ item.transportTime }}</div></div>
+                        
                         <div v-if="item.category === 'flight' && idx === 0" class="pl-0 mb-4">
                             <div class="boarding-pass rounded-2xl p-4 shadow-sm relative">
                                 <div class="flex justify-between items-center mb-3 border-b border-dashed border-gray-300 pb-2"><div class="text-blue-800 font-bold tracking-widest"><i class="fas fa-plane-departure mr-1"></i> ANA</div><div class="text-gray-400 text-xs">{{ item.date }}</div></div>
@@ -104,6 +165,7 @@
                                 <div class="mt-3 text-center text-sm font-medium text-gray-600 bg-gray-50 py-1 rounded">{{ item.name }}</div>
                             </div>
                         </div>
+                        
                         <div v-else class="relative pl-12 cursor-pointer" @click="editEvent(item)" :class="{ 'opacity-90': isDraggable }">
                             <div v-if="isDraggable" class="absolute right-2 top-2 text-gray-300 z-20"><i class="fas fa-bars"></i></div>
                             <div class="absolute left-0 top-0 w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md z-10 border-2 border-white" :class="[getCategoryColor(item.category), isDraggable ? 'draggable-shake' : '']"><i :class="getCategoryIcon(item.category)"></i></div>
@@ -119,17 +181,35 @@
 
             <div v-show="currentTab === 'info'" class="space-y-6 pb-20">
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-                    <h3 class="font-bold text-gray-800 mb-3 flex justify-between items-center"><span><i class="fas fa-coins text-yellow-500 mr-2"></i>匯率換算 (JPY/TWD)</span><span class="text-[10px] text-gray-400 font-normal bg-gray-50 px-2 py-1 rounded"><span v-if="settings.lastUpdate">更新: {{ settings.lastUpdate }}</span><span v-else>更新中...</span></span></h3>
-                    <div class="flex items-center gap-3"><div class="flex-1"><label class="text-xs text-gray-400 block mb-1">日幣 (JPY)</label><input type="number" v-model="converter.jpy" @input="calculateTWD" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-lg font-bold text-blue-600" placeholder="0"></div><i class="fas fa-exchange-alt text-gray-300 mt-4"></i><div class="flex-1"><label class="text-xs text-gray-400 block mb-1">台幣 (TWD)</label><input type="number" v-model="converter.twd" @input="calculateJPY" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-lg font-bold text-green-600" placeholder="0"></div></div>
-                    <div class="text-[10px] text-right mt-2 text-gray-400">當前匯率: {{ settings.rate }}</div>
+                    <h3 class="font-bold text-gray-800 mb-3 flex justify-between items-center">
+                        <span><i class="fas fa-coins text-yellow-500 mr-2"></i>匯率換算 (JPY/TWD)</span>
+                        <span class="text-[10px] text-gray-400 font-normal bg-gray-50 px-2 py-1 rounded">
+                            <span v-if="settings.lastUpdate">更新: {{ settings.lastUpdate }}</span>
+                            <span v-else>更新中...</span>
+                        </span>
+                    </h3>
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1">
+                            <label class="text-xs text-gray-400 block mb-1">日幣 (JPY)</label>
+                            <input type="number" v-model="converter.jpy" @input="calculateTWD" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-lg font-bold text-blue-600" placeholder="0">
+                        </div>
+                        <i class="fas fa-exchange-alt text-gray-300 mt-4"></i>
+                        <div class="flex-1">
+                            <label class="text-xs text-gray-400 block mb-1">台幣 (TWD)</label>
+                            <input type="number" v-model="converter.twd" @input="calculateJPY" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-lg font-bold text-green-600" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="text-[10px] text-right mt-2 text-gray-400">當前匯率 (JPY→TWD): {{ settings.rate }}</div>
                 </div>
-                
+
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="bg-blue-600 px-4 py-2 text-white text-sm font-bold flex justify-between items-center"><span><i class="fas fa-plane mr-2"></i>航班資訊 (ANA)</span></div>
+                    <div class="bg-blue-600 px-4 py-2 text-white text-sm font-bold flex justify-between items-center">
+                        <span><i class="fas fa-plane mr-2"></i>航班資訊 (ANA)</span>
+                    </div>
                     <div class="p-4 border-b border-gray-100 relative group"><div class="flex justify-between mb-2"><span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold">航班 1</span><span class="text-xs text-gray-500">12/24</span></div><div class="flex justify-between items-center text-center"><div><div class="text-2xl font-black text-gray-800">TSA</div><div class="text-xs text-gray-500">13:30</div><div class="text-[10px] text-gray-400 mt-1">松山 T1</div></div><div class="flex-1 px-2 flex flex-col items-center"><div class="text-[10px] text-blue-500 font-bold mb-1">3h</div><div class="w-full h-[1px] bg-gray-300 relative"><i class="fas fa-plane absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 text-gray-400 text-xs"></i></div><div class="text-[10px] text-gray-400 mt-1">NH852</div></div><div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">17:30</div><div class="text-[10px] text-gray-400 mt-1">羽田 T2</div></div></div></div>
                     <div class="p-4 border-b border-gray-100 relative group"><div class="flex justify-between mb-2"><span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold">航班 2</span><span class="text-xs text-gray-500">12/27</span></div><div class="flex justify-between items-center text-center"><div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">18:00</div><div class="text-[10px] text-gray-400 mt-1">羽田 T2</div></div><div class="flex-1 px-2 flex flex-col items-center"><div class="text-[10px] text-blue-500 font-bold mb-1">1h 35m</div><div class="w-full h-[1px] bg-gray-300 relative"><i class="fas fa-plane absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 text-gray-400 text-xs"></i></div><div class="text-[10px] text-gray-400 mt-1">NH75</div></div><div><div class="text-2xl font-black text-gray-800">CTS</div><div class="text-xs text-gray-500">19:35</div><div class="text-[10px] text-gray-400 mt-1">新千歲</div></div></div></div>
-                    <div class="p-4 border-b border-gray-100 relative group"><div class="flex justify-between mb-2"><span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold">航班 3</span><span class="text-xs text-gray-500">01/02</span></div><div class="flex justify-between items-center text-center"><div><div class="text-2xl font-black text-gray-800">HKD</div><div class="text-xs text-gray-500">11:45</div><div class="text-[10px] text-gray-400 mt-1">函館</div></div><div class="flex-1 px-2 flex flex-col items-center"><div class="text-[10px] text-blue-500 font-bold mb-1">1h 30m</div><div class="w-full h-[1px] bg-gray-300 relative"><i class="fas fa-plane absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 text-gray-400 text-xs"></i></div><div class="text-[10px] text-gray-400 mt-1">NH554</div></div><div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">13:15</div><div class="text-[10px] text-gray-400 mt-1">羽田 T2</div></div></div></div>
-                    <div class="p-4 relative group"><div class="flex justify-between mb-2"><span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold">航班 4</span><span class="text-xs text-gray-500">01/04</span></div><div class="flex justify-between items-center text-center"><div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">12:40</div><div class="text-[10px] text-gray-400 mt-1">羽田 T2</div></div><div class="flex-1 px-2 flex flex-col items-center"><div class="text-[10px] text-blue-500 font-bold mb-1">4h 10m</div><div class="w-full h-[1px] bg-gray-300 relative"><i class="fas fa-plane absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 text-gray-400 text-xs"></i></div><div class="text-[10px] text-gray-400 mt-1">NH853</div></div><div><div class="text-2xl font-black text-gray-800">TSA</div><div class="text-xs text-gray-500">15:50</div><div class="text-[10px] text-gray-400 mt-1">松山 T1</div></div></div></div>
+                    <div class="p-4 border-b border-gray-100 relative group"><div class="flex justify-between mb-2"><span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded font-bold">航班 3</span><span class="text-xs text-gray-500">01/02</span></div><div class="flex justify-between items-center text-center"><div><div class="text-2xl font-black text-gray-800">HKD</div><div class="text-xs text-gray-500">11:45</div><div class="text-[10px] text-gray-400 mt-1">函館</div></div><div class="flex-1 px-2 flex flex-col items-center"><div class="text-[10px] text-green-500 font-bold mb-1">1h 30m</div><div class="w-full h-[1px] bg-gray-300 relative"><i class="fas fa-plane absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 text-gray-400 text-xs rotate-180"></i></div><div class="text-[10px] text-gray-400 mt-1">NH554</div></div><div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">13:15</div><div class="text-[10px] text-gray-400 mt-1">羽田 T2</div></div></div></div>
+                    <div class="p-4 relative group"><div class="flex justify-between mb-2"><span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded font-bold">航班 4</span><span class="text-xs text-gray-500">01/04</span></div><div class="flex justify-between items-center text-center"><div><div class="text-2xl font-black text-gray-800">HND</div><div class="text-xs text-gray-500">12:40</div><div class="text-[10px] text-gray-400 mt-1">羽田 T2</div></div><div class="flex-1 px-2 flex flex-col items-center"><div class="text-[10px] text-green-500 font-bold mb-1">4h 10m</div><div class="w-full h-[1px] bg-gray-300 relative"><i class="fas fa-plane absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 text-gray-400 text-xs rotate-180"></i></div><div class="text-[10px] text-gray-400 mt-1">NH853</div></div><div><div class="text-2xl font-black text-gray-800">TSA</div><div class="text-xs text-gray-500">15:50</div><div class="text-[10px] text-gray-400 mt-1">松山 T1</div></div></div></div>
                 </div>
 
                 <h3 class="font-bold text-gray-800 mt-2 mb-1"><i class="fas fa-bed text-indigo-500 mr-2"></i>住宿資訊</h3>
@@ -215,8 +295,8 @@
 
 <script>
     const { createApp, ref, computed, onMounted, watch, onUnmounted } = Vue;
-    // 使用新版本號，強制覆蓋舊資料
-    const DATA_VERSION = 'v2.0_full_itinerary_from_file';
+    // 重要：版本控制，確保新行程能覆蓋舊資料
+    const DATA_VERSION = 'v3.0_final_itinerary';
 
     createApp({
         setup() {
@@ -237,10 +317,10 @@
 
             // 住宿資料 (依照Excel)
             const hotels = ref([
-                { name: 'Hotel Sunroute Asakusa', dates: '12/24 - 12/27', address: '東京都台東區雷門1-8-5', phone: '+81-3-3847-1511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Sunroute+Asakusa' },
-                { name: 'Hotel Nets Sapporo', dates: '12/27 - 12/31', address: '北海道札幌市中央區南7条西4丁目1-1', phone: '+81-11-530-5511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Nets+Sapporo' },
+                { name: '淺草燦路都飯店', dates: '12/24 - 12/27', address: '東京都台東區雷門1-8-5', phone: '+81-3-3847-1511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Sunroute+Asakusa' },
+                { name: '札幌 Nets 飯店', dates: '12/27 - 12/31', address: '北海道札幌市中央區南7条西4丁目1-1', phone: '+81-11-530-5511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Nets+Sapporo' },
                 { name: 'LA JOLIE MOTOMACHI', dates: '12/31 - 01/02', address: '北海道函館市末廣町6-6', phone: '+81-138-23-3322', mapLink: 'https://www.google.com/maps/search/?api=1&query=LA+JOLIE+MOTOMACHI+Hakodate' },
-                { name: 'Sotetsu Fresa Inn Tokyo-Roppongi', dates: '01/02 - 01/04', address: '東京都港區六本木3-10-1', phone: '+81-3-5413-2031', mapLink: 'https://www.google.com/maps/search/?api=1&query=Sotetsu+Fresa+Inn+Tokyo+Roppongi' }
+                { name: 'Sotetsu Fresa Inn 六本木', dates: '01/02 - 01/04', address: '東京都港區六本木3-10-1', phone: '+81-3-5413-2031', mapLink: 'https://www.google.com/maps/search/?api=1&query=Sotetsu+Fresa+Inn+Tokyo+Roppongi' }
             ]);
 
             // ** 12天完整行程 (Excel 轉譯) **
@@ -264,7 +344,7 @@
                     events: [
                         { id: 301, category: 'spot', name: '築地市場', startTime: '09:00', endTime: '12:00', transportType: 'subway', transportTime: '20分', notes: 'A1出口，吃海鮮丼、玉子燒' },
                         { id: 302, category: 'spot', name: '銀座逛街', startTime: '13:00', endTime: '16:00', transportType: 'walk', transportTime: '15分', notes: '步行者天國 (週末)' },
-                        { id: 303, category: 'spot', name: '阿美橫丁', startTime: '17:00', endTime: '19:00', transportType: 'train', transportTime: '-', notes: '藥妝、二木菓子採購' }
+                        { id: 303, category: 'spot', name: '阿美橫丁', startTime: '17:00', endTime: '19:00', transportType: 'train', transportTime: '-', notes: '藥妝採購' }
                     ]
                 },
                 { 
@@ -286,16 +366,17 @@
                 { 
                     date: "2025-12-29", location: "Sapporo", 
                     events: [
-                        { id: 601, category: 'spot', name: '北海道神宮', startTime: '09:30', endTime: '11:30', transportType: 'subway', transportTime: '30分', notes: '圓山公園站' },
-                        { id: 602, category: 'spot', name: '白色戀人公園', startTime: '13:30', endTime: '16:00', transportType: 'bus', transportTime: '40分', notes: '需門票，可預約DIY' },
-                        { id: 603, category: 'food', name: '成吉思汗烤肉 (達摩)', startTime: '18:30', endTime: '20:30', transportType: 'subway', transportTime: '-', notes: '排隊名店' }
+                        { id: 601, category: 'spot', name: '旭川動物園', startTime: '10:30', endTime: '15:30', transportType: 'bus', transportTime: '2h', notes: '看企鵝散步' },
+                        { id: 602, category: 'spot', name: '四季彩之丘', startTime: '16:00', endTime: '17:00', transportType: 'bus', transportTime: '30分', notes: '雪上活動' },
+                        { id: 603, category: 'spot', name: '精靈露台', startTime: '18:00', endTime: '19:30', transportType: 'bus', transportTime: '1h', notes: '夢幻點燈' }
                     ]
                 },
                 { 
                     date: "2025-12-30", location: "Sapporo", 
                     events: [
-                        { id: 701, category: 'spot', name: '小樽運河 & 堺町通', startTime: '10:00', endTime: '16:00', transportType: 'train', transportTime: '45分', notes: 'JR快速Airprot，六花亭、北菓樓' },
-                        { id: 702, category: 'food', name: '小樽壽司通', startTime: '17:00', endTime: '19:00', transportType: 'train', transportTime: '-', notes: '回程回札幌' }
+                        { id: 701, category: 'spot', name: '北海道神宮', startTime: '09:00', endTime: '11:00', transportType: 'subway', transportTime: '20分', notes: '參拜' },
+                        { id: 702, category: 'spot', name: '白色戀人公園', startTime: '11:30', endTime: '13:30', transportType: 'subway', transportTime: '30分', notes: '觀光工廠' },
+                        { id: 703, category: 'spot', name: '小樽運河 & 堺町通', startTime: '14:30', endTime: '18:30', transportType: 'train', transportTime: '40分', notes: '六花亭、北菓樓、壽司' }
                     ]
                 },
                 { 
@@ -448,10 +529,28 @@
                 if(modalType.value==='schedule'){ 
                     if(isEditing.value){ const idx=scheduleData.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); if(idx!==-1)scheduleData.value[currentDayIndex.value].events[idx]=editForm.value; } 
                     else { editForm.value.id=Date.now(); scheduleData.value[currentDayIndex.value].events.push(editForm.value); } 
-                } else if(modalType.value==='shopping') shoppingList.value.push(shoppingForm.value); else if(modalType.value==='expense') expenses.value.push(expenseForm.value); showModal.value=false; persistData(); 
+                } else if(modalType.value==='shopping') {
+                    shoppingList.value.push(shoppingForm.value); 
+                } else if(modalType.value==='expense') {
+                    expenses.value.push(expenseForm.value); 
+                }
+                persistData();
+                showModal.value=false; 
             };
-            const confirmDelete = () => { if(confirm("刪除?")){ const idx=scheduleData.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); if(idx!==-1)scheduleData.value[currentDayIndex.value].events.splice(idx,1); persistData(); showModal.value=false; } };
-            const deleteShoppingItem = (i) => { if(confirm("刪除?")) { shoppingList.value.splice(i,1); persistData(); } };
+            const confirmDelete = () => { 
+                if(confirm("刪除?")){ 
+                    const idx=scheduleData.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); 
+                    if(idx!==-1)scheduleData.value[currentDayIndex.value].events.splice(idx,1); 
+                    persistData();
+                    showModal.value=false; 
+                } 
+            };
+            const deleteShoppingItem = (i) => { 
+                if(confirm("刪除?")) {
+                    shoppingList.value.splice(i,1); 
+                    persistData();
+                }
+            };
             
             const toggleSettlement = () => showSettlement.value = !showSettlement.value;
             const addMember = () => { const n = prompt("輸入新成員名字:"); if(n && !members.value.includes(n)) { members.value.push(n); packingData.value[n] = getNewPackingList(); persistData(); } };
