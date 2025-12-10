@@ -201,7 +201,7 @@
 
     <div class="header-bg relative">
         <div class="header-image-container">
-            <img src="banner.jpg" alt="北海道跨年旅行計畫">
+            <img src="https://images.unsplash.com/photo-1516475429286-465d815a0df4?q=80&w=1000&auto=format&fit=crop" alt="日本冬季縱斷旅行">
         </div>
         
         <div class="snow-layer"></div> 
@@ -236,16 +236,12 @@
                     <div class="pt-1">
                         <span class="text-3xl font-extrabold leading-none">{{ weatherData[selectedDateIndex].temp.split('/')[0] }}°</span>
                         <span class="text-sm font-light text-slate-500 ml-1">/ {{ weatherData[selectedDateIndex].temp.split('/')[1] }}°C</span>
-                        <span class="block text-xs text-slate-600 mt-1">體感: {{ weatherData[selectedDateIndex].feel }}°C</span> 
+                        <span class="block text-xs text-slate-600 mt-1">地點: {{ weatherData[selectedDateIndex].city }}</span> 
                     </div>
                 </div>
                 <div class="text-right text-xs text-slate-600 pl-3">
                     <span class="font-bold block text-slate-700">{{ getWeatherDescription(weatherData[selectedDateIndex].condition) }}</span>
-                    <span v-if="dates[selectedDateIndex].hasCar" class="mt-1 block text-deep-sea-blue font-bold">
-                        <i class="fa-solid fa-car-side mr-1 text-accent-yellow"></i> 租車日
-                        <span v-if="dates[selectedDateIndex].tollFee" class="ml-2 bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">¥{{ formatNumber(dates[selectedDateIndex].tollFee) }}</span>
-                    </span>
-                    <span v-else class="mt-1 block text-slate-400">本日步行/大眾運輸</span>
+                    <span class="mt-1 block text-slate-400">大眾運輸 / 步行</span>
                 </div>
             </div>
 
@@ -326,18 +322,18 @@
                 <div class="space-y-4">
                     <div class="bg-blue-50 rounded-xl p-3 border border-blue-100">
                         <div class="flex justify-between text-sm font-bold text-deep-sea-blue mb-1">
-                            <span>TPE 台北</span> <i class="fa-solid fa-plane text-xs"></i> <span>CTS 札幌</span>
+                            <span>TPE 台北</span> <i class="fa-solid fa-plane text-xs"></i> <span>NRT 東京</span>
                         </div>
                         <div class="flex justify-between text-xs text-slate-500">
-                            <span>08:35</span> <span>CI0130 (12/24)</span> <span>13:15</span>
+                            <span>08:35</span> <span>CI0100 (12/24)</span> <span>12:30</span>
                         </div>
                     </div>
                     <div class="bg-orange-50 rounded-xl p-3 border border-orange-100">
                         <div class="flex justify-between text-sm font-bold text-orange-800 mb-1">
-                            <span>CTS 札幌</span> <i class="fa-solid fa-plane text-xs"></i> <span>TPE 台北</span>
+                            <span>NRT 東京</span> <i class="fa-solid fa-plane text-xs"></i> <span>TPE 台北</span>
                         </div>
                         <div class="flex justify-between text-xs text-slate-500">
-                            <span>14:40</span> <span>CI0131 (1/4)</span> <span>18:15</span>
+                            <span>14:30</span> <span>CI0101 (1/4)</span> <span>17:40</span>
                         </div>
                     </div>
                 </div>
@@ -360,17 +356,6 @@
                         </div>
                     </li>
                 </ul>
-            </div>
-
-            <div class="bg-white rounded-3xl p-6 card-shadow">
-                <h3 class="font-bold text-slate-800 mb-3 border-b border-slate-100 pb-3"><i class="fa-solid fa-car text-green-500 mr-2"></i> 租車資訊</h3>
-                <div class="text-sm space-y-3">
-                    <div class="flex justify-between"><span class="text-slate-500">公司</span><span class="font-bold text-slate-700">Nissan Rent a Car</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">取車點</span><span class="font-bold text-slate-700 text-right">札幌駅南口アスティ店</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">期間</span><span class="font-bold text-slate-700">12/26 08:00 - 1/2 20:00</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">車型</span><span class="font-bold text-slate-700">Kicks (油電 4WD)</span></div>
-                    <button @click="openMap('Nissan Rent a Car Sapporo Station South Exit Asty')" class="w-full mt-4 bg-green-50 text-green-700 py-3 rounded-xl text-sm font-bold hover:bg-green-100 transition-colors flex items-center justify-center"><i class="fa-solid fa-diamond-turn-right mr-2"></i> 導航去取車點</button>
-                </div>
             </div>
             
             <div class="bg-red-50 rounded-3xl p-6 border border-red-100">
@@ -485,7 +470,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <input v-model="newItinerary.startTime" type="text" placeholder="時間 (e.g. 09:30)" class="bg-slate-50 rounded-xl p-3 text-sm outline-none">
                     <select v-model="newItinerary.transportType" class="bg-slate-50 rounded-xl p-3 text-sm outline-none">
-                        <option value="walk">步行</option><option value="car">自駕</option><option value="bus">巴士</option><option value="public">地鐵/JR</option><option value="flight">飛機</option><option value="other">其他</option>
+                        <option value="walk">步行</option><option value="bus">巴士</option><option value="public">地鐵/JR</option><option value="flight">飛機</option><option value="other">其他</option>
                     </select>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
@@ -521,7 +506,7 @@
                 shopping: { color: 'bg-indigo-500', icon: 'fa-solid fa-bag-shopping' },
                 accommodation: { color: 'bg-purple-500', icon: 'fa-solid fa-bed' },
                 flight: { color: 'bg-blue-500', icon: 'fa-solid fa-plane-departure' },
-                transport: { color: 'bg-orange-500', icon: 'fa-solid fa-car' },
+                transport: { color: 'bg-orange-500', icon: 'fa-solid fa-train' },
                 ticket: { color: 'bg-cyan-500', icon: 'fa-solid fa-ticket' },
                 other: { color: 'bg-slate-500', icon: 'fa-solid fa-circle-info' },
                 stay: { color: 'bg-purple-500', icon: 'fa-solid fa-hotel' }, 
@@ -534,151 +519,155 @@
             const currentTab = ref('itinerary');
 
             // --- 資料定義：2025/12/24 - 2026/01/04 (共12天) ---
-            
             const dates = ref([
                 { date: '12/24', weekday: '三', hasCar: false, tollFee: 0 },
                 { date: '12/25', weekday: '四', hasCar: false, tollFee: 0 }, 
-                { date: '12/26', weekday: '五', hasCar: true, tollFee: 0 }, // 租車開始
-                { date: '12/27', weekday: '六', hasCar: true, tollFee: 0 },
-                { date: '12/28', weekday: '日', hasCar: true, tollFee: 0 },
-                { date: '12/29', weekday: '一', hasCar: true, tollFee: 0 },
-                { date: '12/30', weekday: '二', hasCar: true, tollFee: 0 },
-                { date: '12/31', weekday: '三', hasCar: true, tollFee: 0 }, // 跨年夜
-                { date: '1/1', weekday: '四', hasCar: true, tollFee: 0 },   // 元旦
-                { date: '1/2', weekday: '五', hasCar: true, tollFee: 0 },   // 還車
+                { date: '12/26', weekday: '五', hasCar: false, tollFee: 0 },
+                { date: '12/27', weekday: '六', hasCar: false, tollFee: 0 },
+                { date: '12/28', weekday: '日', hasCar: false, tollFee: 0 },
+                { date: '12/29', weekday: '一', hasCar: false, tollFee: 0 },
+                { date: '12/30', weekday: '二', hasCar: false, tollFee: 0 },
+                { date: '12/31', weekday: '三', hasCar: false, tollFee: 0 }, 
+                { date: '1/1', weekday: '四', hasCar: false, tollFee: 0 },   
+                { date: '1/2', weekday: '五', hasCar: false, tollFee: 0 },   
                 { date: '1/3', weekday: '六', hasCar: false, tollFee: 0 },
                 { date: '1/4', weekday: '日', hasCar: false, tollFee: 0 },
             ]);
 
             const hotels = ref([
-                { name: '札幌大通東急STAY酒店', date: '12/24 - 12/26 (2晚)', phone: '+81-11-200-5109', address: '〒060-0042 北海道札幌市中央区大通西９丁目３−3' },
-                { name: '登別溫泉第一瀧本館', date: '12/26 - 12/28 (2晚)', phone: '+81-143-84-2111', address: '〒059-0551 北海道登別市登別温泉町５５' },
-                { name: '洞爺湖 萬世閣飯店', date: '12/28 - 12/30 (2晚)', phone: '+81-142-73-3500', address: '〒049-5721 北海道虻田郡洞爺湖町洞爺湖温泉２１' },
-                { name: '富良野ホテル (Furano Hotel)', date: '12/30 - 1/1 (2晚)', phone: '+81-167-22-1133', address: '〒076-0035 北海道富良野市学田三区' },
-                { name: '札幌西三井花園飯店', date: '1/1 - 1/4 (3晚)', phone: '+81-11-280-5531', address: '〒060-0004 北海道札幌市中央区北４条西７丁目１−2' },
+                { name: '新宿格拉斯麗酒店', date: '12/24 - 12/27 (3晚)', phone: '+81-3-6833-1111', address: '〒160-8466 東京都新宿区歌舞伎町１丁目１９−1' },
+                { name: '札幌格蘭大飯店', date: '12/27 - 12/31 (4晚)', phone: '+81-11-261-3311', address: '〒060-0001 北海道札幌市中央区北１条西４丁目' },
+                { name: '函館國際飯店', date: '12/31 - 1/2 (2晚)', phone: '+81-138-23-5151', address: '〒040-0064 北海道函館市大手町５−10' },
+                { name: '東京灣潮見王子大飯店', date: '1/2 - 1/4 (2晚)', phone: '+81-3-6660-3222', address: '〒135-0052 東京都江東区潮見２丁目８−16' },
             ]);
             
             // 行程資料 (對應 12 天)
             const itineraryData = ref([
-                // Day 1: 12/24 (三) 抵達札幌 - 平安夜
+                // Day 1: 12/24 (三) 抵達東京 - 平安夜
                 [
-                    { id: 101, name: '桃園機場報到', category: 'flight', startTime: '06:00', address: '桃園國際機場 (TPE)', note: '中華航空 CI0130 08:35起飛', hours: null, price: null, transportType: 'flight', travelTime: null, isNoteExpanded: false },
-                    { id: 102, name: '新千歲機場 (CTS) 抵達', category: 'flight', startTime: '13:15', address: '新千歲機場', note: '領取行李與確認巴士站牌', hours: null, price: null, transportType: 'flight', travelTime: '4h40m', isNoteExpanded: false },
-                    { id: 103, name: '搭乘機場巴士至札幌', category: 'transport', startTime: '~14:30', address: '札幌大通東急STAY酒店', note: '國內線14, 22站台搭車。', hours: null, price: '約 ¥1,400/人', transportType: 'bus', travelTime: '1h30m', isNoteExpanded: false },
-                    { id: 104, name: '飯店 Check-in', category: 'accommodation', startTime: '~16:00', address: '札幌東急大通酒店', note: '休息準備晚餐', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
-                    { id: 105, name: '大通公園聖誕市集', category: 'sightseeing', startTime: '~17:30', address: '大通公園 2丁目', note: '慕尼黑聖誕市集 (通常至12/25)，氣氛濃厚。', hours: '11:00-21:00', price: '免費', transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
-                    { id: 106, name: '聖誕晚餐 (湯咖哩)', category: 'food', startTime: '~19:00', address: 'Suage+ 或 GARAKU', note: '熱呼呼的湯咖哩適合平安夜。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
+                    { id: 101, name: '桃園機場報到', category: 'flight', startTime: '06:00', address: '桃園國際機場 (TPE)', note: '中華航空 CI0100 08:35起飛', hours: null, price: null, transportType: 'flight', travelTime: null, isNoteExpanded: false },
+                    { id: 102, name: '成田機場 (NRT) 抵達', category: 'flight', startTime: '12:30', address: '成田國際機場', note: '領取行李與購買 Skyliner 車票', hours: null, price: null, transportType: 'flight', travelTime: '3h', isNoteExpanded: false },
+                    { id: 103, name: '搭乘 Skyliner 至新宿', category: 'transport', startTime: '~14:00', address: '新宿格拉斯麗酒店', note: 'Skyliner 至日暮里轉乘 JR 山手線至新宿。', hours: null, price: '¥2,500', transportType: 'public', travelTime: '1h15m', isNoteExpanded: false },
+                    { id: 104, name: '飯店 Check-in', category: 'accommodation', startTime: '~16:00', address: '新宿格拉斯麗酒店', note: '哥吉拉飯店，休息準備晚餐', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
+                    { id: 105, name: '六本木之丘聖誕燈飾', category: 'sightseeing', startTime: '~17:30', address: '六本木けやき坂', note: '東京最著名的聖誕燈飾之一。', hours: '17:00-23:00', price: '免費', transportType: 'public', travelTime: '20m', isNoteExpanded: false },
+                    { id: 106, name: '聖誕晚餐 (燒肉)', category: 'food', startTime: '~19:30', address: '敘敘苑 六本木店', note: '需提前預約，享受聖誕大餐。', hours: null, price: '¥10,000+', transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
                 ],
-                // Day 2: 12/25 (四) 札幌市區 - 聖誕節
+                // Day 2: 12/25 (四) 東京 - 聖誕節 (迪士尼)
                 [
-                    { id: 201, name: '北海道神宮', category: 'sightseeing', startTime: '09:00', address: '北海道神宮', note: '雪中的神宮，參拜並購買御守。', hours: '7:00-16:00', price: '免費', transportType: 'public', travelTime: '20m', isNoteExpanded: false },
-                    { id: 202, name: '六花亭 札幌本店', category: 'food', startTime: '~11:00', address: '六花亭 札幌本店', note: '品嚐限定甜點 (丸成奶油三明治冰淇淋)。', hours: '10:00-17:30', price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
-                    { id: 203, name: '午餐 (根室花丸迴轉壽司)', category: 'food', startTime: '~12:30', address: 'JR Tower Stella Place', note: '需排隊，建議先抽號碼牌。', hours: '11:00-23:00', price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
-                    { id: 204, name: '白色戀人工廠', category: 'sightseeing', startTime: '~15:00', address: '白い恋人パーク', note: '聖誕燈飾與歐風建築。', hours: '10:00-19:00', price: '¥800', transportType: 'public', travelTime: '30m', isNoteExpanded: false },
-                    { id: 205, name: '狸小路逛街', category: 'shopping', startTime: '~18:00', address: '狸小路商店街', note: '藥妝店、Don Quijote 採購。', hours: null, price: null, transportType: 'public', travelTime: '20m', isNoteExpanded: false },
+                    { id: 201, name: '東京迪士尼海洋', category: 'sightseeing', startTime: '08:30', address: '東京迪士尼海洋', note: '體驗聖誕節特別活動 "Disney Christmas"。', hours: '9:00-21:00', price: '¥9,400~', transportType: 'public', travelTime: '50m', isNoteExpanded: false },
+                    { id: 202, name: '地中海港灣聖誕秀', category: 'sightseeing', startTime: '~12:00', address: '地中海港灣', note: '觀賞聖誕水上遊行。', hours: null, price: null, transportType: 'walk', travelTime: '0m', isNoteExpanded: false },
+                    { id: 203, name: '園區晚餐', category: 'food', startTime: '~18:00', address: 'S.S.哥倫比亞餐廳', note: '感受美式豪華郵輪晚餐。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
+                    { id: 204, name: '夜間煙火', category: 'sightseeing', startTime: '20:30', address: '園區全域', note: '聖誕配色的煙火表演。', hours: null, price: null, transportType: 'walk', travelTime: '0m', isNoteExpanded: false },
                 ],
-                // Day 3: 12/26 (五) 租車 -> 登別
+                // Day 3: 12/26 (五) 東京市區觀光
                 [
-                    { id: 301, name: '札幌取車', category: 'transport', startTime: '08:00', address: 'Nissan Rent a Car 札幌駅南口', note: '開始自駕行程！檢查雪胎。', hours: null, price: null, transportType: 'walk', travelTime: '15m', isNoteExpanded: false },
-                    { id: 302, name: '支笏湖', category: 'sightseeing', startTime: '~10:00', address: '支笏湖', note: '不凍湖美景，湖畔散步。', hours: null, price: '免費', transportType: 'car', travelTime: '1h15m', isNoteExpanded: false },
-                    { id: 303, name: '前往登別', category: 'transport', startTime: '~12:00', address: '登別溫泉', note: '開車前往登別。', hours: null, price: null, transportType: 'car', travelTime: '1h', isNoteExpanded: false },
-                    { id: 304, name: '登別地獄谷', category: 'sightseeing', startTime: '~14:00', address: '登別地獄谷', note: '觀賞火山地形與硫磺氣味。', hours: null, price: '免費', transportType: 'car', travelTime: '10m', isNoteExpanded: false },
-                    { id: 305, name: '第一瀧本館 Check-in', category: 'accommodation', startTime: '~16:00', address: '第一瀧本館', note: '享受著名的地獄谷景觀大浴場。', hours: null, price: null, transportType: 'car', travelTime: '5m', isNoteExpanded: false },
-                    { id: 306, name: '飯店晚餐 (Buffet)', category: 'food', startTime: '~18:30', address: '飯店餐廳', note: '螃蟹吃到飽。', hours: null, price: null, transportType: 'walk', travelTime: '0m', isNoteExpanded: false },
+                    { id: 301, name: '淺草寺 & 雷門', category: 'sightseeing', startTime: '09:30', address: '淺草寺', note: '參拜並逛仲見世通商店街。', hours: '6:00-17:00', price: '免費', transportType: 'public', travelTime: '30m', isNoteExpanded: false },
+                    { id: 302, name: '晴空塔', category: 'sightseeing', startTime: '~11:30', address: '東京晴空塔', note: '可在 Solamachi 享用午餐。', hours: '10:00-21:00', price: '¥2,100', transportType: 'walk', travelTime: '20m', isNoteExpanded: false },
+                    { id: 303, name: 'SHIBUYA SKY', category: 'sightseeing', startTime: '~16:00', address: 'SHIBUYA SKY', note: '預約日落時段，俯瞰東京全景。', hours: '10:00-22:30', price: '¥2,200', transportType: 'public', travelTime: '45m', isNoteExpanded: false },
+                    { id: 304, name: '澀谷逛街', category: 'shopping', startTime: '~18:00', address: '澀谷 Parco / Loft', note: '潮流聖地購物。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
+                    { id: 305, name: '居酒屋晚餐', category: 'food', startTime: '~20:00', address: '澀谷橫丁', note: '體驗熱鬧的居酒屋氛圍。', hours: null, price: null, transportType: 'walk', travelTime: '5m', isNoteExpanded: false },
                 ],
-                // Day 4: 12/27 (六) 登別 -> 尼克斯
+                // Day 4: 12/27 (六) 東京 -> 札幌
                 [
-                    { id: 401, name: '登別熊牧場', category: 'sightseeing', startTime: '09:30', address: '登別熊牧場', note: '搭纜車上山看熊。', hours: '9:30-16:30', price: '¥3,000', transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
-                    { id: 402, name: '尼克斯海洋公園', category: 'sightseeing', startTime: '~13:00', address: '登別尼克斯海洋公園', note: '企鵝遊行是重點。', hours: '9:00-17:00', price: '¥3,000', transportType: 'car', travelTime: '15m', isNoteExpanded: false },
-                    { id: 403, name: '溫泉街散策', category: 'shopping', startTime: '~16:00', address: '登別溫泉街', note: '閻魔堂變臉表演。', hours: null, price: null, transportType: 'car', travelTime: '15m', isNoteExpanded: false },
+                    { id: 401, name: '前往羽田機場', category: 'transport', startTime: '08:00', address: '羽田機場 (HND)', note: '搭乘京急線或單軌電車。', hours: null, price: null, transportType: 'public', travelTime: '50m', isNoteExpanded: false },
+                    { id: 402, name: '飛往新千歲 (CTS)', category: 'flight', startTime: '10:30', address: '新千歲機場', note: 'JAL/ANA 國內線，飛行約 1.5 小時。', hours: null, price: null, transportType: 'flight', travelTime: '1h30m', isNoteExpanded: false },
+                    { id: 403, name: '前往札幌市區', category: 'transport', startTime: '~13:00', address: '札幌格蘭大飯店', note: '搭乘 JR 快速 Airport 號。', hours: null, price: '¥1,150', transportType: 'public', travelTime: '40m', isNoteExpanded: false },
+                    { id: 404, name: '飯店 Check-in', category: 'accommodation', startTime: '~14:30', address: '札幌格蘭大飯店', note: '放置行李。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
+                    { id: 405, name: '大通公園散步', category: 'sightseeing', startTime: '~16:00', address: '大通公園', note: '觀賞札幌白色燈樹節 (White Illumination)。', hours: null, price: '免費', transportType: 'walk', travelTime: '5m', isNoteExpanded: false },
+                    { id: 406, name: '晚餐 (成吉思汗烤肉)', category: 'food', startTime: '~18:00', address: '達摩成吉思汗', note: '北海道必吃烤羊肉。', hours: '17:00-23:00', price: null, transportType: 'walk', travelTime: '15m', isNoteExpanded: false },
                 ],
-                // Day 5: 12/28 (日) 登別 -> 洞爺湖
+                // Day 5: 12/28 (日) 札幌市區
                 [
-                    { id: 501, name: '前往洞爺湖', category: 'transport', startTime: '10:00', address: '洞爺湖溫泉', note: '經由昭和新山。', hours: null, price: null, transportType: 'car', travelTime: '50m', isNoteExpanded: false },
-                    { id: 502, name: '昭和新山熊牧場', category: 'sightseeing', startTime: '~11:00', address: '昭和新山', note: '可搭乘有珠山纜車看火山口。', hours: null, price: '¥1,800', transportType: 'car', travelTime: '0m', isNoteExpanded: false },
-                    { id: 503, name: '洞爺湖 萬世閣 Check-in', category: 'accommodation', startTime: '~15:00', address: '洞爺湖 萬世閣', note: '湖景溫泉。', hours: null, price: null, transportType: 'car', travelTime: '15m', isNoteExpanded: false },
-                    { id: 504, name: '洞爺湖彩燈隧道', category: 'sightseeing', startTime: '~19:00', address: '洞爺湖溫泉街', note: '冬季限定燈飾隧道。', hours: '17:00-22:00', price: '免費', transportType: 'walk', travelTime: '5m', isNoteExpanded: false },
+                    { id: 501, name: '二條市場早餐', category: 'food', startTime: '08:30', address: '二條市場', note: '海鮮丼 (大磯/どんぶり茶屋)。', hours: '7:00-18:00', price: null, transportType: 'walk', travelTime: '15m', isNoteExpanded: false },
+                    { id: 502, name: '北海道大學', category: 'sightseeing', startTime: '~10:30', address: '北海道大學', note: '冬季雪景校園，克拉克博士像。', hours: null, price: '免費', transportType: 'public', travelTime: '20m', isNoteExpanded: false },
+                    { id: 503, name: '札幌啤酒博物館', category: 'sightseeing', startTime: '~14:00', address: '札幌啤酒博物館', note: '了解啤酒歷史，試飲限定啤酒。', hours: '11:00-18:00', price: '免費(試飲付費)', transportType: 'bus', travelTime: '30m', isNoteExpanded: false },
+                    { id: 504, name: '晚餐 (湯咖哩)', category: 'food', startTime: '~18:00', address: 'GARAKU 湯咖哩', note: '人氣排隊名店。', hours: '11:30-21:00', price: null, transportType: 'public', travelTime: '20m', isNoteExpanded: false },
                 ],
-                 // Day 6: 12/29 (一) 洞爺湖 -> 富良野
+                 // Day 6: 12/29 (一) 小樽一日遊
                 [
-                    { id: 601, name: '長途移動 (往富良野)', category: 'transport', startTime: '09:00', address: '富良野', note: '車程較長，中途休息站休息。', hours: null, price: null, transportType: 'car', travelTime: '3h', isNoteExpanded: false },
-                    { id: 602, name: '午餐 (富良野咖哩)', category: 'food', startTime: '~12:30', address: '唯我獨尊', note: '特色歐姆蛋咖哩。', hours: '11:00-21:00', price: null, transportType: 'car', travelTime: '0m', isNoteExpanded: false },
-                    { id: 603, name: '森林精靈露台', category: 'sightseeing', startTime: '~16:00', address: '森林精靈露台', note: '傍晚點燈後最美。', hours: '12:00-20:45', price: '免費', transportType: 'car', travelTime: '10m', isNoteExpanded: false },
-                    { id: 604, name: '富良野飯店 Check-in', category: 'accommodation', startTime: '~18:00', address: '富良野 Hotel', note: '休息。', hours: null, price: null, transportType: 'car', travelTime: '10m', isNoteExpanded: false },
+                    { id: 601, name: '前往小樽', category: 'transport', startTime: '09:30', address: '小樽駅', note: '搭乘 JR 函館本線。', hours: null, price: '¥750', transportType: 'public', travelTime: '45m', isNoteExpanded: false },
+                    { id: 602, name: '三角市場午餐', category: 'food', startTime: '~10:30', address: '三角市場', note: '滝波食堂 螃蟹丼。', hours: '8:00-17:00', price: null, transportType: 'walk', travelTime: '2m', isNoteExpanded: false },
+                    { id: 603, name: '小樽運河', category: 'sightseeing', startTime: '~12:30', address: '小樽運河', note: '漫步運河畔，拍照留念。', hours: null, price: '免費', transportType: 'walk', travelTime: '15m', isNoteExpanded: false },
+                    { id: 604, name: '堺町通商店街', category: 'shopping', startTime: '~14:00', address: '堺町通り', note: '北一硝子、六花亭、LeTAO總店下午茶。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
+                    { id: 605, name: '返回札幌', category: 'transport', startTime: '~18:00', address: '札幌', note: '搭乘 JR 返回。', hours: null, price: null, transportType: 'public', travelTime: '45m', isNoteExpanded: false },
                 ],
-                // Day 7: 12/30 (二) 美瑛 & 旭川
+                // Day 7: 12/30 (二) 札幌最後採購
                 [
-                     { id: 701, name: '美瑛聖誕樹', category: 'sightseeing', startTime: '09:30', address: '美瑛', note: '網美必拍，雪地中的一棵樹。', hours: null, price: '免費', transportType: 'car', travelTime: '40m', isNoteExpanded: false },
-                     { id: 702, name: '白鬚瀑布', category: 'sightseeing', startTime: '~10:30', address: '白鬚瀑布', note: '藍色河水與冰瀑。', hours: null, price: '免費', transportType: 'car', travelTime: '20m', isNoteExpanded: false },
-                     { id: 703, name: '旭山動物園', category: 'sightseeing', startTime: '~13:00', address: '旭山動物園', note: '企鵝散步必看。', hours: '10:30-15:30', price: '¥1,000', transportType: 'car', travelTime: '50m', isNoteExpanded: false },
-                     { id: 704, name: '旭川拉麵村', category: 'food', startTime: '~17:00', address: '旭川拉麵村', note: '晚餐吃拉麵暖身。', hours: '11:00-20:00', price: null, transportType: 'car', travelTime: '20m', isNoteExpanded: false },
+                     { id: 701, name: '北海道神宮', category: 'sightseeing', startTime: '09:30', address: '北海道神宮', note: '雪中參拜，購買限定 Hello Kitty 御守。', hours: '7:00-16:00', price: '免費', transportType: 'public', travelTime: '30m', isNoteExpanded: false },
+                     { id: 702, name: '六花亭 札幌本店', category: 'food', startTime: '~11:30', address: '六花亭 札幌本店', note: '伴手禮採買 & 2樓享用甜點。', hours: '10:00-17:30', price: null, transportType: 'public', travelTime: '20m', isNoteExpanded: false },
+                     { id: 703, name: '狸小路商店街', category: 'shopping', startTime: '~14:00', address: '狸小路', note: '藥妝店、唐吉訶德大採購。', hours: null, price: null, transportType: 'walk', travelTime: '15m', isNoteExpanded: false },
+                     { id: 704, name: '晚餐 (螃蟹大餐)', category: 'food', startTime: '~19:00', address: '蟹本家 或 冰雪之門', note: '年末豪華晚餐 (需預約)。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
                 ],
-                // Day 8: 12/31 (三) 跨年夜
+                // Day 8: 12/31 (三) 札幌 -> 函館 (跨年)
                 [
-                    { id: 801, name: '返回札幌', category: 'transport', startTime: '10:00', address: '札幌', note: '返回札幌準備跨年。', hours: null, price: null, transportType: 'car', travelTime: '2h30m', isNoteExpanded: false },
-                    { id: 802, name: '三井 Outlet 北廣島', category: 'shopping', startTime: '~13:00', address: 'MOP 札幌北廣島', note: '年末折扣季採買。', hours: '10:00-18:00 (注意跨年營業時間)', price: null, transportType: 'car', travelTime: '0m', isNoteExpanded: false },
-                    { id: 803, name: '超市採買 (跨年蕎麥麵)', category: 'shopping', startTime: '~17:00', address: 'Aeon/Coop', note: '買泡麵、熟食回飯店吃。', hours: null, price: null, transportType: 'car', travelTime: '30m', isNoteExpanded: false },
-                    { id: 804, name: '跨年倒數', category: 'sightseeing', startTime: '23:30', address: '電視塔或飯店內', note: '日本跨年通常較安靜，可聽除夜鐘聲。', hours: null, price: null, transportType: 'walk', travelTime: '0m', isNoteExpanded: false },
+                    { id: 801, name: '搭乘特急北斗號', category: 'transport', startTime: '09:00', address: '函館駅', note: '前往函館，車程約 3.5 小時。', hours: null, price: '¥9,440', transportType: 'public', travelTime: '3h40m', isNoteExpanded: false },
+                    { id: 802, name: '函館飯店 Check-in', category: 'accommodation', startTime: '~13:00', address: '函館國際飯店', note: '寄放行李，就在車站附近。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
+                    { id: 803, name: '金森紅磚倉庫', category: 'sightseeing', startTime: '~14:30', address: '金森紅磚倉庫', note: '港邊散步，享用 SNAFFLE\'S 起司蛋糕。', hours: '9:30-19:00', price: '免費', transportType: 'walk', travelTime: '15m', isNoteExpanded: false },
+                    { id: 804, name: '函館山夜景', category: 'sightseeing', startTime: '~16:30', address: '函館山纜車', note: '世界三大夜景，需提早上山佔位。', hours: '10:00-21:00', price: '¥1,500', transportType: 'public', travelTime: '20m', isNoteExpanded: false },
+                    { id: 805, name: '幸運小丑漢堡', category: 'food', startTime: '~19:00', address: '幸運小丑漢堡', note: '函館限定美食，中華炸雞漢堡。', hours: '10:00-23:00', price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
+                    { id: 806, name: '跨年倒數', category: 'sightseeing', startTime: '23:00', address: '金森倉庫群', note: '欣賞港口煙火 (若有舉辦) 或聽除夜鐘。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
                 ],
-                // Day 9: 1/1 (四) 元旦 初詣
+                // Day 9: 1/1 (四) 函館 (元旦)
                 [
-                    { id: 901, name: '初詣 (參拜)', category: 'sightseeing', startTime: '10:00', address: '北海道神宮', note: '新年第一次參拜，人潮眾多。', hours: null, price: '免費', transportType: 'public', travelTime: '30m', isNoteExpanded: false },
-                    { id: 902, name: '百貨公司福袋', category: 'shopping', startTime: '~13:00', address: '札幌大丸/Stellar Place', note: '搶購新年福袋 (初賣)。', hours: null, price: null, transportType: 'public', travelTime: '20m', isNoteExpanded: false },
-                    { id: 903, name: '悠閒下午茶', category: 'food', startTime: '~15:30', address: '札幌市區 Cafe', note: '休息片刻。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
-                    { id: 904, name: '螃蟹大餐', category: 'food', startTime: '~19:00', address: '蟹本家 或 難陀', note: '新年吃好一點 (需預約)。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
+                    { id: 901, name: '函館朝市', category: 'food', startTime: '08:30', address: '函館朝市', note: '釣烏賊體驗，享用海鮮丼早餐。', hours: '6:00-14:00', price: null, transportType: 'walk', travelTime: '5m', isNoteExpanded: false },
+                    { id: 902, name: '五稜郭塔', category: 'sightseeing', startTime: '~11:00', address: '五稜郭塔', note: '俯瞰星形堡壘雪景。', hours: '9:00-18:00', price: '¥900', transportType: 'public', travelTime: '20m', isNoteExpanded: false },
+                    { id: 903, name: '八幡坂', category: 'sightseeing', startTime: '~14:00', address: '八幡坂', note: '著名的斜坡街道，直通大海的視覺效果。', hours: null, price: '免費', transportType: 'public', travelTime: '20m', isNoteExpanded: false },
+                    { id: 904, name: '元町教會群', category: 'sightseeing', startTime: '~15:00', address: '元町', note: '參觀東正教會等西式建築。', hours: null, price: '免費', transportType: 'walk', travelTime: '5m', isNoteExpanded: false },
+                    { id: 905, name: '飯店溫泉', category: 'other', startTime: '~18:00', address: '函館國際飯店', note: '享受頂樓溫泉，眺望函館夜景。', hours: null, price: null, transportType: 'walk', travelTime: '0m', isNoteExpanded: false },
                 ],
-                // Day 10: 1/2 (五) 小樽 & 還車
+                // Day 10: 1/2 (五) 函館 -> 東京 (初賣)
                 [
-                    { id: 1001, name: '前往小樽', category: 'transport', startTime: '09:00', address: '小樽', note: '最後一天用車。', hours: null, price: null, transportType: 'car', travelTime: '50m', isNoteExpanded: false },
-                    { id: 1002, name: '小樽運河 & 堺町通', category: 'sightseeing', startTime: '~10:00', address: '小樽運河', note: '北一硝子、音樂盒堂。', hours: null, price: null, transportType: 'car', travelTime: '0m', isNoteExpanded: false },
-                    { id: 1003, name: 'LeTAO 甜點', category: 'food', startTime: '~14:00', address: 'LeTAO 本店', note: '雙層起司蛋糕。', hours: null, price: null, transportType: 'walk', travelTime: '5m', isNoteExpanded: false },
-                    { id: 1004, name: '返回札幌還車', category: 'transport', startTime: '~18:00', address: 'Nissan Rent a Car', note: '加滿油後還車。', hours: null, price: null, transportType: 'car', travelTime: '1h', isNoteExpanded: false },
+                    { id: 1001, name: '前往函館機場', category: 'transport', startTime: '09:00', address: '函館機場 (HKD)', note: '搭乘機場巴士。', hours: null, price: '¥500', transportType: 'bus', travelTime: '20m', isNoteExpanded: false },
+                    { id: 1002, name: '飛往羽田', category: 'flight', startTime: '11:00', address: '羽田機場 (HND)', note: 'JAL/ANA 國內線。', hours: null, price: null, transportType: 'flight', travelTime: '1h20m', isNoteExpanded: false },
+                    { id: 1003, name: '飯店 Check-in', category: 'accommodation', startTime: '~14:00', address: '東京灣潮見王子大飯店', note: '放置行李，前往市區。', hours: null, price: null, transportType: 'public', travelTime: '40m', isNoteExpanded: false },
+                    { id: 1004, name: '新年福袋採購', category: 'shopping', startTime: '~15:30', address: '銀座/有樂町', note: '各大百貨公司初賣 (Hatsuuri) 折扣季。', hours: null, price: null, transportType: 'public', travelTime: '15m', isNoteExpanded: false },
+                    { id: 1005, name: '拉麵晚餐', category: 'food', startTime: '~19:00', address: '銀座 篝', note: '雞白湯拉麵。', hours: '11:00-22:00', price: null, transportType: 'walk', travelTime: '5m', isNoteExpanded: false },
                 ],
-                 // Day 11: 1/3 (六) 札幌市區最後採買
+                 // Day 11: 1/3 (六) 東京 Free Day
                 [
-                    { id: 1101, name: '二條市場', category: 'food', startTime: '09:00', address: '二條市場', note: '早餐吃海鮮丼 (大磯/どんぶり茶屋)。', hours: '7:00-18:00', price: null, transportType: 'walk', travelTime: '15m', isNoteExpanded: false },
-                    { id: 1102, name: '最後採購', category: 'shopping', startTime: '~11:00', address: '札幌市區', note: '補齊伴手禮。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
-                    { id: 1103, name: '藻岩山夜景', category: 'sightseeing', startTime: '~16:30', address: '藻岩山纜車', note: '日本新三大夜景。', hours: '10:30-22:00', price: '¥2,100', transportType: 'public', travelTime: '40m', isNoteExpanded: false },
-                    { id: 1104, name: '居酒屋晚餐', category: 'food', startTime: '~19:30', address: '薄野', note: '感受最後一晚的北海道。', hours: null, price: null, transportType: 'walk', travelTime: '20m', isNoteExpanded: false },
+                    { id: 1101, name: '明治神宮 (初詣)', category: 'sightseeing', startTime: '09:00', address: '明治神宮', note: '若之前沒參拜，可來此體驗新年氣氛。', hours: '6:40-16:20', price: '免費', transportType: 'public', travelTime: '30m', isNoteExpanded: false },
+                    { id: 1102, name: '原宿/表參道', category: 'shopping', startTime: '~11:00', address: '表參道', note: '年輕潮流服飾、精品採購。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
+                    { id: 1103, name: 'teamLab Planets', category: 'sightseeing', startTime: '~15:00', address: '豊洲 teamLab', note: '沈浸式數位藝術展 (需預約)。', hours: '10:00-20:00', price: '¥3,800', transportType: 'public', travelTime: '40m', isNoteExpanded: false },
+                    { id: 1104, name: '台場夜景', category: 'sightseeing', startTime: '~18:00', address: '台場海濱公園', note: '欣賞彩虹大橋與鋼彈模型。', hours: null, price: '免費', transportType: 'public', travelTime: '10m', isNoteExpanded: false },
                 ],
                 // Day 12: 1/4 (日) 返程
                 [
-                    { id: 1201, name: '前往機場', category: 'transport', startTime: '10:00', address: '新千歲機場', note: '搭乘 JR 快速 Airport。', hours: null, price: '¥1,150', transportType: 'public', travelTime: '40m', isNoteExpanded: false },
-                    { id: 1202, name: '機場最後衝刺', category: 'shopping', startTime: '~11:00', address: '國內線航廈', note: '購買生鮮、甜點、哆啦A夢樂園。', hours: null, price: null, transportType: 'walk', travelTime: '0m', isNoteExpanded: false },
-                    { id: 1203, name: '一幻拉麵', category: 'food', startTime: '~12:30', address: '拉麵道場', note: '登機前最後一碗拉麵。', hours: null, price: null, transportType: 'walk', travelTime: '0m', isNoteExpanded: false },
-                    { id: 1204, name: '搭機返台', category: 'flight', startTime: '14:40', address: 'CI0131', note: '18:15 抵達台北。', hours: null, price: null, transportType: 'flight', travelTime: '4h', isNoteExpanded: false },
+                    { id: 1201, name: '飯店退房', category: 'other', startTime: '10:00', address: '東京灣潮見王子大飯店', note: '整理行李。', hours: null, price: null, transportType: 'walk', travelTime: '0m', isNoteExpanded: false },
+                    { id: 1202, name: '東京車站最後採買', category: 'shopping', startTime: '~10:30', address: '東京車站一番街', note: '購買伴手禮 (NewYork Perfect Cheese等)。', hours: null, price: null, transportType: 'public', travelTime: '15m', isNoteExpanded: false },
+                    { id: 1203, name: '前往成田機場', category: 'transport', startTime: '~12:00', address: '成田機場', note: '搭乘成田特快 N\'EX。', hours: null, price: '¥3,070', transportType: 'public', travelTime: '1h', isNoteExpanded: false },
+                    { id: 1204, name: '搭機返台', category: 'flight', startTime: '14:30', address: 'CI0101', note: '17:40 抵達台北。', hours: null, price: null, transportType: 'flight', travelTime: '4h', isNoteExpanded: false },
                 ]
             ]);
 
             // 天氣資料 (對應 12 天)
             const weatherData = ref([
-                { condition: 'snow', temp: '-2/-6', feel: '-10' }, // 12/24
-                { condition: 'snow', temp: '-3/-8', feel: '-12' }, // 12/25
-                { condition: 'cloudy', temp: '-1/-5', feel: '-8' }, // 12/26
-                { condition: 'snow', temp: '-4/-9', feel: '-14' }, // 12/27
-                { condition: 'snow', temp: '-5/-12', feel: '-16' }, // 12/28
-                { condition: 'sunny', temp: '-2/-8', feel: '-10' }, // 12/29
-                { condition: 'snow', temp: '-3/-7', feel: '-11' }, // 12/30
-                { condition: 'snow', temp: '-2/-6', feel: '-9' },  // 12/31
-                { condition: 'sunny', temp: '0/-5', feel: '-6' },   // 1/1
-                { condition: 'cloudy', temp: '1/-4', feel: '-5' },  // 1/2
-                { condition: 'snow', temp: '-1/-6', feel: '-8' },   // 1/3
-                { condition: 'snow', temp: '-2/-7', feel: '-10' },  // 1/4
+                { condition: 'sunny', temp: '5/12', feel: '3', city: '東京' }, // 12/24
+                { condition: 'cloudy', temp: '4/11', feel: '2', city: '東京' }, // 12/25
+                { condition: 'sunny', temp: '3/10', feel: '1', city: '東京' }, // 12/26
+                { condition: 'cloudy', temp: '0/-4', feel: '-8', city: '札幌' }, // 12/27 (移動日)
+                { condition: 'snow', temp: '-2/-8', feel: '-12', city: '札幌' }, // 12/28
+                { condition: 'snow', temp: '-3/-7', feel: '-11', city: '小樽' }, // 12/29
+                { condition: 'snow', temp: '-1/-6', feel: '-10', city: '札幌' }, // 12/30
+                { condition: 'snow', temp: '-1/-5', feel: '-9', city: '函館' },  // 12/31
+                { condition: 'sunny', temp: '0/-4', feel: '-8', city: '函館' },   // 1/1
+                { condition: 'sunny', temp: '6/13', feel: '4', city: '東京' },  // 1/2 (移動日)
+                { condition: 'cloudy', temp: '5/12', feel: '3', city: '東京' },   // 1/3
+                { condition: 'sunny', temp: '4/11', feel: '2', city: '東京' },  // 1/4
             ]);
             
             // 購物清單 (範例資料)
             const shoppingList = ref([
                 { name: '六花亭 奶油葡萄乾夾心餅乾', image: 'https://via.placeholder.com/100/f0f9ff/005e8a?text=Rokkatei' },
-                { name: 'LeTAO 雙層起司蛋糕', image: 'https://via.placeholder.com/100/f0f9ff/005e8a?text=LeTAO' },
-                { name: '薯條三兄弟', image: 'https://via.placeholder.com/100/f0f9ff/005e8a?text=JagaPockle' },
+                { name: 'NewYork Perfect Cheese', image: 'https://via.placeholder.com/100/f0f9ff/005e8a?text=NY+Cheese' },
+                { name: 'SNAFFLE\'S 起司蛋糕', image: 'https://via.placeholder.com/100/f0f9ff/005e8a?text=Snaffles' },
             ]);
 
             // 花費紀錄 (範例資料 - 日期已更新)
             const expenses = ref([
-                { name: '機票費用', amount: 35000, category: 'flight', date: '2025-09-15', payment: 'card' },
-                { name: '札幌湯咖哩', amount: 4500, category: 'food', date: '2025-12-24', payment: 'cash' },
-                { name: '小樽水族館門票', amount: 3600, category: 'ticket', date: '2025-12-27', payment: 'card' },
-                { name: '登別溫泉飯店', amount: 80000, category: 'stay', date: '2025-12-26', payment: 'card' },
+                { name: '國際線機票', amount: 35000, category: 'flight', date: '2025-09-15', payment: 'card' },
+                { name: '國內線機票(東京-北海道)', amount: 15000, category: 'flight', date: '2025-10-01', payment: 'card' },
+                { name: '迪士尼門票', amount: 9400, category: 'ticket', date: '2025-11-20', payment: 'card' },
+                { name: '敘敘苑燒肉', amount: 12000, category: 'food', date: '2025-12-24', payment: 'card' },
             ]);
 
             // --- 狀態控制 ---
@@ -690,7 +679,7 @@
             
             // 新增/編輯行程狀態
             const newItinerary = ref({
-                id: null, name: '', category: 'sightseeing', startTime: '', hours: '', address: '', price: '', note: '', transportType: 'car', travelTime: '', isNoteExpanded: false
+                id: null, name: '', category: 'sightseeing', startTime: '', hours: '', address: '', price: '', note: '', transportType: 'public', travelTime: '', isNoteExpanded: false
             });
             // 新增購物狀態
             const newShoppingItem = ref({
@@ -748,10 +737,10 @@
             };
             const getWeatherDescription = (condition) => {
                 const map = {
-                    snow: '大雪/降雪',
+                    snow: '下雪',
                     sunny: '晴朗',
-                    cloudy: '多雲/陰天',
-                    rain: '降雨'
+                    cloudy: '多雲',
+                    rain: '下雨'
                 };
                 return map[condition] || '天氣資訊未定';
             };
@@ -805,7 +794,7 @@
             const resetItineraryForm = () => {
                 isEditMode.value = false;
                 newItinerary.value = {
-                    id: Date.now(), name: '', category: 'sightseeing', startTime: '', hours: '', address: '', price: '', note: '', transportType: 'car', travelTime: '', isNoteExpanded: false
+                    id: Date.now(), name: '', category: 'sightseeing', startTime: '', hours: '', address: '', price: '', note: '', transportType: 'public', travelTime: '', isNoteExpanded: false
                 };
             };
 
