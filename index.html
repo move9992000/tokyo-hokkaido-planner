@@ -41,7 +41,6 @@
         <div class="relative h-[230px] w-full overflow-hidden" ref="bannerRef">
             <img src="banner.jpg" alt="Banner" class="w-full h-full object-cover object-center">
             <canvas id="snow-canvas"></canvas>
-
             <div class="absolute bottom-[8px] left-[15px] right-[15px] flex justify-between items-end z-20 pointer-events-none">
                 <div class="flex gap-2 pointer-events-auto">
                     <button @click="toggleDraggable" class="glass-btn" :class="{ 'edit-active': isDraggable }"><i class="fas fa-pencil-alt"></i></button>
@@ -133,6 +132,15 @@
                 </div>
                 <div class="grid grid-cols-1 gap-3"><div v-for="(hotel, idx) in hotels" :key="idx" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col"><div class="flex items-start justify-between"><div><h4 class="font-bold text-gray-800 text-lg">{{ hotel.name }}</h4><span class="inline-block bg-indigo-50 text-indigo-600 text-[10px] px-2 py-0.5 rounded mt-1 font-bold">{{ hotel.dates }}</span></div><div class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center shrink-0"><i class="fas fa-hotel"></i></div></div><div class="mt-3 space-y-1 text-sm text-gray-500"><p><i class="fas fa-map-marker-alt w-4 text-center mr-1"></i>{{ hotel.address }}</p><p><i class="fas fa-phone w-4 text-center mr-1"></i>{{ hotel.phone }}</p></div><a :href="hotel.mapLink" target="_blank" class="mt-3 bg-indigo-50 text-indigo-600 py-2 rounded-lg text-xs font-bold text-center hover:bg-indigo-100 transition"><i class="fas fa-location-arrow mr-1"></i> 開啟導航</a></div></div>
                 <div class="grid grid-cols-2 gap-3 mt-6"><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3"><div class="w-10 h-10 bg-red-100 text-red-500 rounded-full flex items-center justify-center font-bold text-lg">119</div><div><div class="font-bold text-gray-800">救護車/火警</div><div class="text-xs text-gray-400">日本全境</div></div></div><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3"><div class="w-10 h-10 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center font-bold text-lg">110</div><div><div class="font-bold text-gray-800">警察局</div><div class="text-xs text-gray-400">日本全境</div></div></div><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 col-span-2"><div class="font-bold text-gray-800 text-sm mb-1">台北駐日代表處 (東京)</div><div class="text-xs text-gray-500">緊急電話: +81-3-3280-7917</div><div class="text-xs text-gray-500">地址: 東京都港區白金台5-20-2</div></div></div>
+                
+                <div class="text-center pb-8 mt-12">
+                     <button @click="exportDataForCode" class="text-[10px] text-blue-400 border border-blue-200 px-3 py-1.5 rounded-full hover:bg-blue-50 hover:text-blue-600 transition flex items-center gap-1 mx-auto"><i class="fas fa-code"></i> 匯出目前資料 (更新網站用)</button>
+                     <p class="text-[9px] text-gray-300 mt-2">將目前的行程與設定匯出成程式碼，<br>請複製後貼上至 index.html 檔案中。</p>
+                </div>
+
+                <div class="text-center pb-8 mt-4 opacity-50 hover:opacity-100 transition">
+                     <button @click="resetAllData" class="text-[10px] text-red-300 border border-red-100 px-3 py-1 rounded-full hover:bg-red-50 hover:text-red-500 transition">⚠️ 如果畫面異常請點我重置</button>
+                </div>
             </div>
 
             <div v-show="currentTab === 'shopping'" class="pb-20">
@@ -171,8 +179,6 @@
                     </div>
                 </div>
             </div>
-
-            <div class="text-center pb-8 mt-12 opacity-50 hover:opacity-100 transition"><button @click="resetAllData" class="text-[10px] text-red-300 border border-red-100 px-3 py-1 rounded-full hover:bg-red-50 hover:text-red-500 transition">⚠️ 如果畫面異常請點我重置</button></div>
 
         </div>
 
@@ -231,7 +237,7 @@
             const showSettlement = ref(false);
             const currentChecklistMember = ref('我');
 
-            // 住宿與行程資料
+            // 住宿資料
             const hotels = ref([
                 { name: 'Hotel Sunroute Asakusa', dates: '12/24 - 12/27', address: '東京都台東區雷門1-8-5', phone: '+81-3-3847-1511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Sunroute+Asakusa' },
                 { name: 'Hotel Nets Sapporo', dates: '12/27 - 12/31', address: '北海道札幌市中央區南7条西4丁目1-1', phone: '+81-11-530-5511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Nets+Sapporo' },
@@ -239,99 +245,17 @@
                 { name: 'Sotetsu Fresa Inn Tokyo-Roppongi', dates: '01/02 - 01/04', address: '東京都港區六本木3-10-1', phone: '+81-3-5413-2031', mapLink: 'https://www.google.com/maps/search/?api=1&query=Sotetsu+Fresa+Inn+Tokyo+Roppongi' }
             ]);
 
-            // ** 詳細行程 (含12天) **
+            // 預設行程
             const schedule = ref([
-                { 
-                    date: "2025-12-24", location: "Tokyo", 
-                    events: [
-                        { id: 101, category: 'transport', name: '前往松山機場 (T1)', startTime: '07:06', endTime: '', transportType: 'train', transportTime: '30分', notes: '搭乘普悠瑪+捷運' },
-                        { id: 102, category: 'flight', name: '台北(TSA) ✈️ 東京(HND)', startTime: '13:30', endTime: '17:30', depCode: 'TSA', arrCode: 'HND', duration: '3h', transportType: 'train', transportTime: '45分' },
-                        { id: 103, category: 'hotel', name: '淺草燦路都飯店 Check-in', startTime: '19:30', endTime: '', notes: '離田原町站近，3號出口(往淺草) / 2號or1號出口(往上野銀座)' }
-                    ]
-                },
-                { 
-                    date: "2025-12-25", location: "Tokyo", 
-                    events: [
-                        { id: 201, category: 'spot', name: '東京迪士尼樂園 (陸地)', startTime: '09:00', endTime: '21:00', transportType: 'train', transportTime: '40分', notes: '聖誕活動！記得抽整理券/DPA' }
-                    ]
-                },
-                { 
-                    date: "2025-12-26", location: "Tokyo", 
-                    events: [
-                        { id: 301, category: 'spot', name: '築地市場', startTime: '09:00', endTime: '12:00', transportType: 'subway', transportTime: '20分', notes: 'A1出口，吃海鮮丼、玉子燒' },
-                        { id: 302, category: 'spot', name: '銀座逛街', startTime: '13:00', endTime: '16:00', transportType: 'walk', transportTime: '15分', notes: '步行者天國 (週末)' },
-                        { id: 303, category: 'spot', name: '阿美橫丁', startTime: '17:00', endTime: '19:00', transportType: 'train', transportTime: '-', notes: '藥妝、二木菓子採購' }
-                    ]
-                },
-                { 
-                    date: "2025-12-27", location: "Tokyo/Sapporo", 
-                    events: [
-                        { id: 401, category: 'spot', name: '淺草寺 / 雷門', startTime: '09:00', endTime: '11:00', transportType: 'walk', transportTime: '15分', notes: '最後巡禮，退房寄行李' },
-                        { id: 402, category: 'flight', name: '東京(HND) ✈️ 札幌(CTS)', startTime: '18:00', endTime: '19:35', depCode: 'HND', arrCode: 'CTS', duration: '1h 35m', transportType: 'train', transportTime: '50分' },
-                        { id: 403, category: 'hotel', name: '札幌 Nets 飯店 Check-in', startTime: '21:00', endTime: '', notes: '薄野站附近' }
-                    ]
-                },
-                { 
-                    date: "2025-12-28", location: "Sapporo", 
-                    events: [
-                        { id: 501, category: 'food', name: '二條市場', startTime: '08:00', endTime: '10:00', transportType: 'walk', transportTime: '15分', notes: '早餐海鮮丼' },
-                        { id: 502, category: 'spot', name: '大通公園 & 電視塔', startTime: '10:30', endTime: '12:30', transportType: 'walk', transportTime: '10分', notes: '札幌雪祭會場(部分)' },
-                        { id: 503, category: 'shop', name: '狸小路商店街', startTime: '14:00', endTime: '18:00', transportType: 'walk', transportTime: '-', notes: '伴手禮採買' }
-                    ]
-                },
-                { 
-                    date: "2025-12-29", location: "Sapporo", 
-                    events: [
-                        { id: 601, category: 'spot', name: '北海道神宮', startTime: '09:30', endTime: '11:30', transportType: 'subway', transportTime: '30分', notes: '圓山公園站' },
-                        { id: 602, category: 'spot', name: '白色戀人公園', startTime: '13:30', endTime: '16:00', transportType: 'bus', transportTime: '40分', notes: '需門票，可預約DIY' },
-                        { id: 603, category: 'food', name: '成吉思汗烤肉 (達摩)', startTime: '18:30', endTime: '20:30', transportType: 'subway', transportTime: '-', notes: '排隊名店' }
-                    ]
-                },
-                { 
-                    date: "2025-12-30", location: "Sapporo", 
-                    events: [
-                        { id: 701, category: 'spot', name: '小樽運河 & 堺町通', startTime: '10:00', endTime: '16:00', transportType: 'train', transportTime: '45分', notes: 'JR快速Airprot，六花亭、北菓樓' },
-                        { id: 702, category: 'food', name: '小樽壽司通', startTime: '17:00', endTime: '19:00', transportType: 'train', transportTime: '-', notes: '回程回札幌' }
-                    ]
-                },
-                { 
-                    date: "2025-12-31", location: "Hakodate", 
-                    events: [
-                        { id: 801, category: 'transport', name: '札幌 🚄 函館 (JR特急)', startTime: '10:56', endTime: '14:41', transportType: 'tram', transportTime: '20分', notes: '北斗號 (約4小時)' },
-                        { id: 802, category: 'hotel', name: 'LA JOLIE MOTOMACHI Check-in', startTime: '15:30', endTime: '', transportType: 'walk', transportTime: '15分', notes: '十字街站' },
-                        { id: 803, category: 'spot', name: '函館山夜景', startTime: '17:00', endTime: '19:00', transportType: 'tram', transportTime: '-', notes: '搭乘纜車，百萬夜景' }
-                    ]
-                },
-                { 
-                    date: "2026-01-01", location: "Hakodate", 
-                    events: [
-                        { id: 901, category: 'food', name: '函館朝市', startTime: '08:00', endTime: '10:00', transportType: 'walk', transportTime: '10分', notes: '釣烏賊、海鮮丼' },
-                        { id: 902, category: 'spot', name: '金森紅磚倉庫', startTime: '10:30', endTime: '13:00', transportType: 'walk', transportTime: '15分', notes: '逛街、甜點' },
-                        { id: 903, category: 'spot', name: '五稜郭公園 / 五稜郭塔', startTime: '14:00', endTime: '16:30', transportType: 'tram', transportTime: '-', notes: '登塔看五角星' }
-                    ]
-                },
-                { 
-                    date: "2026-01-02", location: "Tokyo", 
-                    events: [
-                        { id: 1001, category: 'flight', name: '函館(HKD) ✈️ 東京(HND)', startTime: '11:45', endTime: '13:15', depCode: 'HKD', arrCode: 'HND', duration: '1h 30m', transportType: 'train', transportTime: '50分' },
-                        { id: 1002, category: 'hotel', name: '六本木 Sotetsu Fresa Inn Check-in', startTime: '15:00', endTime: '', transportType: 'subway', transportTime: '-', notes: '六本木站' },
-                        { id: 1003, category: 'spot', name: '東京鐵塔 / 芝公園', startTime: '17:00', endTime: '19:00', transportType: 'walk', transportTime: '-', notes: '拍照打卡' }
-                    ]
-                },
-                { 
-                    date: "2026-01-03", location: "Tokyo", 
-                    events: [
-                        { id: 1101, category: 'spot', name: 'Shibuya Sky', startTime: '10:00', endTime: '12:00', transportType: 'subway', transportTime: '20分', notes: '需預約時段' },
-                        { id: 1102, category: 'shop', name: '澀谷 / 原宿 / 表參道', startTime: '13:00', endTime: '18:00', transportType: 'walk', transportTime: '-', notes: '逛街購物' }
-                    ]
-                },
-                { 
-                    date: "2026-01-04", location: "Tokyo", 
-                    events: [
-                        { id: 1201, category: 'transport', name: '前往羽田機場 (T2)', startTime: '09:30', endTime: '10:30', transportType: 'train', transportTime: '-', notes: '提早到機場逛街' },
-                        { id: 1202, category: 'flight', name: '東京(HND) ✈️ 台北(TSA)', startTime: '12:40', endTime: '15:50', depCode: 'HND', arrCode: 'TSA', duration: '4h 10m', transportType: 'walk', transportTime: '-', notes: '平安回家' }
-                    ]
-                }
+                { date: "2025-12-24", location: "Tokyo", events: [{ id: 1, category: 'flight', name: '台北(TSA) ✈️ 東京(HND)', startTime: '13:30', endTime: '17:30', depCode: 'TSA', arrCode: 'HND', duration: '3h', transportType: 'train', transportTime: '45分' }, { id: 2, category: 'hotel', name: '東京住宿 Check-in', startTime: '19:00', endTime: '', notes: '第一晚東京', transportType: 'walk', transportTime: '10分' }] },
+                { date: "2025-12-25", location: "Tokyo", events: [] }, { date: "2025-12-26", location: "Tokyo", events: [] },
+                { date: "2025-12-27", location: "Tokyo/Sapporo", events: [{ id: 10, category: 'flight', name: '東京(HND) ✈️ 札幌(CTS)', startTime: '18:00', endTime: '19:35', depCode: 'HND', arrCode: 'CTS', duration: '1h 35m', transportType: 'train', transportTime: '40分' }, { id: 11, category: 'hotel', name: '札幌住宿 Check-in', startTime: '21:00', endTime: '', notes: '抵達北海道', transportType: 'walk', transportTime: '-' }] },
+                { date: "2025-12-28", location: "Sapporo", events: [] }, { date: "2025-12-29", location: "Sapporo", events: [] }, { date: "2025-12-30", location: "Sapporo", events: [] },
+                { date: "2025-12-31", location: "Hakodate", events: [{ id: 20, category: 'transport', name: '札幌 🚄 函館 (JR特急)', startTime: '10:56', endTime: '14:41', notes: '移動日', transportType: 'walk', transportTime: '20分' }, { id: 21, category: 'hotel', name: '函館住宿', startTime: '15:30', endTime: '', notes: '跨年夜', transportType: 'walk', transportTime: '-' }] },
+                { date: "2026-01-01", location: "Hakodate", events: [] },
+                { date: "2026-01-02", location: "Tokyo", events: [{ id: 30, category: 'flight', name: '函館(HKD) ✈️ 東京(HND)', startTime: '11:45', endTime: '13:15', depCode: 'HKD', arrCode: 'HND', duration: '1h 30m', transportType: 'train', transportTime: '40分' }, { id: 31, category: 'hotel', name: '東京住宿', startTime: '15:00', endTime: '', notes: '回到東京', transportType: 'walk', transportTime: '-' }] },
+                { date: "2026-01-03", location: "Tokyo", events: [] },
+                { date: "2026-01-04", location: "Tokyo", events: [{ id: 40, category: 'flight', name: '東京(HND) ✈️ 台北(TSA)', startTime: '12:40', endTime: '15:50', depCode: 'HND', arrCode: 'TSA', duration: '4h 10m', transportType: 'walk', transportTime: '-' }] }
             ]);
 
             // --- 多人行李清單結構 ---
@@ -347,7 +271,6 @@
             const getNewPackingList = () => JSON.parse(JSON.stringify(defaultPackingTemplate));
             const packingData = ref({ '我': getNewPackingList() });
 
-            // 確保資料正確，避免 undefined 錯誤
             const currentChecklistData = computed(() => {
                 const member = currentChecklistMember.value || '我';
                 if (!packingData.value[member]) {
@@ -438,6 +361,28 @@
                     } 
                 } catch(e){ console.error(e); }
             };
+            
+            // --- 匯出功能 ---
+            const exportDataForCode = () => {
+                // 產生一個 JSON 字串，包含所有資料
+                const dataToExport = {
+                    schedule: schedule.value,
+                    shoppingList: shoppingList.value,
+                    expenses: expenses.value,
+                    members: members.value,
+                    settings: settings.value,
+                    packingData: packingData.value
+                };
+                
+                // 轉成字串並複製到剪貼簿
+                const jsonString = JSON.stringify(dataToExport);
+                navigator.clipboard.writeText(jsonString).then(() => {
+                    alert("資料已複製！\n\n請將這段文字傳給工程師，或自行取代 localStorage 中的資料。");
+                }).catch(err => {
+                    console.error('複製失敗', err);
+                    alert("複製失敗，請手動選取複製");
+                });
+            };
 
             // --- 救命按鈕: 重置所有資料 ---
             const resetAllData = () => {
@@ -452,7 +397,10 @@
                     const savedData = localStorage.getItem('tripData');
                     if (savedData) {
                         const parsed = JSON.parse(savedData);
-                        // schedule.value = parsed.schedule || schedule.value; // 保留原廠設定行程
+                        // 強制檢查行程天數，若不同則使用新版預設值，避免衝突
+                        if(parsed.schedule && parsed.schedule.length === 12) {
+                             schedule.value = parsed.schedule;
+                        }
                         shoppingList.value = parsed.shoppingList || [];
                         expenses.value = parsed.expenses || [];
                         members.value = parsed.members || ['我'];
@@ -461,18 +409,14 @@
                         if (parsed.packingData) {
                             packingData.value = parsed.packingData;
                         } else if (parsed.packingList && Array.isArray(parsed.packingList)) {
-                            // 舊資料遷移
                             packingData.value['我'] = parsed.packingList;
                         }
                         
-                        // 資料修復防呆
                         members.value.forEach(m => {
                             if(!packingData.value[m]) packingData.value[m] = getNewPackingList();
                         });
                     }
-                } catch (e) {
-                    console.error("Data load error", e);
-                }
+                } catch (e) { console.error("Data load error", e); }
                 
                 initSortable();
                 fetchWeather();
@@ -536,7 +480,6 @@
             const getTransportIcon = (t) => { const map={walk:'fa-person-walking', subway:'fa-train-subway', train:'fa-train', hsr:'fa-train', tram:'fa-train-tram', taxi:'fa-taxi', bus:'fa-bus'}; return `fas ${map[t]||'fa-person-walking'}`; };
             const getWeatherIcon = (code) => { if(code<=3)return 'fas fa-sun'; if(code<=60)return 'fas fa-cloud-rain'; if(code<=80)return 'fas fa-snowflake'; return 'fas fa-cloud'; };
             const getMapLink = (n) => `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(n)}`;
-            const getUVColor = (uv) => { if(uv <= 2) return 'text-green-500'; if(uv <= 5) return 'text-yellow-500'; if(uv <= 7) return 'text-orange-500'; return 'text-red-500'; };
             const totalExpenses = computed(() => expenses.value.reduce((sum, item) => sum + Number(item.amount), 0));
             const modalTitle = computed(() => ({ schedule: isEditing.value?'編輯行程':'新增行程', shopping:'新增購物清單', expense:'新增花費' }[modalType.value] || ''));
 
@@ -544,6 +487,7 @@
             const openAddModal = (t) => { modalType.value=t; isEditing.value=false; editForm.value={category:'spot',transportType:'train',transportTime:'20分'}; shoppingForm.value={}; expenseForm.value={category:'food',payment:'現金',date:schedule.value[currentDayIndex.value].date,payer:'我',involved:[...members.value]}; showModal.value=true; };
             const editEvent = (i) => { if(isDraggable.value)return; if(i.category==='flight')return; modalType.value='schedule'; isEditing.value=true; editForm.value=JSON.parse(JSON.stringify(i)); showModal.value=true; };
             const handleImageUpload = (e) => { const f=e.target.files[0]; if(f){ const r=new FileReader(); r.onload=(e)=>shoppingForm.value.image=e.target.result; r.readAsDataURL(f); } };
+            
             const saveData = () => { 
                 if(modalType.value==='schedule'){ 
                     if(isEditing.value){ const idx=schedule.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); if(idx!==-1)schedule.value[currentDayIndex.value].events[idx]=editForm.value; } 
@@ -578,7 +522,7 @@
                 openAddModal, editEvent, saveData, confirmDelete, deleteShoppingItem, handleImageUpload,
                 getDayName, getDayNum, getCategoryIcon, getCategoryColor, getTransportIcon, getWeatherIcon, getMapLink, getUVColor,
                 isDraggable, toggleDraggable, handleAddClick, calculateTWD, calculateJPY, resetAllData, toggleCheckItem: (item) => { item.checked = !item.checked; persistData(); },
-                currentChecklistMember, currentChecklistData
+                currentChecklistMember, currentChecklistData, exportDataForCode
             };
         }
     }).mount('#app');
