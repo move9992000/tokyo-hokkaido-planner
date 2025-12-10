@@ -322,18 +322,34 @@
                 <div class="space-y-4">
                     <div class="bg-blue-50 rounded-xl p-3 border border-blue-100">
                         <div class="flex justify-between text-sm font-bold text-deep-sea-blue mb-1">
-                            <span>TPE 台北</span> <i class="fa-solid fa-plane text-xs"></i> <span>NRT 東京</span>
+                            <span>TSA 松山</span> <i class="fa-solid fa-plane text-xs"></i> <span>HND 羽田</span>
                         </div>
                         <div class="flex justify-between text-xs text-slate-500">
-                            <span>08:35</span> <span>CI0100 (12/24)</span> <span>12:30</span>
+                            <span>13:30</span> <span>NH852 (12/24)</span> <span>17:30</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-200">
+                         <div class="flex justify-between text-sm font-bold text-slate-700 mb-1">
+                            <span>HND 羽田</span> <i class="fa-solid fa-plane text-xs"></i> <span>CTS 札幌</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-slate-500">
+                            <span>18:00</span> <span>NH075 (12/27)</span> <span>19:35</span>
+                        </div>
+                    </div>
+                     <div class="bg-slate-50 rounded-xl p-3 border border-slate-200">
+                         <div class="flex justify-between text-sm font-bold text-slate-700 mb-1">
+                            <span>HKD 函館</span> <i class="fa-solid fa-plane text-xs"></i> <span>HND 羽田</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-slate-500">
+                            <span>11:45</span> <span>NH554 (1/2)</span> <span>13:15</span>
                         </div>
                     </div>
                     <div class="bg-orange-50 rounded-xl p-3 border border-orange-100">
                         <div class="flex justify-between text-sm font-bold text-orange-800 mb-1">
-                            <span>NRT 東京</span> <i class="fa-solid fa-plane text-xs"></i> <span>TPE 台北</span>
+                            <span>HND 羽田</span> <i class="fa-solid fa-plane text-xs"></i> <span>TSA 松山</span>
                         </div>
                         <div class="flex justify-between text-xs text-slate-500">
-                            <span>14:30</span> <span>CI0101 (1/4)</span> <span>17:40</span>
+                            <span>12:40</span> <span>NH853 (1/4)</span> <span>15:50</span>
                         </div>
                     </div>
                 </div>
@@ -546,12 +562,11 @@
             const itineraryData = ref([
                 // Day 1: 12/24 (三) 抵達東京 - 平安夜
                 [
-                    { id: 101, name: '桃園機場報到', category: 'flight', startTime: '06:00', address: '桃園國際機場 (TPE)', note: '中華航空 CI0100 08:35起飛', hours: null, price: null, transportType: 'flight', travelTime: null, isNoteExpanded: false },
-                    { id: 102, name: '成田機場 (NRT) 抵達', category: 'flight', startTime: '12:30', address: '成田國際機場', note: '領取行李與購買 Skyliner 車票', hours: null, price: null, transportType: 'flight', travelTime: '3h', isNoteExpanded: false },
-                    { id: 103, name: '搭乘 Skyliner 至淺草', category: 'transport', startTime: '~14:00', address: 'Hotel Sunroute Asakusa', note: 'Skyliner 至上野，轉乘銀座線至田原町或淺草。', hours: null, price: '¥2,500', transportType: 'public', travelTime: '1h15m', isNoteExpanded: false },
-                    { id: 104, name: '飯店 Check-in', category: 'accommodation', startTime: '~16:00', address: 'Hotel Sunroute Asakusa', note: '淺草太陽道飯店，休息準備晚餐', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
-                    { id: 105, name: '六本木之丘聖誕燈飾', category: 'sightseeing', startTime: '~17:30', address: '六本木けやき坂', note: '東京最著名的聖誕燈飾之一。', hours: '17:00-23:00', price: '免費', transportType: 'public', travelTime: '40m', isNoteExpanded: false },
-                    { id: 106, name: '聖誕晚餐 (燒肉)', category: 'food', startTime: '~19:30', address: '敘敘苑 六本木店', note: '需提前預約，享受聖誕大餐。', hours: null, price: '¥10,000+', transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
+                    { id: 101, name: '台北松山機場報到', category: 'flight', startTime: '11:30', address: '台北松山機場 (TSA)', note: 'ANA NH852 13:30 起飛', hours: null, price: null, transportType: 'flight', travelTime: null, isNoteExpanded: false },
+                    { id: 102, name: '飛往東京羽田 (HND)', category: 'flight', startTime: '13:30', address: '東京羽田機場', note: 'NH852 (TSA T1 -> HND T2)，飛行時間 3小時。', hours: null, price: null, transportType: 'flight', travelTime: '3h', isNoteExpanded: false },
+                    { id: 103, name: '前往淺草飯店', category: 'transport', startTime: '~18:30', address: 'Hotel Sunroute Asakusa', note: '搭乘京急線直通淺草線。', hours: null, price: '¥500', transportType: 'public', travelTime: '50m', isNoteExpanded: false },
+                    { id: 104, name: '飯店 Check-in', category: 'accommodation', startTime: '~19:30', address: 'Hotel Sunroute Asakusa', note: '淺草太陽道飯店。', hours: null, price: null, transportType: 'walk', travelTime: '0m', isNoteExpanded: false },
+                    { id: 105, name: '淺草附近晚餐', category: 'food', startTime: '~20:00', address: '淺草', note: '飯店附近居酒屋或拉麵。', hours: null, price: null, transportType: 'walk', travelTime: '5m', isNoteExpanded: false },
                 ],
                 // Day 2: 12/25 (四) 東京 - 聖誕節 (迪士尼)
                 [
@@ -568,14 +583,14 @@
                     { id: 304, name: '澀谷逛街', category: 'shopping', startTime: '~18:00', address: '澀谷 Parco / Loft', note: '潮流聖地購物。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
                     { id: 305, name: '居酒屋晚餐', category: 'food', startTime: '~20:00', address: '澀谷橫丁', note: '體驗熱鬧的居酒屋氛圍。', hours: null, price: null, transportType: 'walk', travelTime: '5m', isNoteExpanded: false },
                 ],
-                // Day 4: 12/27 (六) 東京 -> 札幌
+                // Day 4: 12/27 (六) 東京 -> 札幌 (晚班機)
                 [
-                    { id: 401, name: '前往羽田機場', category: 'transport', startTime: '08:00', address: '羽田機場 (HND)', note: '搭乘京急線直達。', hours: null, price: null, transportType: 'public', travelTime: '50m', isNoteExpanded: false },
-                    { id: 402, name: '飛往新千歲 (CTS)', category: 'flight', startTime: '10:30', address: '新千歲機場', note: 'JAL/ANA 國內線，飛行約 1.5 小時。', hours: null, price: null, transportType: 'flight', travelTime: '1h30m', isNoteExpanded: false },
-                    { id: 403, name: '前往札幌市區', category: 'transport', startTime: '~13:00', address: 'Hotel Nets Sapporo', note: '搭乘 JR 快速 Airport 號至札幌，轉地鐵至薄野站。', hours: null, price: '¥1,150', transportType: 'public', travelTime: '1h', isNoteExpanded: false },
-                    { id: 404, name: '飯店 Check-in', category: 'accommodation', startTime: '~15:00', address: 'Hotel Nets Sapporo', note: '放置行李，位於薄野商圈附近。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
-                    { id: 405, name: '大通公園散步', category: 'sightseeing', startTime: '~16:30', address: '大通公園', note: '觀賞札幌白色燈樹節 (White Illumination)。', hours: null, price: '免費', transportType: 'walk', travelTime: '15m', isNoteExpanded: false },
-                    { id: 406, name: '晚餐 (成吉思汗烤肉)', category: 'food', startTime: '~18:00', address: '達摩成吉思汗', note: '北海道必吃烤羊肉。', hours: '17:00-23:00', price: null, transportType: 'walk', travelTime: '15m', isNoteExpanded: false },
+                    { id: 401, name: '飯店退房', category: 'accommodation', startTime: '10:00', address: 'Hotel Sunroute Asakusa', note: '寄放行李或尋找置物櫃。', hours: null, price: null, transportType: 'walk', travelTime: '0m', isNoteExpanded: false },
+                    { id: 402, name: '東京車站/銀座逛街', category: 'shopping', startTime: '~11:00', address: '銀座', note: '利用下午時間在市區最後採買。', hours: null, price: null, transportType: 'public', travelTime: '20m', isNoteExpanded: false },
+                    { id: 403, name: '前往羽田機場', category: 'transport', startTime: '16:00', address: '羽田機場 (HND)', note: '預留時間前往機場，準備搭乘晚班機。', hours: null, price: null, transportType: 'public', travelTime: '45m', isNoteExpanded: false },
+                    { id: 404, name: '飛往新千歲 (CTS)', category: 'flight', startTime: '18:00', address: '新千歲機場', note: 'NH075 (HND T2 -> CTS)，飛行約 1.5 小時。', hours: null, price: null, transportType: 'flight', travelTime: '1h35m', isNoteExpanded: false },
+                    { id: 405, name: '前往札幌市區', category: 'transport', startTime: '~20:00', address: 'Hotel Nets Sapporo', note: '搭乘 JR 快速 Airport 號。', hours: null, price: '¥1,150', transportType: 'public', travelTime: '1h', isNoteExpanded: false },
+                    { id: 406, name: '飯店 Check-in & 宵夜', category: 'accommodation', startTime: '~21:30', address: 'Hotel Nets Sapporo', note: '辦理入住，附近吃拉麵宵夜。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
                 ],
                 // Day 5: 12/28 (日) 札幌市區
                 [
@@ -616,13 +631,14 @@
                     { id: 904, name: '元町教會群', category: 'sightseeing', startTime: '~15:00', address: '元町', note: '參觀東正教會等西式建築。', hours: null, price: '免費', transportType: 'walk', travelTime: '5m', isNoteExpanded: false },
                     { id: 905, name: '飯店休息', category: 'other', startTime: '~18:00', address: 'LA JOLIE MOTOMACHI', note: '享受飯店設施與溫馨氛圍。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
                 ],
-                // Day 10: 1/2 (五) 函館 -> 東京 (初賣)
+                // Day 10: 1/2 (五) 函館 -> 東京
                 [
-                    { id: 1001, name: '前往函館機場', category: 'transport', startTime: '09:00', address: '函館機場 (HKD)', note: '搭乘機場巴士。', hours: null, price: '¥500', transportType: 'bus', travelTime: '20m', isNoteExpanded: false },
-                    { id: 1002, name: '飛往羽田', category: 'flight', startTime: '11:00', address: '羽田機場 (HND)', note: 'JAL/ANA 國內線。', hours: null, price: null, transportType: 'flight', travelTime: '1h20m', isNoteExpanded: false },
-                    { id: 1003, name: '飯店 Check-in', category: 'accommodation', startTime: '~15:00', address: 'Sotetsu Fresa Inn', note: '六本木相鐵 FRESA INN，放置行李。', hours: null, price: null, transportType: 'public', travelTime: '50m', isNoteExpanded: false },
-                    { id: 1004, name: '新年福袋採購', category: 'shopping', startTime: '~16:00', address: '六本木 Hills / Midtown', note: '各大百貨公司初賣 (Hatsuuri) 折扣季。', hours: null, price: null, transportType: 'walk', travelTime: '5m', isNoteExpanded: false },
-                    { id: 1005, name: '拉麵晚餐', category: 'food', startTime: '~19:00', address: '六本木 拉麵', note: '享用熱騰騰的拉麵。', hours: '11:00-22:00', price: null, transportType: 'walk', travelTime: '5m', isNoteExpanded: false },
+                    { id: 1001, name: '前往函館機場', category: 'transport', startTime: '09:45', address: '函館機場 (HKD)', note: '搭乘機場巴士。', hours: null, price: '¥500', transportType: 'bus', travelTime: '20m', isNoteExpanded: false },
+                    { id: 1002, name: '飛往羽田', category: 'flight', startTime: '11:45', address: '羽田機場 (HND)', note: 'NH554 (HKD -> HND T2)。', hours: null, price: null, transportType: 'flight', travelTime: '1h30m', isNoteExpanded: false },
+                    { id: 1003, name: '前往六本木飯店', category: 'transport', startTime: '~13:30', address: 'Sotetsu Fresa Inn', note: '京急線轉大江戶線。', hours: null, price: null, transportType: 'public', travelTime: '50m', isNoteExpanded: false },
+                    { id: 1004, name: '飯店 Check-in', category: 'accommodation', startTime: '~14:30', address: 'Sotetsu Fresa Inn', note: '六本木相鐵 FRESA INN。', hours: null, price: null, transportType: 'walk', travelTime: '5m', isNoteExpanded: false },
+                    { id: 1005, name: '新年福袋採購', category: 'shopping', startTime: '~16:00', address: '六本木 Hills / Midtown', note: '初賣折扣季。', hours: null, price: null, transportType: 'walk', travelTime: '10m', isNoteExpanded: false },
+                    { id: 1006, name: '拉麵晚餐', category: 'food', startTime: '~19:00', address: '六本木 拉麵', note: '享用熱騰騰的拉麵。', hours: '11:00-22:00', price: null, transportType: 'walk', travelTime: '5m', isNoteExpanded: false },
                 ],
                  // Day 11: 1/3 (六) 東京 Free Day
                 [
@@ -633,10 +649,10 @@
                 ],
                 // Day 12: 1/4 (日) 返程
                 [
-                    { id: 1201, name: '飯店退房', category: 'other', startTime: '11:00', address: 'Sotetsu Fresa Inn', note: '整理行李。', hours: null, price: null, transportType: 'walk', travelTime: '0m', isNoteExpanded: false },
-                    { id: 1202, name: '東京車站最後採買', category: 'shopping', startTime: '~11:30', address: '東京車站一番街', note: '購買伴手禮 (NewYork Perfect Cheese等)。', hours: null, price: null, transportType: 'public', travelTime: '15m', isNoteExpanded: false },
-                    { id: 1203, name: '前往成田機場', category: 'transport', startTime: '~12:30', address: '成田機場', note: '搭乘成田特快 N\'EX。', hours: null, price: '¥3,070', transportType: 'public', travelTime: '1h', isNoteExpanded: false },
-                    { id: 1204, name: '搭機返台', category: 'flight', startTime: '14:30', address: 'CI0101', note: '17:40 抵達台北。', hours: null, price: null, transportType: 'flight', travelTime: '4h', isNoteExpanded: false },
+                    { id: 1201, name: '飯店退房', category: 'other', startTime: '10:00', address: 'Sotetsu Fresa Inn', note: '整理行李。', hours: null, price: null, transportType: 'walk', travelTime: '0m', isNoteExpanded: false },
+                    { id: 1202, name: '前往羽田機場', category: 'transport', startTime: '10:30', address: '羽田機場 (HND)', note: '前往羽田機場第二航廈。', hours: null, price: null, transportType: 'public', travelTime: '45m', isNoteExpanded: false },
+                    { id: 1203, name: '搭機返台', category: 'flight', startTime: '12:40', address: '台北松山 (TSA)', note: 'NH853 (HND T2 -> TSA T1)。', hours: null, price: null, transportType: 'flight', travelTime: '4h10m', isNoteExpanded: false },
+                    { id: 1204, name: '抵達台北', category: 'other', startTime: '15:50', address: '台北松山機場', note: '平安抵達。', hours: null, price: null, transportType: 'walk', travelTime: '0m', isNoteExpanded: false },
                 ]
             ]);
 
