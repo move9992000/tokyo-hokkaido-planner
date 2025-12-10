@@ -41,6 +41,7 @@
         <div class="relative h-[230px] w-full overflow-hidden" ref="bannerRef">
             <img src="banner.jpg" alt="Banner" class="w-full h-full object-cover object-center">
             <canvas id="snow-canvas"></canvas>
+
             <div class="absolute bottom-[8px] left-[15px] right-[15px] flex justify-between items-end z-20 pointer-events-none">
                 <div class="flex gap-2 pointer-events-auto">
                     <button @click="toggleDraggable" class="glass-btn" :class="{ 'edit-active': isDraggable }"><i class="fas fa-pencil-alt"></i></button>
@@ -86,17 +87,17 @@
 
             <div v-show="currentTab === 'schedule'">
                 <div class="flex space-x-3 overflow-x-auto hide-scrollbar mb-4 pb-2">
-                    <button v-for="(day, index) in schedule" :key="index" @click="currentDayIndex = index" class="flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl transition-all border" :class="currentDayIndex === index ? 'bg-blue-600 text-white shadow-lg scale-105 border-blue-600' : 'bg-white text-gray-400 border-gray-100'">
+                    <button v-for="(day, index) in scheduleData" :key="index" @click="currentDayIndex = index" class="flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl transition-all border" :class="currentDayIndex === index ? 'bg-blue-600 text-white shadow-lg scale-105 border-blue-600' : 'bg-white text-gray-400 border-gray-100'">
                         <span class="text-xs uppercase font-bold">{{ getDayName(day.date) }}</span><span class="text-lg font-bold">{{ getDayNum(day.date) }}</span>
                     </button>
                 </div>
                 <div v-if="weather" class="mb-6 bg-blue-50/80 rounded-xl p-3 flex items-center justify-between border border-blue-100 shadow-sm">
-                    <div class="flex items-center gap-3"><div class="text-3xl" :class="weather.iconClass"><i :class="weather.icon"></i></div><div><div class="text-sm font-bold text-gray-700">{{ schedule[currentDayIndex].location.split('/')[0] }}</div><div class="text-xs text-gray-500">{{ weather.desc }}</div></div></div>
+                    <div class="flex items-center gap-3"><div class="text-3xl" :class="weather.iconClass"><i :class="weather.icon"></i></div><div><div class="text-sm font-bold text-gray-700">{{ scheduleData[currentDayIndex].location.split('/')[0] }}</div><div class="text-xs text-gray-500">{{ weather.desc }}</div></div></div>
                     <div class="text-right"><div class="text-2xl font-bold text-gray-800">{{ weather.temp }}°</div><div class="text-xs text-gray-400">體感 {{ weather.feelsLike }}°</div><div v-if="weather.uv !== undefined" class="text-[10px] font-bold mt-0.5" :class="getUVColor(weather.uv)"><i class="fas fa-sun mr-0.5"></i>UV: {{ weather.uv }}</div></div>
                 </div>
                 <div id="itinerary-list" class="space-y-0 relative pb-20">
-                    <div v-for="(item, idx) in schedule[currentDayIndex].events" :key="item.id" class="relative group itinerary-item pb-6" :data-id="item.id">
-                        <div v-if="idx < schedule[currentDayIndex].events.length - 1" class="absolute left-[19px] top-10 bottom-0 w-[2px] bg-gray-200 z-0 flex flex-col items-center justify-center"><div class="bg-gray-100 text-[10px] text-gray-500 px-1 py-0.5 rounded border border-gray-200 mt-4 whitespace-nowrap z-10 flex items-center gap-1"><i :class="getTransportIcon(item.transportType)"></i> {{ item.transportTime }}</div></div>
+                    <div v-for="(item, idx) in scheduleData[currentDayIndex].events" :key="item.id" class="relative group itinerary-item pb-6" :data-id="item.id">
+                        <div v-if="idx < scheduleData[currentDayIndex].events.length - 1" class="absolute left-[19px] top-10 bottom-0 w-[2px] bg-gray-200 z-0 flex flex-col items-center justify-center"><div class="bg-gray-100 text-[10px] text-gray-500 px-1 py-0.5 rounded border border-gray-200 mt-4 whitespace-nowrap z-10 flex items-center gap-1"><i :class="getTransportIcon(item.transportType)"></i> {{ item.transportTime }}</div></div>
                         <div v-if="item.category === 'flight' && idx === 0" class="pl-0 mb-4">
                             <div class="boarding-pass rounded-2xl p-4 shadow-sm relative">
                                 <div class="flex justify-between items-center mb-3 border-b border-dashed border-gray-300 pb-2"><div class="text-blue-800 font-bold tracking-widest"><i class="fas fa-plane-departure mr-1"></i> ANA</div><div class="text-gray-400 text-xs">{{ item.date }}</div></div>
@@ -133,14 +134,7 @@
                 <div class="grid grid-cols-1 gap-3"><div v-for="(hotel, idx) in hotels" :key="idx" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col"><div class="flex items-start justify-between"><div><h4 class="font-bold text-gray-800 text-lg">{{ hotel.name }}</h4><span class="inline-block bg-indigo-50 text-indigo-600 text-[10px] px-2 py-0.5 rounded mt-1 font-bold">{{ hotel.dates }}</span></div><div class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center shrink-0"><i class="fas fa-hotel"></i></div></div><div class="mt-3 space-y-1 text-sm text-gray-500"><p><i class="fas fa-map-marker-alt w-4 text-center mr-1"></i>{{ hotel.address }}</p><p><i class="fas fa-phone w-4 text-center mr-1"></i>{{ hotel.phone }}</p></div><a :href="hotel.mapLink" target="_blank" class="mt-3 bg-indigo-50 text-indigo-600 py-2 rounded-lg text-xs font-bold text-center hover:bg-indigo-100 transition"><i class="fas fa-location-arrow mr-1"></i> 開啟導航</a></div></div>
                 <div class="grid grid-cols-2 gap-3 mt-6"><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3"><div class="w-10 h-10 bg-red-100 text-red-500 rounded-full flex items-center justify-center font-bold text-lg">119</div><div><div class="font-bold text-gray-800">救護車/火警</div><div class="text-xs text-gray-400">日本全境</div></div></div><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3"><div class="w-10 h-10 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center font-bold text-lg">110</div><div><div class="font-bold text-gray-800">警察局</div><div class="text-xs text-gray-400">日本全境</div></div></div><div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 col-span-2"><div class="font-bold text-gray-800 text-sm mb-1">台北駐日代表處 (東京)</div><div class="text-xs text-gray-500">緊急電話: +81-3-3280-7917</div><div class="text-xs text-gray-500">地址: 東京都港區白金台5-20-2</div></div></div>
                 
-                <div class="text-center pb-8 mt-12">
-                     <button @click="exportDataForCode" class="text-[10px] text-blue-400 border border-blue-200 px-3 py-1.5 rounded-full hover:bg-blue-50 hover:text-blue-600 transition flex items-center gap-1 mx-auto"><i class="fas fa-code"></i> 匯出目前資料 (更新網站用)</button>
-                     <p class="text-[9px] text-gray-300 mt-2">將目前的行程與設定匯出成程式碼，<br>請複製後貼上至 index.html 檔案中。</p>
-                </div>
-
-                <div class="text-center pb-8 mt-4 opacity-50 hover:opacity-100 transition">
-                     <button @click="resetAllData" class="text-[10px] text-red-300 border border-red-100 px-3 py-1 rounded-full hover:bg-red-50 hover:text-red-500 transition">⚠️ 如果畫面異常請點我重置</button>
-                </div>
+                <div class="text-center pb-8 mt-12 opacity-50 hover:opacity-100 transition"><button @click="resetAllData" class="text-[10px] text-red-300 border border-red-100 px-3 py-1 rounded-full hover:bg-red-50 hover:text-red-500 transition">⚠️ 如果畫面異常請點我重置</button></div>
             </div>
 
             <div v-show="currentTab === 'shopping'" class="pb-20">
@@ -185,7 +179,6 @@
         <div v-if="showModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
             <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl transform transition-all scale-100 max-h-[90vh] overflow-y-auto">
                 <h3 class="text-lg font-bold mb-4">{{ modalTitle }}</h3>
-                
                 <div v-if="modalType === 'schedule'" class="space-y-3">
                     <select v-model="editForm.category" class="w-full p-2 border rounded-lg bg-gray-50"><option value="spot">景點</option><option value="food">美食</option><option value="shop">購物</option><option value="hotel">住宿</option><option value="flight">航班</option></select>
                     <input v-model="editForm.name" placeholder="名稱" class="w-full p-2 border rounded-lg">
@@ -193,24 +186,9 @@
                     <div class="bg-gray-50 p-2 rounded-lg"><label class="text-xs text-gray-500">交通方式</label><div class="flex gap-2 mt-1"><select v-model="editForm.transportType" class="p-1 text-sm border rounded"><option value="walk">步行</option><option value="subway">地鐵</option><option value="train">火車</option><option value="hsr">高鐵</option><option value="tram">路面電車</option><option value="taxi">計程車</option><option value="bus">客運/公車</option></select><input v-model="editForm.transportTime" placeholder="時間" class="flex-1 p-1 text-sm border rounded"></div></div>
                     <textarea v-model="editForm.notes" placeholder="備註" class="w-full p-2 border rounded-lg h-20"></textarea>
                 </div>
-
-                <div v-if="modalType === 'shopping'" class="space-y-3">
-                    <input v-model="shoppingForm.name" placeholder="商品名稱" class="w-full p-2 border rounded-lg">
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer relative"><input type="file" @change="handleImageUpload" class="absolute inset-0 opacity-0"><span class="text-gray-400 text-sm"><i class="fas fa-camera mr-1"></i> 上傳圖片</span></div>
-                </div>
-
-                <div v-if="modalType === 'expense'" class="space-y-3">
-                    <input v-model="expenseForm.name" placeholder="項目名稱" class="w-full p-2 border rounded-lg">
-                    <div class="flex gap-2"><input v-model="expenseForm.amount" type="number" placeholder="金額" class="w-2/3 p-2 border rounded-lg text-lg font-bold"><select v-model="expenseForm.category" class="w-1/3 p-2 border rounded-lg bg-gray-50 text-sm"><option value="food">飲食</option><option value="transport">交通</option><option value="shop">購物</option><option value="ticket">門票</option><option value="hotel">住宿</option><option value="other">其他</option></select></div>
-                    <div class="bg-gray-50 p-3 rounded-lg"><label class="text-xs text-gray-500 font-bold block mb-2">誰先付錢?</label><div class="flex flex-wrap gap-2"><button v-for="m in members" :key="m" @click="expenseForm.payer = m" class="px-3 py-1 rounded-full text-xs transition border" :class="expenseForm.payer === m ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200'">{{ m }}</button></div></div>
-                    <div class="bg-gray-50 p-3 rounded-lg"><div class="flex justify-between mb-2"><label class="text-xs text-gray-500 font-bold">分攤給誰?</label><button @click="toggleAllInvolved" class="text-[10px] text-blue-500 font-bold">全選/全不選</button></div><div class="flex flex-wrap gap-2"><label v-for="m in members" :key="m" class="flex items-center gap-1 bg-white px-2 py-1 rounded border border-gray-200 text-xs"><input type="checkbox" :value="m" v-model="expenseForm.involved" class="rounded text-blue-600">{{ m }}</label></div></div>
-                </div>
-
-                <div class="flex gap-3 mt-6">
-                    <button v-if="isEditing" @click="confirmDelete" class="flex-1 bg-red-100 text-red-500 py-2 rounded-lg font-bold">刪除</button>
-                    <button @click="showModal = false" class="flex-1 bg-gray-100 text-gray-500 py-2 rounded-lg font-bold">取消</button>
-                    <button @click="saveData" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">儲存</button>
-                </div>
+                <div v-if="modalType === 'shopping'" class="space-y-3"><input v-model="shoppingForm.name" placeholder="商品名稱" class="w-full p-2 border rounded-lg"><div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer relative"><input type="file" @change="handleImageUpload" class="absolute inset-0 opacity-0"><span class="text-gray-400 text-sm"><i class="fas fa-camera mr-1"></i> 上傳圖片</span></div></div>
+                <div v-if="modalType === 'expense'" class="space-y-3"><input v-model="expenseForm.name" placeholder="項目名稱" class="w-full p-2 border rounded-lg"><div class="flex gap-2"><input v-model="expenseForm.amount" type="number" placeholder="金額" class="w-2/3 p-2 border rounded-lg text-lg font-bold"><select v-model="expenseForm.category" class="w-1/3 p-2 border rounded-lg bg-gray-50 text-sm"><option value="food">飲食</option><option value="transport">交通</option><option value="shop">購物</option><option value="ticket">門票</option><option value="hotel">住宿</option><option value="other">其他</option></select></div><div class="bg-gray-50 p-3 rounded-lg"><label class="text-xs text-gray-500 font-bold block mb-2">誰先付錢?</label><div class="flex flex-wrap gap-2"><button v-for="m in members" :key="m" @click="expenseForm.payer = m" class="px-3 py-1 rounded-full text-xs transition border" :class="expenseForm.payer === m ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200'">{{ m }}</button></div></div><div class="bg-gray-50 p-3 rounded-lg"><div class="flex justify-between mb-2"><label class="text-xs text-gray-500 font-bold">分攤給誰?</label><button @click="toggleAllInvolved" class="text-[10px] text-blue-500 font-bold">全選/全不選</button></div><div class="flex flex-wrap gap-2"><label v-for="m in members" :key="m" class="flex items-center gap-1 bg-white px-2 py-1 rounded border border-gray-200 text-xs"><input type="checkbox" :value="m" v-model="expenseForm.involved" class="rounded text-blue-600">{{ m }}</label></div></div></div>
+                <div class="flex gap-3 mt-6"><button v-if="isEditing" @click="confirmDelete" class="flex-1 bg-red-100 text-red-500 py-2 rounded-lg font-bold">刪除</button><button @click="showModal = false" class="flex-1 bg-gray-100 text-gray-500 py-2 rounded-lg font-bold">取消</button><button @click="saveData" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">儲存</button></div>
             </div>
         </div>
 
@@ -219,6 +197,8 @@
 
 <script>
     const { createApp, ref, computed, onMounted, watch, onUnmounted } = Vue;
+    // 使用新版本號，強制覆蓋舊資料
+    const DATA_VERSION = 'v3.0_final_itinerary';
 
     createApp({
         setup() {
@@ -237,28 +217,109 @@
             const showSettlement = ref(false);
             const currentChecklistMember = ref('我');
 
-            // 住宿資料
             const hotels = ref([
-                { name: 'Hotel Sunroute Asakusa', dates: '12/24 - 12/27', address: '東京都台東區雷門1-8-5', phone: '+81-3-3847-1511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Sunroute+Asakusa' },
-                { name: 'Hotel Nets Sapporo', dates: '12/27 - 12/31', address: '北海道札幌市中央區南7条西4丁目1-1', phone: '+81-11-530-5511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Nets+Sapporo' },
+                { name: '淺草燦路都飯店', dates: '12/24 - 12/27', address: '東京都台東區雷門1-8-5', phone: '+81-3-3847-1511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Sunroute+Asakusa' },
+                { name: '札幌 Nets 飯店', dates: '12/27 - 12/31', address: '北海道札幌市中央區南7条西4丁目1-1', phone: '+81-11-530-5511', mapLink: 'https://www.google.com/maps/search/?api=1&query=Hotel+Nets+Sapporo' },
                 { name: 'LA JOLIE MOTOMACHI', dates: '12/31 - 01/02', address: '北海道函館市末廣町6-6', phone: '+81-138-23-3322', mapLink: 'https://www.google.com/maps/search/?api=1&query=LA+JOLIE+MOTOMACHI+Hakodate' },
-                { name: 'Sotetsu Fresa Inn Tokyo-Roppongi', dates: '01/02 - 01/04', address: '東京都港區六本木3-10-1', phone: '+81-3-5413-2031', mapLink: 'https://www.google.com/maps/search/?api=1&query=Sotetsu+Fresa+Inn+Tokyo+Roppongi' }
+                { name: 'Sotetsu Fresa Inn 六本木', dates: '01/02 - 01/04', address: '東京都港區六本木3-10-1', phone: '+81-3-5413-2031', mapLink: 'https://www.google.com/maps/search/?api=1&query=Sotetsu+Fresa+Inn+Tokyo+Roppongi' }
             ]);
 
-            // 預設行程
-            const schedule = ref([
-                { date: "2025-12-24", location: "Tokyo", events: [{ id: 1, category: 'flight', name: '台北(TSA) ✈️ 東京(HND)', startTime: '13:30', endTime: '17:30', depCode: 'TSA', arrCode: 'HND', duration: '3h', transportType: 'train', transportTime: '45分' }, { id: 2, category: 'hotel', name: '東京住宿 Check-in', startTime: '19:00', endTime: '', notes: '第一晚東京', transportType: 'walk', transportTime: '10分' }] },
-                { date: "2025-12-25", location: "Tokyo", events: [] }, { date: "2025-12-26", location: "Tokyo", events: [] },
-                { date: "2025-12-27", location: "Tokyo/Sapporo", events: [{ id: 10, category: 'flight', name: '東京(HND) ✈️ 札幌(CTS)', startTime: '18:00', endTime: '19:35', depCode: 'HND', arrCode: 'CTS', duration: '1h 35m', transportType: 'train', transportTime: '40分' }, { id: 11, category: 'hotel', name: '札幌住宿 Check-in', startTime: '21:00', endTime: '', notes: '抵達北海道', transportType: 'walk', transportTime: '-' }] },
-                { date: "2025-12-28", location: "Sapporo", events: [] }, { date: "2025-12-29", location: "Sapporo", events: [] }, { date: "2025-12-30", location: "Sapporo", events: [] },
-                { date: "2025-12-31", location: "Hakodate", events: [{ id: 20, category: 'transport', name: '札幌 🚄 函館 (JR特急)', startTime: '10:56', endTime: '14:41', notes: '移動日', transportType: 'walk', transportTime: '20分' }, { id: 21, category: 'hotel', name: '函館住宿', startTime: '15:30', endTime: '', notes: '跨年夜', transportType: 'walk', transportTime: '-' }] },
-                { date: "2026-01-01", location: "Hakodate", events: [] },
-                { date: "2026-01-02", location: "Tokyo", events: [{ id: 30, category: 'flight', name: '函館(HKD) ✈️ 東京(HND)', startTime: '11:45', endTime: '13:15', depCode: 'HKD', arrCode: 'HND', duration: '1h 30m', transportType: 'train', transportTime: '40分' }, { id: 31, category: 'hotel', name: '東京住宿', startTime: '15:00', endTime: '', notes: '回到東京', transportType: 'walk', transportTime: '-' }] },
-                { date: "2026-01-03", location: "Tokyo", events: [] },
-                { date: "2026-01-04", location: "Tokyo", events: [{ id: 40, category: 'flight', name: '東京(HND) ✈️ 台北(TSA)', startTime: '12:40', endTime: '15:50', depCode: 'HND', arrCode: 'TSA', duration: '4h 10m', transportType: 'walk', transportTime: '-' }] }
+            // ** 12天完整行程 (依據 Excel 轉譯) **
+            const scheduleData = ref([
+                { 
+                    date: "2025-12-24", location: "Tokyo", 
+                    events: [
+                        { id: 101, category: 'transport', name: '前往松山機場 (T1)', startTime: '07:06', endTime: '', transportType: 'train', transportTime: '30分', notes: '搭乘普悠瑪+捷運' },
+                        { id: 102, category: 'flight', name: '台北(TSA) ✈️ 東京(HND)', startTime: '13:30', endTime: '17:30', depCode: 'TSA', arrCode: 'HND', duration: '3h', transportType: 'train', transportTime: '45分' },
+                        { id: 103, category: 'hotel', name: '淺草燦路都飯店 Check-in', startTime: '19:30', endTime: '', notes: '離田原町站近，3號出口(往淺草) / 2號or1號出口(往上野銀座)' }
+                    ]
+                },
+                { 
+                    date: "2025-12-25", location: "Tokyo", 
+                    events: [
+                        { id: 201, category: 'spot', name: '東京迪士尼樂園 (陸地)', startTime: '09:00', endTime: '21:00', transportType: 'train', transportTime: '40分', notes: '聖誕活動！記得抽整理券/DPA' }
+                    ]
+                },
+                { 
+                    date: "2025-12-26", location: "Tokyo", 
+                    events: [
+                        { id: 301, category: 'spot', name: '築地市場', startTime: '09:00', endTime: '12:00', transportType: 'subway', transportTime: '20分', notes: 'A1出口，吃海鮮丼、玉子燒' },
+                        { id: 302, category: 'spot', name: '銀座逛街', startTime: '13:00', endTime: '16:00', transportType: 'walk', transportTime: '15分', notes: '步行者天國 (週末)' },
+                        { id: 303, category: 'spot', name: '阿美橫丁', startTime: '17:00', endTime: '19:00', transportType: 'train', transportTime: '-', notes: '藥妝、二木菓子採購' }
+                    ]
+                },
+                { 
+                    date: "2025-12-27", location: "Tokyo/Sapporo", 
+                    events: [
+                        { id: 401, category: 'spot', name: '淺草寺 / 雷門', startTime: '09:00', endTime: '11:00', transportType: 'walk', transportTime: '15分', notes: '最後巡禮，退房寄行李' },
+                        { id: 402, category: 'flight', name: '東京(HND) ✈️ 札幌(CTS)', startTime: '18:00', endTime: '19:35', depCode: 'HND', arrCode: 'CTS', duration: '1h 35m', transportType: 'train', transportTime: '50分' },
+                        { id: 403, category: 'hotel', name: '札幌 Nets 飯店 Check-in', startTime: '21:00', endTime: '', notes: '薄野站附近' }
+                    ]
+                },
+                { 
+                    date: "2025-12-28", location: "Sapporo", 
+                    events: [
+                        { id: 501, category: 'food', name: '二條市場', startTime: '08:00', endTime: '10:00', transportType: 'walk', transportTime: '15分', notes: '早餐海鮮丼' },
+                        { id: 502, category: 'spot', name: '大通公園 & 電視塔', startTime: '10:30', endTime: '12:30', transportType: 'walk', transportTime: '10分', notes: '札幌雪祭會場(部分)' },
+                        { id: 503, category: 'shop', name: '狸小路商店街', startTime: '14:00', endTime: '18:00', transportType: 'walk', transportTime: '-', notes: '伴手禮採買' }
+                    ]
+                },
+                { 
+                    date: "2025-12-29", location: "Sapporo", 
+                    events: [
+                        { id: 601, category: 'spot', name: '旭川動物園', startTime: '10:30', endTime: '15:30', transportType: 'bus', transportTime: '2h', notes: '看企鵝散步' },
+                        { id: 602, category: 'spot', name: '四季彩之丘', startTime: '16:00', endTime: '17:00', transportType: 'bus', transportTime: '30分', notes: '雪上活動' },
+                        { id: 603, category: 'spot', name: '精靈露台', startTime: '18:00', endTime: '19:30', transportType: 'bus', transportTime: '1h', notes: '夢幻點燈' }
+                    ]
+                },
+                { 
+                    date: "2025-12-30", location: "Sapporo", 
+                    events: [
+                        { id: 701, category: 'spot', name: '北海道神宮', startTime: '09:00', endTime: '11:00', transportType: 'subway', transportTime: '20分', notes: '參拜' },
+                        { id: 702, category: 'spot', name: '白色戀人公園', startTime: '11:30', endTime: '13:30', transportType: 'subway', transportTime: '30分', notes: '觀光工廠' },
+                        { id: 703, category: 'spot', name: '小樽運河 & 堺町通', startTime: '14:30', endTime: '18:30', transportType: 'train', transportTime: '40分', notes: '六花亭、北菓樓、壽司' }
+                    ]
+                },
+                { 
+                    date: "2025-12-31", location: "Hakodate", 
+                    events: [
+                        { id: 801, category: 'transport', name: '札幌 🚄 函館 (JR特急)', startTime: '10:56', endTime: '14:41', transportType: 'tram', transportTime: '20分', notes: '北斗號 (約4小時)' },
+                        { id: 802, category: 'hotel', name: 'LA JOLIE MOTOMACHI Check-in', startTime: '15:30', endTime: '', transportType: 'walk', transportTime: '15分', notes: '十字街站' },
+                        { id: 803, category: 'spot', name: '函館山夜景', startTime: '17:00', endTime: '19:00', transportType: 'tram', transportTime: '-', notes: '搭乘纜車，百萬夜景' }
+                    ]
+                },
+                { 
+                    date: "2026-01-01", location: "Hakodate", 
+                    events: [
+                        { id: 901, category: 'food', name: '函館朝市', startTime: '08:00', endTime: '10:00', transportType: 'walk', transportTime: '10分', notes: '釣烏賊、海鮮丼' },
+                        { id: 902, category: 'spot', name: '金森紅磚倉庫', startTime: '10:30', endTime: '13:00', transportType: 'walk', transportTime: '15分', notes: '逛街、甜點' },
+                        { id: 903, category: 'spot', name: '五稜郭公園 / 五稜郭塔', startTime: '14:00', endTime: '16:30', transportType: 'tram', transportTime: '-', notes: '登塔看五角星' }
+                    ]
+                },
+                { 
+                    date: "2026-01-02", location: "Tokyo", 
+                    events: [
+                        { id: 1001, category: 'flight', name: '函館(HKD) ✈️ 東京(HND)', startTime: '11:45', endTime: '13:15', depCode: 'HKD', arrCode: 'HND', duration: '1h 30m', transportType: 'train', transportTime: '50分' },
+                        { id: 1002, category: 'hotel', name: '六本木 Sotetsu Fresa Inn Check-in', startTime: '15:00', endTime: '', transportType: 'subway', transportTime: '-', notes: '六本木站' },
+                        { id: 1003, category: 'spot', name: '東京鐵塔 / 芝公園', startTime: '17:00', endTime: '19:00', transportType: 'walk', transportTime: '-', notes: '拍照打卡' }
+                    ]
+                },
+                { 
+                    date: "2026-01-03", location: "Tokyo", 
+                    events: [
+                        { id: 1101, category: 'spot', name: 'Shibuya Sky', startTime: '10:00', endTime: '12:00', transportType: 'subway', transportTime: '20分', notes: '需預約時段' },
+                        { id: 1102, category: 'shop', name: '澀谷 / 原宿 / 表參道', startTime: '13:00', endTime: '18:00', transportType: 'walk', transportTime: '-', notes: '逛街購物' }
+                    ]
+                },
+                { 
+                    date: "2026-01-04", location: "Tokyo", 
+                    events: [
+                        { id: 1201, category: 'transport', name: '前往羽田機場 (T2)', startTime: '09:30', endTime: '10:30', transportType: 'train', transportTime: '-', notes: '提早到機場逛街' },
+                        { id: 1202, category: 'flight', name: '東京(HND) ✈️ 台北(TSA)', startTime: '12:40', endTime: '15:50', depCode: 'HND', arrCode: 'TSA', duration: '4h 10m', transportType: 'walk', transportTime: '-', notes: '平安回家' }
+                    ]
+                }
             ]);
 
-            // --- 多人行李清單結構 ---
             const defaultPackingTemplate = [
                 { name: '重要文件', items: [ {name:'護照',tag:'隨身',important:true}, {name:'簽證',tag:'隨身',important:true}, {name:'國際駕照'}, {name:'機票',tag:'隨身',important:true}, {name:'住宿憑證'}, {name:'交通票券'}, {name:'外幣',tag:'隨身',important:true}, {name:'信用卡',tag:'隨身',important:true}, {name:'旅遊手冊'} ] },
                 { name: '3C 產品', items: [ {name:'手機',tag:'隨身',important:true}, {name:'充電線'}, {name:'充電器'}, {name:'行動電源',tag:'隨身',important:true}, {name:'萬用轉接頭'}, {name:'筆電',tag:'隨身'}, {name:'相機'}, {name:'網卡'}, {name:'自拍棒'} ] },
@@ -273,9 +334,7 @@
 
             const currentChecklistData = computed(() => {
                 const member = currentChecklistMember.value || '我';
-                if (!packingData.value[member]) {
-                    packingData.value[member] = getNewPackingList();
-                }
+                if (!packingData.value[member]) packingData.value[member] = getNewPackingList();
                 return packingData.value[member];
             });
 
@@ -286,7 +345,6 @@
             const expenseForm = ref({});
             let sortableInstance = null;
 
-            // --- Canvas 積雪 ---
             let canvas, ctx, animationId;
             const flakes = [];
             const snowPileHeight = new Array(480).fill(0);
@@ -295,20 +353,10 @@
             const updateFlakes = () => { for (let i = 0; i < flakes.length; i++) { const f = flakes[i]; f.y += Math.pow(f.d, 2) * 0.5 + 0.3; f.x += Math.sin(f.y * 0.05) * 0.3; const floorIndex = Math.floor(f.x); if (floorIndex >= 0 && floorIndex < canvas.width) { const pileHeight = snowPileHeight[floorIndex]; if (f.y + f.r >= canvas.height - pileHeight) { if (pileHeight < 25) { for(let k = -2; k <= 2; k++) { if (floorIndex + k >= 0 && floorIndex + k < canvas.width) { snowPileHeight[floorIndex + k] += 0.4 * (3 - Math.abs(k)); } } } resetFlake(f); } } else if (f.y > canvas.height) { resetFlake(f); } } };
             const resetFlake = (f) => { f.y = -10; f.x = Math.random() * canvas.width; };
 
-            // --- 天氣 API ---
             const cityMap = { 'Tokyo': { lat: 35.6895, lon: 139.6917 }, 'Sapporo': { lat: 43.0618, lon: 141.3545 }, 'Hakodate': { lat: 41.7687, lon: 140.7288 } };
-            const getWeatherDesc = (code) => {
-                if (code === 0) return '晴天';
-                if (code <= 3) return '多雲';
-                if (code <= 48) return '起霧';
-                if (code <= 67) return '有雨';
-                if (code <= 77) return '下雪';
-                if (code <= 82) return '陣雨';
-                if (code <= 86) return '暴雪';
-                return '陰天';
-            };
+            const getWeatherDesc = (code) => { if(code===0) return '晴天'; if(code<=3) return '多雲'; if(code<=67) return '有雨'; if(code<=86) return '降雪'; return '陰天'; };
             const fetchWeather = async () => {
-                const locRaw = schedule.value[currentDayIndex.value].location;
+                const locRaw = scheduleData.value[currentDayIndex.value].location;
                 const locKey = locRaw.split('/')[0];
                 const coords = cityMap[locKey] || cityMap['Tokyo'];
                 try {
@@ -316,194 +364,78 @@
                     const res = await fetch(url);
                     const data = await res.json();
                     if(data.current) {
-                        let icon = 'fas fa-cloud';
-                        let iconClass = 'text-gray-500';
-                        const code = data.current.weather_code;
-                        if (code === 0) { icon = 'fas fa-sun'; iconClass = 'text-yellow-500'; }
-                        else if (code <= 3) { icon = 'fas fa-cloud-sun'; iconClass = 'text-gray-400'; }
-                        else if (code <= 67) { icon = 'fas fa-cloud-rain'; iconClass = 'text-blue-500'; }
-                        else if (code >= 71) { icon = 'fas fa-snowflake'; iconClass = 'text-blue-200'; }
-
-                        weather.value = {
-                            temp: Math.round(data.current.temperature_2m),
-                            feelsLike: Math.round(data.current.apparent_temperature),
-                            code: code,
-                            desc: getWeatherDesc(code),
-                            icon: icon,
-                            iconClass: iconClass,
-                            uv: data.daily ? data.daily.uv_index_max[0] : 0
-                        };
+                        let icon='fas fa-cloud', iconClass='text-gray-500', code=data.current.weather_code;
+                        if(code===0){icon='fas fa-sun';iconClass='text-yellow-500';}else if(code<=3){icon='fas fa-cloud-sun';iconClass='text-gray-400';}else if(code<=67){icon='fas fa-cloud-rain';iconClass='text-blue-500';}else if(code>=71){icon='fas fa-snowflake';iconClass='text-blue-200';}
+                        weather.value = { temp: Math.round(data.current.temperature_2m), feelsLike: Math.round(data.current.apparent_temperature), desc: getWeatherDesc(code), icon, iconClass, uv: data.daily?data.daily.uv_index_max[0]:0 };
                     }
-                } catch(e) { 
-                    console.error(e);
-                    weather.value = { temp: '-', feelsLike: '-', code: 0, desc: 'N/A', icon: 'fas fa-minus', uv: 0 };
-                }
+                } catch(e) { weather.value={temp:'-',feelsLike:'-',desc:'N/A',icon:'fas fa-minus',uv:0}; }
             };
+            const getUVColor = (uv) => { if(uv<=2)return 'text-green-500'; if(uv<=5)return 'text-yellow-500'; if(uv<=7)return 'text-orange-500'; return 'text-red-500'; };
 
-            const getUVColor = (uv) => {
-                if(uv <= 2) return 'text-green-500';
-                if(uv <= 5) return 'text-yellow-500';
-                if(uv <= 7) return 'text-orange-500';
-                return 'text-red-500';
-            };
-
-            // --- 匯率 API ---
             const calculateTWD = () => { if(settings.value.rate > 0) converter.value.twd = (converter.value.jpy * settings.value.rate).toFixed(0); };
             const calculateJPY = () => { if(settings.value.rate > 0) converter.value.jpy = (converter.value.twd / settings.value.rate).toFixed(0); };
             const fetchExchangeRate = async () => {
-                try { 
-                    const res = await fetch('https://api.exchangerate-api.com/v4/latest/JPY'); 
-                    const data = await res.json(); 
-                    if(data && data.rates && data.rates.TWD){ 
-                        settings.value.rate = data.rates.TWD; 
-                        settings.value.lastUpdate = new Date(data.time_last_updated*1000).toLocaleDateString();
-                        calculateTWD(); 
-                    } 
-                } catch(e){ console.error(e); }
-            };
-            
-            // --- 匯出功能 ---
-            const exportDataForCode = () => {
-                // 產生一個 JSON 字串，包含所有資料
-                const dataToExport = {
-                    schedule: schedule.value,
-                    shoppingList: shoppingList.value,
-                    expenses: expenses.value,
-                    members: members.value,
-                    settings: settings.value,
-                    packingData: packingData.value
-                };
-                
-                // 轉成字串並複製到剪貼簿
-                const jsonString = JSON.stringify(dataToExport);
-                navigator.clipboard.writeText(jsonString).then(() => {
-                    alert("資料已複製！\n\n請將這段文字傳給工程師，或自行取代 localStorage 中的資料。");
-                }).catch(err => {
-                    console.error('複製失敗', err);
-                    alert("複製失敗，請手動選取複製");
-                });
-            };
+                try { const res = await fetch('https://api.exchangerate-api.com/v4/latest/JPY'); const data = await res.json(); if(data&&data.rates&&data.rates.TWD){ settings.value.rate = data.rates.TWD; settings.value.lastUpdate = new Date(data.time_last_updated*1000).toLocaleDateString(); calculateTWD(); } } catch(e){} };
 
-            // --- 救命按鈕: 重置所有資料 ---
-            const resetAllData = () => {
-                if(confirm("確定要重置所有資料嗎？這會清除所有紀錄並修復故障。")) {
-                    localStorage.removeItem('tripData');
-                    location.reload();
-                }
-            };
+            const resetAllData = () => { if(confirm("確定要重置所有資料嗎？")) { localStorage.removeItem('tripData'); location.reload(); } };
+            const persistData = () => { localStorage.setItem('tripData', JSON.stringify({ version: DATA_VERSION, schedule: scheduleData.value, shoppingList: shoppingList.value, expenses: expenses.value, members: members.value, settings: settings.value, packingData: packingData.value })); };
 
             onMounted(() => {
-                try {
-                    const savedData = localStorage.getItem('tripData');
-                    if (savedData) {
-                        const parsed = JSON.parse(savedData);
-                        // 強制檢查行程天數，若不同則使用新版預設值，避免衝突
-                        if(parsed.schedule && parsed.schedule.length === 12) {
-                             schedule.value = parsed.schedule;
-                        }
+                const savedData = localStorage.getItem('tripData');
+                if (savedData) {
+                    const parsed = JSON.parse(savedData);
+                    // 檢查版本號，若不同則強制更新行程
+                    if (parsed.version === DATA_VERSION) {
+                        scheduleData.value = parsed.schedule;
                         shoppingList.value = parsed.shoppingList || [];
                         expenses.value = parsed.expenses || [];
                         members.value = parsed.members || ['我'];
-                        
-                        if (parsed.settings && parsed.settings.rate) settings.value = parsed.settings;
-                        if (parsed.packingData) {
-                            packingData.value = parsed.packingData;
-                        } else if (parsed.packingList && Array.isArray(parsed.packingList)) {
-                            packingData.value['我'] = parsed.packingList;
-                        }
-                        
-                        members.value.forEach(m => {
-                            if(!packingData.value[m]) packingData.value[m] = getNewPackingList();
-                        });
+                        if(parsed.settings) settings.value = parsed.settings;
+                        if(parsed.packingData) packingData.value = parsed.packingData;
+                    } else {
+                        // 版本不同，更新行程但保留其他資料
+                        console.log("Updating to version: " + DATA_VERSION);
+                        shoppingList.value = parsed.shoppingList || [];
+                        expenses.value = parsed.expenses || [];
+                        members.value = parsed.members || ['我'];
+                        if(parsed.settings) settings.value = parsed.settings;
+                        if(parsed.packingData) packingData.value = parsed.packingData;
+                        persistData(); // 立即存檔
                     }
-                } catch (e) { console.error("Data load error", e); }
+                } else {
+                    persistData(); // 第一次執行，直接存檔
+                }
                 
-                initSortable();
-                fetchWeather();
-                fetchExchangeRate();
-                setTimeout(initCanvas, 100);
+                initSortable(); fetchWeather(); fetchExchangeRate(); setTimeout(initCanvas, 100);
             });
 
             onUnmounted(() => { cancelAnimationFrame(animationId); });
-
-            // 強制保存資料的函數
-            const persistData = () => {
-                localStorage.setItem('tripData', JSON.stringify({
-                    schedule: schedule.value, 
-                    shoppingList: shoppingList.value, 
-                    expenses: expenses.value, 
-                    members: members.value, 
-                    settings: settings.value, 
-                    packingData: packingData.value
-                }));
-            };
-
-            // 監聽所有重要資料變動
-            watch([schedule, shoppingList, expenses, members, settings, packingData], () => {
-                persistData();
-            }, { deep: true });
-
-            watch(isDraggable, (val) => { if (sortableInstance) { sortableInstance.option("disabled", !val); } });
+            
+            // 監聽並自動存檔
+            watch([scheduleData, shoppingList, expenses, members, settings, packingData], () => { persistData(); }, { deep: true });
+            watch(isDraggable, (val) => { if(sortableInstance) sortableInstance.option("disabled", !val); });
             const toggleDraggable = () => isDraggable.value = !isDraggable.value;
+            watch(currentDayIndex, () => { setTimeout(initSortable, 100); fetchWeather(); });
 
-            watch(currentDayIndex, () => {
-                setTimeout(initSortable, 100);
-                fetchWeather(); 
-            });
-
-            const packingProgress = computed(() => {
-                let total = 0, checked = 0;
-                const list = currentChecklistData.value;
-                if(list) list.forEach(cat => cat.items.forEach(i => { total++; if(i.checked) checked++; }));
-                return total === 0 ? 0 : Math.round((checked / total) * 100);
-            });
-
-            const settlementPlan = computed(() => {
-                let balance = {}; members.value.forEach(m => balance[m] = 0);
-                expenses.value.forEach(ex => { const amt = parseFloat(ex.amount); if(!amt||!ex.involved||ex.involved.length===0)return; balance[ex.payer]=(balance[ex.payer]||0)+amt; const share=amt/ex.involved.length; ex.involved.forEach(p=>{balance[p]=(balance[p]||0)-share;}); });
-                let d=[], c=[]; for(let p in balance){ if(balance[p]<-1)d.push({name:p,amount:balance[p]}); else if(balance[p]>1)c.push({name:p,amount:balance[p]}); } d.sort((a,b)=>a.amount-b.amount); c.sort((a,b)=>b.amount-a.amount);
-                let plan=[], i=0, j=0; while(i<d.length && j<c.length){ let db=d[i], cr=c[j], amt=Math.min(Math.abs(db.amount), cr.amount); plan.push({from:db.name, to:cr.name, amount:amt}); db.amount+=amt; cr.amount-=amt; if(Math.abs(db.amount)<1)i++; if(cr.amount<1)j++; } return plan;
-            });
-
-            const toggleSettlement = () => showSettlement.value = !showSettlement.value;
-            const addMember = () => { const n = prompt("輸入新成員名字:"); if(n && !members.value.includes(n)) { members.value.push(n); packingData.value[n] = getNewPackingList(); persistData(); } };
-            const renameMember = (i) => { const old=members.value[i], n=prompt("修改名字:",old); if(n&&n!==old&&!members.value.includes(n)){ members.value[i]=n; if(packingData.value[old]) { packingData.value[n] = packingData.value[old]; delete packingData.value[old]; } else { packingData.value[n] = getNewPackingList(); } expenses.value.forEach(e=>{ if(e.payer===old)e.payer=n; if(e.involved.includes(old))e.involved[e.involved.indexOf(old)]=n; }); if (currentChecklistMember.value === old) currentChecklistMember.value = n; persistData(); } };
-            const removeMember = (i) => { if(members.value[i]==='我')return; if(confirm("刪除成員?")){ const nameToRemove = members.value[i]; members.value.splice(i,1); delete packingData.value[nameToRemove]; if (currentChecklistMember.value === nameToRemove) currentChecklistMember.value = '我'; persistData(); } };
-            const toggleAllInvolved = () => { if(expenseForm.value.involved.length===members.value.length) expenseForm.value.involved=[]; else expenseForm.value.involved=[...members.value]; };
-            
-            const initSortable = () => { const el=document.getElementById('itinerary-list'); if(el){ sortableInstance=new Sortable(el,{ animation:150, handle:'.itinerary-item', disabled:!isDraggable.value, onEnd:(evt)=>{ const item=schedule.value[currentDayIndex.value].events.splice(evt.oldIndex,1)[0]; schedule.value[currentDayIndex.value].events.splice(evt.newIndex,0,item); persistData(); } }); } };
-            
-            const getDayName = (d) => new Date(d).toLocaleDateString('en-US', { weekday: 'short' });
-            const getDayNum = (d) => new Date(d).getDate();
-            const getCategoryIcon = (c) => ({ flight:'fa-plane', hotel:'fa-bed', spot:'fa-camera', food:'fa-utensils', shop:'fa-bag-shopping', transport:'fa-train', ticket:'fa-ticket', other:'fa-star' }[c] || 'fa-circle');
-            const getCategoryColor = (c) => ({ flight:'bg-blue-400', hotel:'bg-indigo-400', spot:'bg-pink-400', food:'bg-orange-400', shop:'bg-yellow-400', transport:'bg-green-400' }[c] || 'bg-gray-400');
-            const getTransportIcon = (t) => { const map={walk:'fa-person-walking', subway:'fa-train-subway', train:'fa-train', hsr:'fa-train', tram:'fa-train-tram', taxi:'fa-taxi', bus:'fa-bus'}; return `fas ${map[t]||'fa-person-walking'}`; };
-            const getWeatherIcon = (code) => { if(code<=3)return 'fas fa-sun'; if(code<=60)return 'fas fa-cloud-rain'; if(code<=80)return 'fas fa-snowflake'; return 'fas fa-cloud'; };
-            const getMapLink = (n) => `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(n)}`;
+            const packingProgress = computed(() => { let t=0, c=0; const l=currentChecklistData.value; if(l) l.forEach(cat => cat.items.forEach(i => { t++; if(i.checked) c++; })); return t===0?0:Math.round((c/t)*100); });
+            const settlementPlan = computed(() => { let b={}; members.value.forEach(m=>b[m]=0); expenses.value.forEach(ex=>{ const a=parseFloat(ex.amount); if(!a||!ex.involved||ex.involved.length===0)return; b[ex.payer]=(b[ex.payer]||0)+a; const s=a/ex.involved.length; ex.involved.forEach(p=>b[p]=(b[p]||0)-s); }); let d=[], c=[]; for(let p in b){ if(b[p]<-1)d.push({name:p,amount:b[p]}); else if(b[p]>1)c.push({name:p,amount:b[p]}); } d.sort((a,b)=>a.amount-b.amount); c.sort((a,b)=>b.amount-a.amount); let plan=[], i=0, j=0; while(i<d.length && j<c.length){ let db=d[i], cr=c[j], a=Math.min(Math.abs(db.amount), cr.amount); plan.push({from:db.name, to:cr.name, amount:a}); db.amount+=a; cr.amount-=a; if(Math.abs(db.amount)<1)i++; if(cr.amount<1)j++; } return plan; });
             const totalExpenses = computed(() => expenses.value.reduce((sum, item) => sum + Number(item.amount), 0));
             const modalTitle = computed(() => ({ schedule: isEditing.value?'編輯行程':'新增行程', shopping:'新增購物清單', expense:'新增花費' }[modalType.value] || ''));
 
             const handleAddClick = () => { if(currentTab.value==='schedule')openAddModal('schedule'); else if(currentTab.value==='shopping')openAddModal('shopping'); else if(currentTab.value==='expenses')openAddModal('expense'); };
-            const openAddModal = (t) => { modalType.value=t; isEditing.value=false; editForm.value={category:'spot',transportType:'train',transportTime:'20分'}; shoppingForm.value={}; expenseForm.value={category:'food',payment:'現金',date:schedule.value[currentDayIndex.value].date,payer:'我',involved:[...members.value]}; showModal.value=true; };
+            const openAddModal = (t) => { modalType.value=t; isEditing.value=false; editForm.value={category:'spot',transportType:'train',transportTime:'20分'}; shoppingForm.value={}; expenseForm.value={category:'food',payment:'現金',date:scheduleData.value[currentDayIndex.value].date,payer:'我',involved:[...members.value]}; showModal.value=true; };
             const editEvent = (i) => { if(isDraggable.value)return; if(i.category==='flight')return; modalType.value='schedule'; isEditing.value=true; editForm.value=JSON.parse(JSON.stringify(i)); showModal.value=true; };
             const handleImageUpload = (e) => { const f=e.target.files[0]; if(f){ const r=new FileReader(); r.onload=(e)=>shoppingForm.value.image=e.target.result; r.readAsDataURL(f); } };
-            
             const saveData = () => { 
                 if(modalType.value==='schedule'){ 
-                    if(isEditing.value){ const idx=schedule.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); if(idx!==-1)schedule.value[currentDayIndex.value].events[idx]=editForm.value; } 
-                    else { editForm.value.id=Date.now(); schedule.value[currentDayIndex.value].events.push(editForm.value); } 
-                } else if(modalType.value==='shopping') {
-                    shoppingList.value.push(shoppingForm.value); 
-                } else if(modalType.value==='expense') {
-                    expenses.value.push(expenseForm.value); 
-                }
-                persistData();
-                showModal.value=false; 
+                    if(isEditing.value){ const idx=scheduleData.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); if(idx!==-1)scheduleData.value[currentDayIndex.value].events[idx]=editForm.value; } 
+                    else { editForm.value.id=Date.now(); scheduleData.value[currentDayIndex.value].events.push(editForm.value); } 
+                } else if(modalType.value==='shopping') shoppingList.value.push(shoppingForm.value); else if(modalType.value==='expense') expenses.value.push(expenseForm.value); persistData(); showModal.value=false; 
             };
             const confirmDelete = () => { 
                 if(confirm("刪除?")){ 
-                    const idx=schedule.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); 
-                    if(idx!==-1)schedule.value[currentDayIndex.value].events.splice(idx,1); 
+                    const idx=scheduleData.value[currentDayIndex.value].events.findIndex(e=>e.id===editForm.value.id); 
+                    if(idx!==-1)scheduleData.value[currentDayIndex.value].events.splice(idx,1); 
                     persistData();
                     showModal.value=false; 
                 } 
@@ -514,15 +446,32 @@
                     persistData();
                 }
             };
+            
+            const toggleSettlement = () => showSettlement.value = !showSettlement.value;
+            const addMember = () => { const n = prompt("輸入新成員名字:"); if(n && !members.value.includes(n)) { members.value.push(n); packingData.value[n] = getNewPackingList(); persistData(); } };
+            const renameMember = (i) => { const old=members.value[i], n=prompt("修改名字:",old); if(n&&n!==old&&!members.value.includes(n)){ members.value[i]=n; if(packingData.value[old]) { packingData.value[n] = packingData.value[old]; delete packingData.value[old]; } else { packingData.value[n] = getNewPackingList(); } expenses.value.forEach(e=>{ if(e.payer===old)e.payer=n; if(e.involved.includes(old))e.involved[e.involved.indexOf(old)]=n; }); if (currentChecklistMember.value === old) currentChecklistMember.value = n; persistData(); } };
+            const removeMember = (i) => { if(members.value[i]==='我')return; if(confirm("刪除成員?")){ const nameToRemove = members.value[i]; members.value.splice(i,1); delete packingData.value[nameToRemove]; if (currentChecklistMember.value === nameToRemove) currentChecklistMember.value = '我'; persistData(); } };
+            const toggleAllInvolved = () => { if(expenseForm.value.involved.length===members.value.length) expenseForm.value.involved=[]; else expenseForm.value.involved=[...members.value]; };
+            
+            const initSortable = () => { const el=document.getElementById('itinerary-list'); if(el){ sortableInstance=new Sortable(el,{ animation:150, handle:'.itinerary-item', disabled:!isDraggable.value, onEnd:(evt)=>{ const item=scheduleData.value[currentDayIndex.value].events.splice(evt.oldIndex,1)[0]; scheduleData.value[currentDayIndex.value].events.splice(evt.newIndex,0,item); persistData(); } }); } };
+            
+            const getDayName = (d) => new Date(d).toLocaleDateString('en-US', { weekday: 'short' });
+            const getDayNum = (d) => new Date(d).getDate();
+            const getCategoryIcon = (c) => ({ flight:'fa-plane', hotel:'fa-bed', spot:'fa-camera', food:'fa-utensils', shop:'fa-bag-shopping', transport:'fa-train', ticket:'fa-ticket', other:'fa-star' }[c] || 'fa-circle');
+            const getCategoryColor = (c) => ({ flight:'bg-blue-400', hotel:'bg-indigo-400', spot:'bg-pink-400', food:'bg-orange-400', shop:'bg-yellow-400', transport:'bg-green-400' }[c] || 'bg-gray-400');
+            const getTransportIcon = (t) => { const map={walk:'fa-person-walking', subway:'fa-train-subway', train:'fa-train', hsr:'fa-train', tram:'fa-train-tram', taxi:'fa-taxi', bus:'fa-bus'}; return `fas ${map[t]||'fa-person-walking'}`; };
+            const getWeatherIcon = (code) => { if(code<=3)return 'fas fa-sun'; if(code<=60)return 'fas fa-cloud-rain'; if(code<=80)return 'fas fa-snowflake'; return 'fas fa-cloud'; };
+            const getMapLink = (n) => `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(n)}`;
+            const getUVColor = (uv) => { if(uv <= 2) return 'text-green-500'; if(uv <= 5) return 'text-yellow-500'; if(uv <= 7) return 'text-orange-500'; return 'text-red-500'; };
 
             return {
-                currentTab, currentDayIndex, schedule, showModal, modalType, isEditing, modalTitle,
+                currentTab, currentDayIndex, schedule: scheduleData, showModal, modalType, isEditing, modalTitle,
                 editForm, shoppingForm, expenseForm, shoppingList, expenses, converter, weather, settings, members, hotels, packingList: currentChecklistData,
                 totalExpenses, bannerRef, showSettlement, settlementPlan, toggleSettlement, addMember, removeMember, renameMember, toggleAllInvolved, packingProgress,
                 openAddModal, editEvent, saveData, confirmDelete, deleteShoppingItem, handleImageUpload,
                 getDayName, getDayNum, getCategoryIcon, getCategoryColor, getTransportIcon, getWeatherIcon, getMapLink, getUVColor,
                 isDraggable, toggleDraggable, handleAddClick, calculateTWD, calculateJPY, resetAllData, toggleCheckItem: (item) => { item.checked = !item.checked; persistData(); },
-                currentChecklistMember, currentChecklistData, exportDataForCode
+                currentChecklistMember, currentChecklistData
             };
         }
     }).mount('#app');
@@ -530,4 +479,3 @@
 
 </body>
 </html>
-
