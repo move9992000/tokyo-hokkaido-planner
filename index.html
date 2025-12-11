@@ -94,7 +94,6 @@
             }
         }
         
-        /* 修改的部分在這裡：往下移 37px (由 bottom: 45px 改為 8px) */
         .side-tab-bar {
             position: absolute;
             bottom: 8px; 
@@ -206,6 +205,12 @@
         </div>
         
         <div class="snow-layer"></div> 
+        
+        <div v-if="currentTab !== 'info'" class="absolute bottom-[8px] left-[16px] z-30">
+            <button @click="handleAddClick" class="w-[40px] h-[40px] rounded-full bg-accent-yellow shadow-[0_4px_10px_rgba(0,0,0,0.15)] text-deep-sea-blue text-lg flex items-center justify-center hover:scale-105 transition-transform" title="新增">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+        </div>
         
         <div class="side-tab-bar">
             <button @click="currentTab = 'itinerary'" title="行程" :class="{'active': currentTab === 'itinerary'}" class="tab-button"><i class="fa-solid fa-map-location-dot"></i></button>
@@ -429,8 +434,6 @@
         </div>
 
     </main>
-
-    <button v-if="currentTab !== 'info'" @click="handleAddClick" class="fixed bottom-6 right-6 w-14 h-14 bg-accent-yellow rounded-full fab-shadow text-deep-sea-blue text-2xl flex items-center justify-center hover:scale-110 transition-transform z-40"><i class="fa-solid fa-plus"></i></button>
 
     <div v-if="showShoppingModal" class="fixed inset-0 bg-deep-sea-blue/40 z-50 flex items-center justify-center p-6 backdrop-blur-sm animate-fade-in">
         <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl">
@@ -950,5 +953,3 @@
 </script>
 </body>
 </html>
-
-
