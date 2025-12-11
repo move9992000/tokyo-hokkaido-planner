@@ -94,6 +94,7 @@
             }
         }
         
+        /* 調整功能鍵位置：底部距離 8px */
         .side-tab-bar {
             position: absolute;
             bottom: 8px; 
@@ -298,7 +299,7 @@
 
                 <div v-if="currentItinerary.length === 0" class="text-center py-16 text-slate-300">
                     <i class="fa-solid fa-map-location-dot text-5xl mb-3 text-slate-200"></i>
-                    <p class="text-sm">本日尚無行程<br>請點擊左上角新增</p>
+                    <p class="text-sm">本日尚無行程<br>請點擊左下角新增</p>
                 </div>
             </div>
         </div>
@@ -391,16 +392,22 @@
 
         <div v-if="currentTab === 'shopping'" class="animate-fade-in">
             <div class="grid grid-cols-2 gap-4">
-                <div v-for="(item, idx) in shoppingList" :key="idx" class="bg-white rounded-2xl p-3 card-shadow relative group">
-                    <div class="aspect-square bg-slate-50 rounded-xl mb-3 overflow-hidden relative border border-slate-100">
+                <div v-for="(item, idx) in shoppingList" :key="idx" class="bg-white rounded-2xl p-3 card-shadow relative group flex flex-col h-full">
+                    <div class="aspect-square bg-slate-50 rounded-xl mb-3 overflow-hidden relative border border-slate-100 shrink-0">
                         <img v-if="item.image" :src="item.image" class="w-full h-full object-cover">
                         <div v-else class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-solid fa-bag-shopping text-3xl"></i></div>
                         <button @click="removeShoppingItem(idx)" class="absolute top-2 right-2 bg-black/60 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-xmark"></i></button>
                     </div>
-                    <p class="font-bold text-sm text-slate-800 truncate px-1">{{ item.name }}</p>
+                    
+                    <div class="flex-1 flex flex-col">
+                        <p class="font-bold text-sm text-slate-800 mb-1 leading-tight">{{ item.name }}</p>
+                        <p class="text-[10px] text-slate-500 line-clamp-2 leading-relaxed">{{ item.desc }}</p>
+                    </div>
                 </div>
+                
                 <div v-if="shoppingList.length % 2 !== 0" class="h-0 invisible"></div>
-                <div v-if="shoppingList.length === 0" class="col-span-2 text-center py-16 text-slate-300"><i class="fa-solid fa-bag-shopping text-5xl mb-3 text-slate-200"></i><p class="text-sm">購物清單空白<br>請點擊右下角新增</p></div>
+                
+                <div v-if="shoppingList.length === 0" class="col-span-2 text-center py-16 text-slate-300"><i class="fa-solid fa-bag-shopping text-5xl mb-3 text-slate-200"></i><p class="text-sm">購物清單空白<br>請點擊左下角新增</p></div>
             </div>
         </div>
 
@@ -438,7 +445,8 @@
     <div v-if="showShoppingModal" class="fixed inset-0 bg-deep-sea-blue/40 z-50 flex items-center justify-center p-6 backdrop-blur-sm animate-fade-in">
         <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl">
             <h3 class="font-bold text-lg mb-5 text-center text-slate-800">新增購物清單</h3>
-            <input v-model="newShoppingItem.name" type="text" placeholder="商品名稱" class="w-full bg-slate-50 border-none rounded-xl p-4 mb-4 focus:ring-2 focus:ring-deep-sea-blue text-sm">
+            <input v-model="newShoppingItem.name" type="text" placeholder="商品名稱" class="w-full bg-slate-50 border-none rounded-xl p-4 mb-3 focus:ring-2 focus:ring-deep-sea-blue text-sm">
+            <textarea v-model="newShoppingItem.desc" placeholder="商品說明/備註 (選填)" rows="2" class="w-full bg-slate-50 border-none rounded-xl p-4 mb-4 focus:ring-2 focus:ring-deep-sea-blue text-sm resize-none"></textarea>
             <div class="relative mb-6">
                 <input type="file" @change="handleImageUpload" class="hidden" id="fileInput">
                 <label for="fileInput" class="w-full h-36 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center cursor-pointer text-slate-400 hover:bg-slate-100 hover:border-border-slate-300 transition-all">
@@ -676,11 +684,58 @@
                 { condition: 'sunny', temp: '4/11', feel: '2', city: '東京' },  // 1/4
             ]);
             
-            // 購物清單 (範例資料)
+            // 2025-26 日本必買推薦清單 (東京+北海道)
             const shoppingList = ref([
-                { name: '六花亭 奶油葡萄乾夾心餅乾', image: 'https://via.placeholder.com/100/f0f9ff/005e8a?text=Rokkatei' },
-                { name: 'NewYork Perfect Cheese', image: 'https://via.placeholder.com/100/f0f9ff/005e8a?text=NY+Cheese' },
-                { name: 'SNAFFLE\'S 起司蛋糕', image: 'https://via.placeholder.com/100/f0f9ff/005e8a?text=Snaffles' },
+                { 
+                    name: 'NewYork Perfect Cheese', 
+                    desc: '東京車站最強排隊伴手禮，貓舌餅包裹起司與鮮奶油，鹹甜絕配。',
+                    image: 'https://via.placeholder.com/300x300/FFD54F/333333?text=NY+Perfect+Cheese' 
+                },
+                { 
+                    name: 'PRESS BUTTER SAND', 
+                    desc: '焦糖奶油夾心餅，酥脆餅皮配上濃郁內餡，口感層次豐富，東京必買。',
+                    image: 'https://via.placeholder.com/300x300/E0E0E0/333333?text=Press+Butter+Sand' 
+                },
+                { 
+                    name: 'Quality 1st Derma Laser 面膜', 
+                    desc: '2025藥妝店最紅！金色VC100款針對毛孔與提亮，效果媲美專櫃。',
+                    image: 'https://via.placeholder.com/300x300/FDD835/333333?text=Derma+Laser+Mask' 
+                },
+                { 
+                    name: 'Melano CC 酵素洗面乳', 
+                    desc: '常常缺貨的毛孔救星，酵素+維他命C能改善黑頭粉刺，洗後不緊繃。',
+                    image: 'https://via.placeholder.com/300x300/FFF176/333333?text=Melano+CC+Wash' 
+                },
+                { 
+                    name: 'EVE Quick DX 頭痛藥', 
+                    desc: '金色加強版，針對劇烈頭痛生理痛見效快，且添加護胃成分。',
+                    image: 'https://via.placeholder.com/300x300/1E88E5/FFFFFF?text=EVE+Quick+DX' 
+                },
+                { 
+                    name: '六花亭 奶油葡萄夾心餅', 
+                    desc: '北海道代表性甜點，蘭姆葡萄乾與奶油餡的完美結合，必買經典。',
+                    image: 'https://via.placeholder.com/300x300/D32F2F/FFFFFF?text=Rokkatei' 
+                },
+                { 
+                    name: 'Calbee 薯條三兄弟', 
+                    desc: '北海道限定，使用北海道馬鈴薯製作，口感酥脆，送禮自用兩相宜。',
+                    image: 'https://via.placeholder.com/300x300/FFAB00/FFFFFF?text=Jaga+Pokkuru' 
+                },
+                { 
+                    name: 'LeTAO 雙層起司蛋糕', 
+                    desc: '小樽必吃！濃郁烤起司與柔滑凍起司的雙層口感，入口即化。',
+                    image: 'https://via.placeholder.com/300x300/FFF9C4/333333?text=LeTAO+Cheesecake' 
+                },
+                { 
+                    name: 'SHIRO 皂香香水', 
+                    desc: '北海道起家的保養品牌，經典「皂香」味道清新自然，男女皆宜。',
+                    image: 'https://via.placeholder.com/300x300/FAFAFA/333333?text=SHIRO+Fragrance' 
+                },
+                { 
+                    name: 'IHADA 藥用防護粉餅', 
+                    desc: '資生堂旗下針對敏感肌設計，含凡士林成分，冬季保濕與防護首選。',
+                    image: 'https://via.placeholder.com/300x300/BBDEFB/333333?text=IHADA+Balm' 
+                },
             ]);
 
             // 花費紀錄 (範例資料 - 日期已更新)
@@ -702,9 +757,9 @@
             const newItinerary = ref({
                 id: null, name: '', category: 'sightseeing', startTime: '', hours: '', address: '', price: '', note: '', transportType: 'public', travelTime: '', isNoteExpanded: false
             });
-            // 新增購物狀態
+            // 新增購物狀態 (增加 desc)
             const newShoppingItem = ref({
-                name: '', image: null
+                name: '', desc: '', image: null
             });
             // 新增花費狀態
             const newExpense = ref({
@@ -882,7 +937,7 @@
 
             // --- 購物清單管理 ---
             const resetShoppingForm = () => {
-                newShoppingItem.value = { name: '', image: null };
+                newShoppingItem.value = { name: '', desc: '', image: null };
             };
             
             const handleImageUpload = (event) => {
